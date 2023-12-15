@@ -16,7 +16,8 @@
 		"baseUrl": ".",
 		"paths": {
 			"@rumsan/prisma": ["libs/prisma/src/index.ts"],
-			"@rumsan/user": ["libs/user/src/index.ts"]
+			"@rumsan/user": ["libs/user/src/index.ts"],
+			"binod7/prisma-db": ["libs/prisma-db/src/index.ts"]
 		}
 	},
 	"exclude": ["node_modules", "tmp"]
