@@ -18,8 +18,8 @@ async function bootstrap() {
 	const port = process.env.PORT || 3333;
 
 	const config = new DocumentBuilder()
-		.setTitle('Community Service')
-		.setDescription('Rahat Community Management Service')
+		.setTitle('Sample App')
+		.setDescription('This is just a sample app')
 		.setVersion('0.1')
 		.addBearerAuth()
 		.build();

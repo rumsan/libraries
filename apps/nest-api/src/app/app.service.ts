@@ -1,5 +1,5 @@
+import { PrismaService } from '@binod7/prisma-db';
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@rumsan/prisma';
 
 @Injectable()
 export class AppService {
