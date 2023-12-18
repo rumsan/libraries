@@ -7,7 +7,7 @@ import {
 	HttpException,
 } from '@nestjs/common';
 
-import { PrismaService } from '@rumsan/prisma';
+import { PrismaService } from '@binod7/prisma-db';
 import { RequiredRule, CHECK_ABILITY } from './ability.decorator';
 import { ACTIONS, SUBJECTS } from '../constants';
 
