@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
-import { RsUserModule } from '@rumsan/user';
-// import { PrismaDbModule } from '@rumsan/prisma';
+import { RumsanUserModule } from '@binod7/rumsan-user';
 import { PrismaDbModule } from '@binod7/prisma-db';
 
 import { AppController } from './app.controller';
@@ -15,7 +14,7 @@ import { ConfigModule } from '@nestjs/config';
 		EventEmitterModule.forRoot({ maxListeners: 10, ignoreErrors: false }),
 		ListenerModule,
 		PrismaDbModule,
-		RsUserModule,
+		RumsanUserModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],

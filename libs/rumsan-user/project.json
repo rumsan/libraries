@@ -1,0 +1,41 @@
+{
+	"name": "rumsan-user",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "libs/rumsan-user/src",
+	"projectType": "library",
+	"targets": {
+		"build": {
+			"executor": "@nx/js:tsc",
+			"outputs": ["{options.outputPath}"],
+			"options": {
+				"outputPath": "dist/libs/rumsan-user",
+				"tsConfig": "libs/rumsan-user/tsconfig.lib.json",
+				"packageJson": "libs/rumsan-user/package.json",
+				"main": "libs/rumsan-user/src/index.ts",
+				"assets": ["libs/rumsan-user/*.md"]
+			}
+		},
+		"publish": {
+			"command": "node tools/scripts/publish.mjs rumsan-user {args.ver} {args.tag}",
+			"dependsOn": ["build"]
+		},
+		"lint": {
+			"executor": "@nx/eslint:lint",
+			"outputs": ["{options.outputFile}"],
+			"options": {
+				"lintFilePatterns": [
+					"libs/rumsan-user/**/*.ts",
+					"libs/rumsan-user/package.json"
+				]
+			}
+		},
+		"test": {
+			"executor": "@nx/jest:jest",
+			"outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+			"options": {
+				"jestConfig": "libs/rumsan-user/jest.config.ts"
+			}
+		}
+	},
+	"tags": []
+}
