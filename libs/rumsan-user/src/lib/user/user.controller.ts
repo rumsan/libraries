@@ -17,14 +17,13 @@ import { EditUserDto } from './dto';
 import { UserService } from './user.service';
 import { AbilitiesGuard } from '../ability/ability.guard';
 import { CheckAbilities } from '../ability/ability.decorator';
-import { ACTIONS, SUBJECTS } from '../constants';
+import { ACTIONS, APP, SUBJECTS } from '../constants';
 import { SignupDto } from '../auth/dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
-// @UseGuards(JwtGuard)
 @Controller('users')
 @ApiTags('Users')
-@ApiBearerAuth()
+@ApiBearerAuth(APP.JWT_BEARER)
 @UseGuards(JwtGuard, AbilitiesGuard)
 export class UserController {
 	constructor(private userService: UserService) {}

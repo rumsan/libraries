@@ -20,3 +20,7 @@ export const EMAIL_TEMPLATES = {
 export const EVENTS = {
 	SEND_OTP_EMAIL: 'send-otp-email',
 };
+
+export const APP = {
+	JWT_BEARER: 'JWT',
+};

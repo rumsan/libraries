@@ -14,7 +14,7 @@
 	"private": true,
 	"dependencies": {
 		"@binod7/prisma-db": "^0.0.3",
-		"@binod7/rumsan-user": "^0.0.7",
+		"@binod7/rumsan-user": "^0.0.8",
 		"@nestjs/common": "^10.0.2",
 		"@nestjs/config": "^3.1.1",
 		"@nestjs/core": "^10.2.10",

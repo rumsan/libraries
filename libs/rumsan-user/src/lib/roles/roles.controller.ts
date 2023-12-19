@@ -20,12 +20,12 @@ import {
 import { CheckAbilities } from '../ability/ability.decorator';
 import { JwtGuard } from '../auth/guard';
 import { AbilitiesGuard } from '../ability/ability.guard';
-import { ACTIONS, SUBJECTS } from '../constants';
+import { ACTIONS, APP, SUBJECTS } from '../constants';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @Controller('roles')
 @ApiTags('Roles & Permissions')
-@ApiBearerAuth()
+@ApiBearerAuth(APP.JWT_BEARER)
 @UseGuards(JwtGuard, AbilitiesGuard)
 export class RolesController {
 	constructor(private roleService: RolesService) {}

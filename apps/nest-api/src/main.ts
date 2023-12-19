@@ -8,6 +8,7 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app/app.module';
+import { APP } from './constants';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
@@ -21,7 +22,10 @@ async function bootstrap() {
 		.setTitle('Sample App')
 		.setDescription('This is just a sample app')
 		.setVersion('0.1')
-		.addBearerAuth()
+		.addBearerAuth(
+			{ type: 'http', scheme: 'bearer', bearerFormat: APP.JWT_BEARER },
+			APP.JWT_BEARER,
+		)
 		.build();
 
 	const document = SwaggerModule.createDocument(app, config);
