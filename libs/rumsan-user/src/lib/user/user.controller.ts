@@ -25,12 +25,12 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 @Controller('users')
 @ApiTags('Users')
 @ApiBearerAuth()
+@UseGuards(JwtGuard, AbilitiesGuard)
 export class UserController {
 	constructor(private userService: UserService) {}
 
 	@HttpCode(HttpStatus.OK)
 	@CheckAbilities({ action: ACTIONS.CREATE, subject: SUBJECTS.ROLE })
-	@UseGuards(JwtGuard, AbilitiesGuard)
 	@Post()
 	createRole(@Body() dto: SignupDto) {
 		return this.userService.createUser(dto);
@@ -38,7 +38,6 @@ export class UserController {
 
 	@HttpCode(HttpStatus.OK)
 	@CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.USER })
-	@UseGuards(JwtGuard, AbilitiesGuard)
 	@Get('me')
 	getMe(@GetUser() user: User) {
 		// if (user.otp) delete user.otp;
@@ -47,7 +46,6 @@ export class UserController {
 
 	@HttpCode(HttpStatus.OK)
 	@CheckAbilities({ action: ACTIONS.UPDATE, subject: SUBJECTS.USER })
-	@UseGuards(JwtGuard, AbilitiesGuard)
 	@Patch('profile')
 	updateProfile(@GetUser('id') userId: number, @Body() dto: EditUserDto) {
 		return this.userService.updateProfile(+userId, dto);
@@ -55,7 +53,6 @@ export class UserController {
 
 	@HttpCode(HttpStatus.OK)
 	@CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.USER })
-	@UseGuards(JwtGuard, AbilitiesGuard)
 	@Get('')
 	listAll() {
 		return this.userService.listUsers();
@@ -63,7 +60,6 @@ export class UserController {
 
 	@HttpCode(HttpStatus.OK)
 	@CheckAbilities({ action: ACTIONS.UPDATE, subject: SUBJECTS.USER })
-	@UseGuards(JwtGuard, AbilitiesGuard)
 	@Patch(':userId')
 	editUser(@Param('userId') userId: number, @Body() dto: EditUserDto) {
 		return this.userService.updateProfile(+userId, dto);
@@ -71,7 +67,6 @@ export class UserController {
 
 	@HttpCode(HttpStatus.OK)
 	@CheckAbilities({ action: ACTIONS.DELETE, subject: SUBJECTS.USER })
-	@UseGuards(JwtGuard, AbilitiesGuard)
 	@Delete(':userId')
 	deleteUser(@Param('userId') userId: number) {
 		return this.userService.deleteUser(+userId);
