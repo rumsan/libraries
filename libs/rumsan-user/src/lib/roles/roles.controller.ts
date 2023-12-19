@@ -21,10 +21,11 @@ import { CheckAbilities } from '../ability/ability.decorator';
 import { JwtGuard } from '../auth/guard';
 import { AbilitiesGuard } from '../ability/ability.guard';
 import { ACTIONS, SUBJECTS } from '../constants';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @Controller('roles')
 @ApiTags('Roles & Permissions')
+@ApiBearerAuth()
 export class RolesController {
 	constructor(private roleService: RolesService) {}
 

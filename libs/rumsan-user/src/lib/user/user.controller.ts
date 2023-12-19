@@ -19,11 +19,12 @@ import { AbilitiesGuard } from '../ability/ability.guard';
 import { CheckAbilities } from '../ability/ability.decorator';
 import { ACTIONS, SUBJECTS } from '../constants';
 import { SignupDto } from '../auth/dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 // @UseGuards(JwtGuard)
 @Controller('users')
 @ApiTags('Users')
+@ApiBearerAuth()
 export class UserController {
 	constructor(private userService: UserService) {}
 

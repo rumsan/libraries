@@ -3,10 +3,11 @@ import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
 import { AbilitiesGuard, CheckAbilities, JwtGuard } from '@binod7/rumsan-user';
 import { ACTIONS, SUBJECTS } from '../constants';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @Controller('app')
 @ApiTags('App')
+@ApiBearerAuth()
 export class AppController {
 	constructor(private readonly appService: AppService) {}
 
