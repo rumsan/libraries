@@ -7,7 +7,7 @@ import {
 	IsString,
 } from 'class-validator';
 
-export class CreateSettingsDto {
+export class EditSettingsDto {
 	@ApiProperty({
 		example: 'Email Config',
 	})

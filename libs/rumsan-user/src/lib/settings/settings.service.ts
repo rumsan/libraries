@@ -1,18 +1,18 @@
 import { PrismaService } from '@binod7/prisma-db';
 import { ForbiddenException, HttpException, Injectable } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-// import { CreateSettingsDto } from './dto/create-settings.dto';
+import { CreateSettingsDto, EditSettingsDto } from './dto';
 
 @Injectable()
 export class SettingsService {
 	constructor(private prisma: PrismaService) {}
 
-	create(dto: any) {
+	create(dto: CreateSettingsDto) {
 		try {
 			return this.prisma.settings.create({ data: dto });
 		} catch (err) {
+			console.log('ERRO==>', err);
 			if (err instanceof PrismaClientKnownRequestError) {
-				console.log('ERRO==>', err);
 				if (err.code === 'P2002') {
 					throw new ForbiddenException('Settings already exist!');
 				}
@@ -21,7 +21,7 @@ export class SettingsService {
 		}
 	}
 
-	async update(id: number, dto: any) {
+	async update(id: number, dto: EditSettingsDto) {
 		try {
 			try {
 				const row = await this.getById(id);

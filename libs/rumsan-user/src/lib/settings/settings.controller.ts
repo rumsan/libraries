@@ -16,6 +16,7 @@ import { SettingsService } from './settings.service';
 import { JwtGuard } from '../auth/guard';
 import { AbilitiesGuard } from '../ability/ability.guard';
 import { CheckAbilities } from '../ability/ability.decorator';
+import { CreateSettingsDto, EditSettingsDto } from './dto';
 
 @Controller('settings')
 @ApiTags('Settings')
@@ -27,7 +28,7 @@ export class SettingsController {
 	@HttpCode(HttpStatus.OK)
 	@CheckAbilities({ action: ACTIONS.MANAGE, subject: SUBJECTS.ALL })
 	@Post()
-	createSettings(@Body() dto: any) {
+	createSettings(@Body() dto: CreateSettingsDto) {
 		return this.settingService.create(dto);
 	}
 
@@ -74,7 +75,7 @@ export class SettingsController {
 	@HttpCode(HttpStatus.OK)
 	@CheckAbilities({ action: ACTIONS.MANAGE, subject: SUBJECTS.ALL })
 	@Patch(':id')
-	updateById(@Param('id') id: number, @Body() dto: any) {
+	updateById(@Param('id') id: number, @Body() dto: EditSettingsDto) {
 		return this.settingService.update(id, dto);
 	}
 }
