@@ -12,6 +12,7 @@ import { AbilityModule } from './ability/ability.module';
 import { RolesModule } from './roles/roles.module';
 import { RolesService } from './roles/roles.service';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
 	controllers: [AuthController, UserController],
@@ -30,7 +31,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 		AuthModule,
 		UserModule,
 		RolesModule,
+		SettingsModule,
 	],
-	exports: [AuthModule, UserModule],
+	exports: [],
 })
 export class RumsanUserModule {}

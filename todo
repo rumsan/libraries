@@ -1,14 +1,8 @@
 # Task list
 
-- Move code to repo ✅
-- Add Swagger ✅
-- Remove email dependency ✅
-- Re-align User Module ✅
-- Create RS_User DTOs ✅
-- Create ReadMe doc ✅
-  - Step 1: Clone repo
-  - Step 2: npm install
-  - Step 3: Add .env and paste
-  - Step 4: npx prisma migrate dev
-  - Step 5: npx prisma db seed
-  - Step 6: npm run dev
+- Create settings model ✅
+- Prisma generate ✅
+- Create settings module inside libs/rumsan-user ✅
+- Create CRUD APIs ✅
+- Export services ✅
+- Restrict access a/c to flag ✅

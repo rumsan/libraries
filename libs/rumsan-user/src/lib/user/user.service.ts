@@ -69,7 +69,7 @@ export class UserService {
 	async deleteUser(userId: number) {
 		try {
 			const user = await this.getUserById(userId);
-			if (!user) throw new HttpException('User does not exist!', 500);
+			if (!user) throw new HttpException('User does not exist!', 404);
 			return this.prisma.user.delete({ where: { id: +userId } });
 		} catch (err) {
 			throw err;
