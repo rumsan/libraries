@@ -59,8 +59,9 @@ export class SettingsService {
 			if (reqFields?.length) {
 				// Check if dto.value is JSON
 				if (!this.isJsonObject(dto.value))
-					throw new Error(
+					throw new HttpException(
 						'Must send JSON object when requiredField is specified.',
+						HttpStatus.BAD_REQUEST,
 					);
 				// Convert fields to Uppercase
 				dto.requiredFields = reqFields.map((f) => {
@@ -75,8 +76,9 @@ export class SettingsService {
 					suppliedFields,
 				);
 				if (!hasAll)
-					throw new Error(
+					throw new HttpException(
 						`Must send all required fields [${dto.requiredFields.join(',')}]`,
+						HttpStatus.BAD_REQUEST,
 					);
 			}
 			dto.value = { data: dto.value };
@@ -94,14 +96,20 @@ export class SettingsService {
 
 	async updateByName(dto: EditSettingsDto) {
 		try {
-			if (!dto.name) throw new Error('Setting name is required!');
+			if (!dto.name)
+				throw new HttpException(
+					'Setting name is required!',
+					HttpStatus.NOT_FOUND,
+				);
 			dto.name = dto.name.toUpperCase();
 			// Fetch existing setting
 			const setting = await this.prisma.settings.findUnique({
 				where: { name: dto.name },
 			});
-			if (!setting) throw new Error('Settings not found!');
-			if (setting.isReadOnly) throw new Error('Setting is read-only');
+			if (!setting)
+				throw new HttpException('Settings not found!', HttpStatus.NOT_FOUND);
+			if (setting.isReadOnly)
+				throw new HttpException('Setting is read-only', HttpStatus.FORBIDDEN);
 			// Check if requiredFields exist
 			if (setting?.requiredFields.length) {
 				dto.value = this.convertObjectKeysToUpperCase(dto.value);
@@ -183,7 +191,11 @@ export class SettingsService {
 	async delete(id: number) {
 		try {
 			const row = await this.getById(id);
-			if (!row) throw new Error('Settings does not exist!');
+			if (!row)
+				throw new HttpException(
+					'Settings does not exist!',
+					HttpStatus.NOT_FOUND,
+				);
 			return this.prisma.settings.delete({ where: { id: +id } });
 		} catch (err) {
 			throw err;
