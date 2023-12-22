@@ -9,12 +9,14 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app/app.module';
 import { APP } from './constants';
+import { HttpExceptionFilter } from './app/common/ExceptionFilter';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 	const globalPrefix = 'api/v1';
 	app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 	app.setGlobalPrefix(globalPrefix);
+	app.useGlobalFilters(new HttpExceptionFilter());
 
 	const port = process.env.PORT || 3333;
 

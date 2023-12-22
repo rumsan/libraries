@@ -61,8 +61,8 @@ export class SettingsController {
 
 	@HttpCode(HttpStatus.OK)
 	@CheckAbilities({ action: ACTIONS.MANAGE, subject: SUBJECTS.ALL })
-	@Patch(':id')
-	updateById(@Param('id') id: number, @Body() dto: EditSettingsDto) {
-		return this.settingService.update(id, dto);
+	@Patch('')
+	updateById(@Body() dto: EditSettingsDto) {
+		return this.settingService.updateByName(dto);
 	}
 }
