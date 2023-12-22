@@ -1,11 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-	IsBoolean,
-	IsNotEmpty,
-	IsNotEmptyObject,
-	IsOptional,
-	IsString,
-} from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class EditSettingsDto {
 	@ApiProperty({
@@ -16,13 +10,20 @@ export class EditSettingsDto {
 	name: string;
 
 	@ApiProperty({
+		example: 'host,port,username,password',
+	})
+	@IsString()
+	@IsOptional()
+	requiredFields: any;
+
+	@ApiProperty({
 		type: 'object',
 		example: {
 			key1: 'value1',
 			key2: 'value2',
 		},
 	})
-	@IsNotEmptyObject()
+	@IsNotEmpty()
 	value: Record<string, any>;
 
 	@ApiProperty({

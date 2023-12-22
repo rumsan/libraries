@@ -1,7 +1,6 @@
 import {
 	Body,
 	Controller,
-	Delete,
 	Get,
 	HttpCode,
 	HttpStatus,
@@ -36,41 +35,29 @@ export class SettingsController {
 	@CheckAbilities({ action: ACTIONS.MANAGE, subject: SUBJECTS.ALL })
 	@Get()
 	listPublicSettings() {
-		return this.settingService.listPublicOnly();
+		return this.settingService.listPublic();
 	}
 
 	@HttpCode(HttpStatus.OK)
 	@CheckAbilities({ action: ACTIONS.MANAGE, subject: SUBJECTS.ALL })
 	@Get(':id')
-	async getById(@Param('id') id: number) {
-		const row = await this.settingService.getById(id);
-		if (row?.isPrivate)
-			return {
-				success: true,
-				message: 'Private settings are restricted to access!',
-			};
-		return row;
+	getById(@Param('id') id: number) {
+		return this.settingService.getPublic(id);
 	}
 
 	@HttpCode(HttpStatus.OK)
 	@CheckAbilities({ action: ACTIONS.MANAGE, subject: SUBJECTS.ALL })
 	@Get(':name/name')
-	async getByName(@Param('name') name: string) {
-		const row = await this.settingService.getByName(name);
-		if (row?.isPrivate)
-			return {
-				success: true,
-				message: 'Private settings are restricted to access!',
-			};
-		return row;
+	getByName(@Param('name') name: string) {
+		return this.settingService.getByName(name);
 	}
 
-	@HttpCode(HttpStatus.OK)
-	@CheckAbilities({ action: ACTIONS.MANAGE, subject: SUBJECTS.ALL })
-	@Delete(':id')
-	deleteById(@Param('id') id: number) {
-		return this.settingService.delete(id);
-	}
+	// @HttpCode(HttpStatus.OK)
+	// @CheckAbilities({ action: ACTIONS.MANAGE, subject: SUBJECTS.ALL })
+	// @Delete(':id')
+	// deleteById(@Param('id') id: number) {
+	// 	return this.settingService.delete(id);
+	// }
 
 	@HttpCode(HttpStatus.OK)
 	@CheckAbilities({ action: ACTIONS.MANAGE, subject: SUBJECTS.ALL })
