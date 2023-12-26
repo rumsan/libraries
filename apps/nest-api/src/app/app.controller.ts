@@ -11,15 +11,15 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 export class AppController {
 	constructor(private readonly appService: AppService) {}
 
-	// @CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.USER })
-	// @UseGuards(JwtGuard, AbilitiesGuard)
+	@CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.USER })
+	@UseGuards(JwtGuard, AbilitiesGuard)
 	@Get()
 	getData() {
 		return this.appService.getData();
 	}
 
-	@Get('update-config')
-	updateAppConfig() {
-		return this.appService.updateAppConfig();
+	@Get('settings')
+	listSettings() {
+		return this.appService.fetchSettings();
 	}
 }

@@ -13,6 +13,7 @@ import { RolesModule } from './roles/roles.module';
 import { RolesService } from './roles/roles.service';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { SettingsModule } from './settings/settings.module';
+import { SettingsService } from './settings/settings.service';
 
 @Module({
 	controllers: [AuthController, UserController],
@@ -22,6 +23,7 @@ import { SettingsModule } from './settings/settings.module';
 		UserService,
 		JwtService,
 		RolesService,
+		SettingsService,
 	],
 	imports: [
 		AbilityModule,

@@ -14,8 +14,7 @@ export class AppService {
 		return { appName, message: 'Hello API', data: d };
 	}
 
-	async updateAppConfig() {
-		this.appConfig.set('APP_NAME', 'DEMO APP');
-		return 'Config updated!';
+	fetchSettings() {
+		return this.appConfig.get('app_settings');
 	}
 }

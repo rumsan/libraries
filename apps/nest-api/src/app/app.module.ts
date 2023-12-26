@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { RumsanUserModule } from '@binod7/rumsan-user';
+import { RumsanUserModule, SettingsService } from '@binod7/rumsan-user';
 import { PrismaDbModule } from '@binod7/prisma-db';
 
 import { AppController } from './app.controller';
@@ -18,7 +18,7 @@ import { AppConfigService } from './app.config';
 		RumsanUserModule,
 	],
 	controllers: [AppController],
-	providers: [AppService, AppConfigService],
+	providers: [AppService, AppConfigService, SettingsService],
 	exports: [AppConfigService],
 })
 export class AppModule {}
