@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ListenerModule } from './listeners/listners.module';
 import { ConfigModule } from '@nestjs/config';
+import { AppConfigService } from './app.config';
 
 @Module({
 	imports: [
@@ -17,6 +18,7 @@ import { ConfigModule } from '@nestjs/config';
 		RumsanUserModule,
 	],
 	controllers: [AppController],
-	providers: [AppService],
+	providers: [AppService, AppConfigService],
+	exports: [AppConfigService],
 })
 export class AppModule {}

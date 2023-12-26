@@ -7,7 +7,7 @@
 	},
 	"scripts": {
 		"dev": "npx nx serve nest-api",
-		"db:migrate": "npx prisma migrate dev",
+		"migrate": "npx prisma migrate dev",
 		"gen:prisma:lib": "npx nx g @nx/nest:library prisma-db --directory=libs/prisma-db --publishable --importPath=binod7/prisma-db",
 		"build:rs-user": "npx nx build rumsan-user",
 		"publish:rs-user": "cd dist/libs/rumsan-user && npm publish --acess=public"
