@@ -7,5 +7,9 @@ module.exports = {
 	setSettings: (data: any) => {
 		app.settings = data;
 	},
-	getSettings: () => app.settings,
+	listSettings: () => app.settings,
+	getSetting: (name: string) => {
+		const { data } = app.settings;
+		return data;
+	},
 };

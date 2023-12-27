@@ -18,14 +18,8 @@ export class AppController {
 		return this.appService.getData();
 	}
 
-	@Get('name')
-	updateAppName() {
-		require('./setting/setting.config').setSettings({ title: 'Hello Rumsan' });
-		return 'Settings updated!';
-	}
-
 	@Get('settings')
 	listSettings() {
-		return require('./setting/setting.config').getSettings();
+		return require('./setting/setting.config').listSettings();
 	}
 }
