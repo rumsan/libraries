@@ -9,8 +9,7 @@ export class AppSettingService {
 	}
 	private config = {
 		// your initial configuration values
-		APP_NAME: 'RS User',
-		PORT: 4040,
+		app_name: 'RS User',
 	};
 
 	get(key: string): any {
@@ -22,7 +21,7 @@ export class AppSettingService {
 	}
 
 	async refreshSettings() {
-		console.log('HURRAY!');
+		console.log('Refreshed!!');
 		const d = await this.settingsService.listPublic();
 		this.set('app_settings', d);
 	}
