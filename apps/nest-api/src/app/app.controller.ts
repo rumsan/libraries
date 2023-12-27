@@ -20,12 +20,12 @@ export class AppController {
 
 	@Get('name')
 	updateAppName() {
-		require('./app.config').setSettings({ title: 'Hello Rumsan' });
+		require('./setting/setting.config').setSettings({ title: 'Hello Rumsan' });
 		return 'Settings updated!';
 	}
 
 	@Get('settings')
 	listSettings() {
-		return require('./app.config').getSettings();
+		return require('./setting/setting.config').getSettings();
 	}
 }

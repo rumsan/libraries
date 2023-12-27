@@ -12,6 +12,6 @@ export class ListenerService {
 
 	@OnEvent(EVENTS.REFRESH_APP_SETTINGS)
 	refreshAppSettings(data: any) {
-		require('../app.config').setSettings(data);
+		require('../setting/setting.config').setSettings(data);
 	}
 }

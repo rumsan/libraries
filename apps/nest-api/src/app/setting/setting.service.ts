@@ -23,6 +23,6 @@ export class AppSettingService {
 	async refreshSettings() {
 		console.log('Refreshed!!');
 		const d = await this.settingsService.listPublic();
-		require('../app.config').setSettings(d);
+		require('../setting/setting.config').setSettings(d);
 	}
 }
