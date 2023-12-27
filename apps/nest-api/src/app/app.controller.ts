@@ -24,11 +24,17 @@ export class AppController {
 
 	@Get('name')
 	updateAppName() {
-		return this.appSetting.set('app_name', 'demo');
+		// setSettings([{ title: 'hello word' }]);
+		require('./app.config').setSettings({ title: 'hola madrid' });
+		return 'Settings updated!';
+		// return this.appSetting.set('app_name', 'demo');
 	}
 
 	@Get('settings')
 	listSettings() {
-		return this.appService.fetchSettings();
+		return require('./app.config').getSettings();
+		// const settings = getSettings();
+		// return settings;
+		// return this.appService.fetchSettings();
 	}
 }

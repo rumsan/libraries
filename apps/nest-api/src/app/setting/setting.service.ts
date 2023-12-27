@@ -9,7 +9,7 @@ export class AppSettingService {
 	}
 	private config = {
 		// your initial configuration values
-		app_name: 'RS User',
+		app_name: '',
 	};
 
 	get(key: string): any {
@@ -23,6 +23,6 @@ export class AppSettingService {
 	async refreshSettings() {
 		console.log('Refreshed!!');
 		const d = await this.settingsService.listPublic();
-		this.set('app_settings', d);
+		require('../app.config').setSettings(d);
 	}
 }
