@@ -7,10 +7,15 @@ import {
 } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { CreateSettingsDto, EditSettingsDto } from './dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EVENTS } from '../constants';
 
 @Injectable()
 export class SettingsService {
-	constructor(private prisma: PrismaService) {}
+	constructor(
+		private prisma: PrismaService,
+		private eventEmitter: EventEmitter2,
+	) {}
 
 	stringToArray(value: string) {
 		let arr: string[] = [];
@@ -139,12 +144,15 @@ export class SettingsService {
 			} else {
 				dto.requiredFields = [];
 			}
-			return this.prisma.settings.update({
+			const updated = await this.prisma.settings.update({
 				where: {
 					id: +setting.id,
 				},
 				data: { ...dto },
 			});
+			const updatedList = await this.listPublic();
+			this.eventEmitter.emit(EVENTS.REFRESH_APP_SETTINGS, updatedList);
+			return updated;
 		} catch (err) {
 			throw err;
 		}

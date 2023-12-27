@@ -1,12 +1,9 @@
 import { SettingsService } from '@binod7/rumsan-user';
-import { Injectable } from '@nestjs/common';
+import { Global, Injectable } from '@nestjs/common';
 
-// Fetch settings
-// Set settings data
-// Update Settings via API
-// Trigger refreshSettings
+@Global()
 @Injectable()
-export class AppConfigService {
+export class AppSettingService {
 	constructor(private settingsService: SettingsService) {
 		this.refreshSettings();
 	}

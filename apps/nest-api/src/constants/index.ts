@@ -19,6 +19,7 @@ export const EMAIL_TEMPLATES = {
 
 export const EVENTS = {
 	SEND_OTP_EMAIL: 'send-otp-email',
+	REFRESH_APP_SETTINGS: 'refresh-app-settings',
 };
 
 export const APP = {

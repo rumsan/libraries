@@ -1,17 +1,14 @@
 import { PrismaService } from '@binod7/prisma-db';
 import { Injectable } from '@nestjs/common';
-import { AppConfigService } from './app.config';
+import { AppSettingService } from './setting/setting.service';
 
 @Injectable()
 export class AppService {
-	constructor(
-		private prisma: PrismaService,
-		private appConfig: AppConfigService,
-	) {}
+	constructor(private appConfig: AppSettingService) {}
 	async getData() {
-		const appName = this.appConfig.get('APP_NAME');
-		const d = await this.prisma.user.findMany();
-		return { appName, message: 'Hello API', data: d };
+		// const appName = this.appConfig.get('APP_NAME');
+		// const d = await this.prisma.user.findMany();
+		// return { appName, message: 'Hello API', data: d };
 	}
 
 	fetchSettings() {

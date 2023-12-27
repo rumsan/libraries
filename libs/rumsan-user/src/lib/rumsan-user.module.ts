@@ -35,6 +35,6 @@ import { SettingsService } from './settings/settings.service';
 		RolesModule,
 		SettingsModule,
 	],
-	exports: [],
+	exports: [SettingsService],
 })
 export class RumsanUserModule {}

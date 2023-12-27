@@ -7,7 +7,8 @@ import { AppService } from './app.service';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ListenerModule } from './listeners/listners.module';
 import { ConfigModule } from '@nestjs/config';
-import { AppConfigService } from './app.config';
+import { AppSettingModule } from './setting/setting.module';
+import { AppSettingService } from './setting/setting.service';
 
 @Module({
 	imports: [
@@ -16,9 +17,10 @@ import { AppConfigService } from './app.config';
 		ListenerModule,
 		PrismaDbModule,
 		RumsanUserModule,
+		AppSettingModule,
 	],
 	controllers: [AppController],
-	providers: [AppService, AppConfigService, SettingsService],
-	exports: [AppConfigService],
+	providers: [AppService, AppSettingService, SettingsService],
+	exports: [],
 })
 export class AppModule {}

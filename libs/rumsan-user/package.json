@@ -1,6 +1,6 @@
 {
 	"name": "@binod7/rumsan-user",
-	"version": "0.6.0",
+	"version": "0.6.1",
 	"dependencies": {
 		"tslib": "^2.3.0"
 	},
