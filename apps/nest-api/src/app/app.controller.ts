@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 
 import { AppService } from './app.service';
 import { AbilitiesGuard, CheckAbilities, JwtGuard } from '@binod7/rumsan-user';
@@ -21,5 +21,10 @@ export class AppController {
 	@Get('settings')
 	listSettings() {
 		return require('./setting/setting.config').listSettings();
+	}
+
+	@Get('settings/:name')
+	getEmailSettings(@Param('name') name: string) {
+		return require('./setting/setting.config').getSetting(name);
 	}
 }

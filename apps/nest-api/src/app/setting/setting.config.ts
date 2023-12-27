@@ -1,6 +1,6 @@
 let app = {
 	name: 'Rumsan App',
-	settings: { data: null },
+	settings: null,
 };
 
 module.exports = {
@@ -9,7 +9,12 @@ module.exports = {
 	},
 	listSettings: () => app.settings,
 	getSetting: (name: string) => {
-		const { data } = app.settings;
-		return data;
+		if (!name) return null;
+		name = name.toUpperCase().replace(' ', '-');
+		const { settings } = app;
+		if (!settings) return null;
+		const found = settings.find((f: any) => f.name === name);
+		if (!found) return null;
+		return found.value.data;
 	},
 };
