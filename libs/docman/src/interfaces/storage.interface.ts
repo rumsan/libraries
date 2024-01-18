@@ -1,4 +1,4 @@
-export interface Storage {
+export interface IStorage {
   initialize(config: any): void;
   upload(file: Buffer, filename: string): Promise<string>;
   download(fileKey: string): Promise<Buffer>;

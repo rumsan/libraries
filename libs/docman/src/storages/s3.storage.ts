@@ -7,10 +7,10 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { Injectable } from '@nestjs/common';
-import { Storage } from '../interfaces/storage.interface';
+import { IStorage } from '../interfaces/storage.interface';
 
 @Injectable()
-export class S3Storage implements Storage {
+export class S3Storage implements IStorage {
   private s3: S3Client;
   private bucketName: string;
 

@@ -28,7 +28,6 @@ export class DocController {
   @Post('doc/upload')
   @UseInterceptors(FilesInterceptor('files'))
   async uploadFiles(@UploadedFiles() files: IFile[]): Promise<string> {
-    console.log(files);
     const filename = files[1].originalname;
     await this.docManService.upload(files[1].buffer, filename);
 

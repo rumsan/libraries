@@ -2,10 +2,10 @@
 
 import { Injectable } from '@nestjs/common';
 import { create } from 'ipfs-http-client';
-import { Storage } from '../interfaces/storage.interface';
+import { IStorage } from '../interfaces/storage.interface';
 
 @Injectable()
-export class IpfsStorage implements Storage {
+export class IpfsStorage implements IStorage {
   private ipfs: any;
 
   initialize(config: {

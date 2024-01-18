@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Storage } from '../interfaces/storage.interface';
+import { IStorage } from './interfaces/storage.interface';
 
 @Injectable()
 export class DocmanService {
-  private selectedStorage: Storage;
+  private selectedStorage: IStorage;
 
   constructor(@Inject('STORAGE') private readonly storageConfig: any) {
     this.selectedStorage = this.storageConfig.transport;

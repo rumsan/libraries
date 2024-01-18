@@ -10,7 +10,6 @@ import { AbilityModule, RumsanUserModule } from '@rumsan/user';
 import { ERRORS } from '../constants/errors';
 import { AppDocModule } from '../doc/doc.module';
 import { ListenerModule } from '../listener/listener.module';
-import { AppUserModule } from '../user/user.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -27,7 +26,6 @@ import { AppService } from './app.service';
     RumsanUserModule,
     RSExceptionModule.forRoot({ errorSet: ERRORS }),
     RumsanAppModule,
-    AppUserModule,
     AbilityModule.forRoot({ subjects: { APP: 'app' } }),
     //SignupModule.register({ autoApprove: false }),
   ],

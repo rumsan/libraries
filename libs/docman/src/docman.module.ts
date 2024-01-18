@@ -1,6 +1,6 @@
 import { DynamicModule, Global, Module } from '@nestjs/common';
-import { Storage } from '../interfaces/storage.interface';
 import { DocmanService } from './docman.service';
+import { IStorage } from './interfaces/storage.interface';
 
 @Global()
 @Module({
@@ -9,7 +9,7 @@ import { DocmanService } from './docman.service';
 })
 export class DocmanModule {
   static forRoot(storageConfig: {
-    storage: Storage;
+    storage: IStorage;
     config: any;
   }): DynamicModule {
     return {

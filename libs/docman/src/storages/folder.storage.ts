@@ -3,10 +3,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
-import { Storage } from '../interfaces/storage.interface';
+import { IStorage } from '../interfaces/storage.interface';
 
 @Injectable()
-export class FolderStorage implements Storage {
+export class FolderStorage implements IStorage {
   private folderPath: string;
 
   initialize(config: { folderPath: string }): void {
