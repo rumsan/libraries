@@ -17,6 +17,7 @@
     "baseUrl": ".",
     "paths": {
       "@rumsan/core": ["libs/core/src/index.ts"],
+      "@rumsan/docman": ["libs/docman/src/index.ts"],
       "@rumsan/prisma": ["libs/prisma/src/index.ts"],
       "@rumsan/settings": ["libs/settings/src/index.ts"],
       "@rumsan/user": ["libs/user/src/index.ts"]
