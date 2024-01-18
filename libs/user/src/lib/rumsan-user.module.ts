@@ -11,6 +11,7 @@ import { ERRORS_RSUSER } from './constants';
 import { RolesModule } from './roles/roles.module';
 import { UserController } from './user/user.controller';
 import { UserModule } from './user/user.module';
+import { UserService } from './user/user.service';
 
 @Module({
   controllers: [AuthController, UserController],
@@ -28,7 +29,7 @@ import { UserModule } from './user/user.module';
     UserModule,
     RolesModule,
   ],
-  providers: [JwtService, ConfigService],
-  exports: [],
+  providers: [JwtService, ConfigService, UserService],
+  exports: [UserService],
 })
 export class RumsanUserModule {}

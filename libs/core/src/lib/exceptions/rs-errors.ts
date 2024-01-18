@@ -1,17 +1,42 @@
+export type RSErrorInfo = {
+  name: string;
+  message: string;
+  type?: string;
+  httpCode: number;
+  srcModule?: string;
+  meta?: any;
+};
+
 export class RSError extends Error {
   public httpCode: number;
   public type: string;
+  public srcModule?: string;
+  public meta?: any;
   constructor(
-    message: string,
-    name = 'UNKNOWN',
-    httpCode = 500,
-    type = 'RSERROR',
+    errorInfo: RSErrorInfo = {
+      name: 'UNKNOWN',
+      message: 'Unknown error',
+      type: 'RSERROR',
+      httpCode: 500,
+      meta: {},
+    },
   ) {
-    super(message);
-    this.name = name?.toUpperCase() || 'UNKNOWN';
-    this.httpCode = httpCode || 500;
-    this.type = type?.toUpperCase() || 'RSERROR';
+    super(errorInfo.message);
+    this.name = errorInfo.name.toUpperCase() || 'UNKNOWN';
+    this.httpCode = errorInfo.httpCode || 500;
+    this.type = errorInfo.type?.toUpperCase() || 'RSERROR';
+    this.srcModule = errorInfo.srcModule;
+    this.meta = errorInfo.meta;
   }
+}
+
+export function RSE(
+  message: string,
+  name: string = 'UNKNOWN',
+  httpCode: number = 500,
+  type: string = 'RSERROR',
+) {
+  return new RSError({ message, name, httpCode, type, srcModule: 'RS_CORE' });
 }
 
 export const ERRORS: any = {
@@ -25,8 +50,10 @@ export const ERRORS: any = {
       [key: string]: {
         name: string;
         message: string;
-        type: string;
         httpCode: number;
+        sourceModule?: string;
+        meta?: any;
+        type: string;
       };
     } = {};
     Object.keys(ERRORS).forEach((key) => {
@@ -34,16 +61,18 @@ export const ERRORS: any = {
       result[key] = {
         name: ERRORS[key].name,
         message: ERRORS[key].message,
-        type: ERRORS[key].type,
+        meta: ERRORS[key].meta,
         httpCode: ERRORS[key].httpCode,
+        sourceModule: ERRORS[key].srcModule || 'UNKNOWN',
+        type: ERRORS[key].type,
       };
     });
     return result;
   },
 
-  NO_MATCH_IP: new RSError('IP address does not match', 'NO_MATCH_IP', 403),
-  NO_MATCH_OTP: new RSError('OTP does not match', 'NO_MATCH_OTP', 403),
+  NO_MATCH_IP: RSE('IP address does not match', 'NO_MATCH_IP', 403),
+  NO_MATCH_OTP: RSE('OTP does not match', 'NO_MATCH_OTP', 403),
 
-  NOT_JSON: new RSError('Invalid JSON string', 'NOT_JSON', 400),
-  NOT_IMPLEMENTED: new RSError('Not implemented', 'NOT_IMPLEMENTED', 501),
+  NOT_JSON: RSE('Invalid JSON string', 'NOT_JSON', 400),
+  NOT_IMPLEMENTED: RSE('Not implemented', 'NOT_IMPLEMENTED', 501),
 };

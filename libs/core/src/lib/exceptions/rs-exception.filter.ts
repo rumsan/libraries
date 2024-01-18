@@ -60,9 +60,11 @@ export class RsExceptionFilter implements PipeTransform<any>, ExceptionFilter {
       success: boolean;
       name: string;
       message: string | string[];
+      meta?: any;
       statusCode: HttpStatus;
+      sourceModule: string | null;
+      errors?: any;
       type: string;
-      meta: any;
       timestamp: number;
     } = {
       success: false,
@@ -70,9 +72,10 @@ export class RsExceptionFilter implements PipeTransform<any>, ExceptionFilter {
       message:
         'Our server is not happy. It threw an error. Please try again or contact support.' ||
         '',
+      meta: {},
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      sourceModule: null,
       type: 'ERROR',
-      meta: null,
       timestamp: new Date().getTime(),
     };
 
@@ -84,9 +87,9 @@ export class RsExceptionFilter implements PipeTransform<any>, ExceptionFilter {
       exceptionResponse = exception?.getResponse();
 
       if (isObjectWithErrors(exceptionResponse)) {
-        responseData.meta = exceptionResponse?.errors ?? '';
+        responseData.errors = exceptionResponse?.errors ?? '';
       } else {
-        responseData.meta = [response?.errors ?? ''];
+        responseData.errors = [response?.errors ?? ''];
       }
       responseData.name = exception.name;
       responseData.statusCode = exceptionResponse.statusCode;
@@ -97,19 +100,21 @@ export class RsExceptionFilter implements PipeTransform<any>, ExceptionFilter {
       // exceptionResponse = exception?.getResponse();
 
       if (isObjectWithErrors(exceptionResponse)) {
-        responseData.meta = exceptionResponse?.errors ?? '';
+        responseData.errors = exceptionResponse?.errors ?? '';
       } else {
-        responseData.meta = [response?.errors ?? ''];
+        responseData.errors = [response?.errors ?? ''];
       }
       responseData.message = exception.message;
       responseData.statusCode = exception.httpCode;
       responseData.name = exception.name;
-      responseData.type = exception.type;
+      responseData.meta = exception.meta;
+      responseData.type = 'RSERROR';
+      responseData.sourceModule = exception.srcModule || null;
       //console.log('RS Exception occured', responseData);
       // eslint-disable-next-line no-unsafe-optional-chaining
     } else if (exception instanceof Prisma?.PrismaClientKnownRequestError) {
       responseData.name = exception.code;
-      //responseData.meta = exception.meta;
+      //responseData.errors = exception.errors;
       const prismaError = PrimsaFriendlyErrorMessage(exception);
       responseData.message = prismaError.message;
       responseData.statusCode = prismaError.httpCode;

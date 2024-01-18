@@ -8,7 +8,7 @@ import { RSExceptionModule, RumsanAppModule } from '@rumsan/core';
 import { AbilityModule, RumsanUserModule } from '@rumsan/user';
 import { ERRORS } from '../constants/errors';
 import { ListenerModule } from '../listener/listener.module';
-import { UserModule } from '../user/user.module';
+import { AppUserModule } from '../user/user.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -21,7 +21,7 @@ import { AppService } from './app.service';
     }),
     ListenerModule,
     PrismaModule,
-    UserModule,
+    AppUserModule,
     RumsanUserModule,
     RSExceptionModule.forRoot({ errorSet: ERRORS }),
     RumsanAppModule,

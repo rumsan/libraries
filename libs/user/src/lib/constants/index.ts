@@ -1,4 +1,4 @@
-export * from './errors';
+export { ERRORS_RSUSER } from './errors';
 export * from './events';
 
 // For Ability Guard
@@ -13,9 +13,8 @@ export const ACTIONS = {
 // For Ability Guard
 export const SUBJECTS: any = {
   ALL: 'all',
-  USER: 'rsu.user',
-  ROLE: 'rsu.role',
-  PERMISSION: 'rsu.permission',
+  USER: 'user',
+  ROLE: 'role',
 };
 
 export const APP = {

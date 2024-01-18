@@ -25,7 +25,7 @@ export class RolesController {
 
   @CheckAbilities({ action: ACTIONS.CREATE, subject: SUBJECTS.ROLE })
   @Post()
-  createRole(@Body() dto: CreateRoleDto) {
+  async createRole(@Body() dto: CreateRoleDto) {
     return this.roleService.create(dto);
   }
 
@@ -39,14 +39,14 @@ export class RolesController {
 
   @CheckAbilities({ action: ACTIONS.UPDATE, subject: SUBJECTS.ROLE })
   @Patch(':id')
-  editUser(@Param('id') id: number, @Body() dto: EditRoleDto) {
+  updateRole(@Param('id') id: number, @Body() dto: EditRoleDto) {
     return this.roleService.update(+id, dto);
   }
 
   @CheckAbilities({ action: ACTIONS.DELETE, subject: SUBJECTS.ROLE })
-  @Delete(':id')
-  deleteRole(@Param('id') id: number) {
-    return this.roleService.delete(+id);
+  @Delete(':name')
+  deleteRole(@Param('name') name: string) {
+    return this.roleService.delete(name);
   }
 
   @CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.ROLE })
@@ -56,14 +56,14 @@ export class RolesController {
   }
 
   @CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.ROLE })
-  @Get(':roleId')
-  getRole(@Param('roleId') roleId: number) {
-    return this.roleService.getById(roleId);
+  @Get(':name')
+  getRole(@Param('name') name: string) {
+    return this.roleService.getRoleByName(name, true);
   }
 
   @CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.PERMISSION })
-  @Get(':roleId/permissions')
-  listPermsByRole(@Param('roleId') roleId: number) {
-    return this.roleService.listPermissionsByRole(+roleId);
+  @Get(':name/permissions')
+  listPermsByRole(@Param('name') name: string) {
+    return this.roleService.listPermissionsByRole(name);
   }
 }

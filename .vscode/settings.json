@@ -2,6 +2,7 @@
     "editor.codeActionsOnSave": {
       "source.organizeImports": "explicit",
       "editor.formatOnSave": "explicit"
-    }
+    },
+    "typescript.tsdk": "node_modules\\typescript\\lib"
   }
   

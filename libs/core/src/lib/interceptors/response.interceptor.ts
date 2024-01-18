@@ -36,7 +36,13 @@ export class ResponseTransformInterceptor<T>
         typeof data === 'undefined' || data === null
           ? (resData.data = Object.keys(rest).length === 0 ? null : rest)
           : (resData.data = data);
-        if (typeof retData === 'string') resData.data = retData as T;
+        if (
+          typeof retData === 'string' ||
+          typeof retData === 'number' ||
+          typeof retData === 'boolean' ||
+          Array.isArray(retData)
+        )
+          resData.data = retData as T;
         resData.meta = meta;
         resData.code = code;
 

@@ -1,6 +1,7 @@
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { RumsanAppController } from './app.controller';
-import { ERRORS, RSError } from './exceptions';
+import { ERRORS } from './exceptions';
+import { RSE } from './exceptions/rs-errors';
 
 type ControllerFunction = () => any;
 
@@ -12,7 +13,7 @@ export const getConstantController = (name: string) => {
   name = name.toLowerCase();
   const registeredControllers = Object.keys(ConstantControllers);
   if (!registeredControllers.includes(name)) {
-    throw new RSError(
+    throw RSE(
       `Constant controller named [${name}] has not been registered. Allowed values are [${registeredControllers.join(
         ',',
       )}].`,

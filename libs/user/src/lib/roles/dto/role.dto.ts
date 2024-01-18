@@ -8,6 +8,7 @@ import {
   IsString,
   ValidateIf,
 } from 'class-validator';
+import { PermissionSet } from '../../interfaces';
 
 export class CreateRoleDto {
   @ApiProperty({
@@ -23,6 +24,14 @@ export class CreateRoleDto {
   })
   @IsOptional()
   isSystem?: boolean;
+
+  @ApiProperty({
+    example: JSON.stringify({
+      user: ['manage', 'read'],
+    }),
+  })
+  @IsOptional()
+  permissions: PermissionSet;
 }
 
 export class EditRoleDto extends PartialType(CreateRoleDto) {}
