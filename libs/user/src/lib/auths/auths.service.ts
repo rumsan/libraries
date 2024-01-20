@@ -21,7 +21,7 @@ type RequestInfo = {
 };
 
 @Injectable()
-export class AuthService {
+export class AuthsService {
   constructor(
     protected prisma: PrismaService,
     private jwt: JwtService,

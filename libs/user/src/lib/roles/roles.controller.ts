@@ -11,7 +11,7 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CheckAbilities } from '../ability/ability.decorator';
 import { AbilitiesGuard, SkipAbilitiesGuard } from '../ability/ability.guard';
-import { JwtGuard } from '../auth/guard';
+import { JwtGuard } from '../auths/guard';
 import { ACTIONS, APP, SUBJECTS } from '../constants';
 import { CreateRoleDto, EditRoleDto } from './dto';
 import { RolesService } from './roles.service';

@@ -5,16 +5,16 @@ import { RSExceptionModule, RumsanAppModule } from '@rumsan/core';
 import { PrismaModule } from '@rumsan/prisma';
 import { AbilityModule } from './ability/ability.module';
 import { AbilitySubject } from './ability/ability.subjects';
-import { AuthController } from './auth/auth.controller';
-import { AuthModule } from './auth/auth.module';
+import { AuthsController } from './auths/auths.controller';
+import { AuthsModule } from './auths/auths.module';
 import { ERRORS_RSUSER } from './constants';
 import { RolesModule } from './roles/roles.module';
-import { UserController } from './user/user.controller';
-import { UserModule } from './user/user.module';
-import { UserService } from './user/user.service';
+import { UsersController } from './users/users.controller';
+import { UsersModule } from './users/users.module';
+import { UsersService } from './users/users.service';
 
 @Module({
-  controllers: [AuthController, UserController],
+  controllers: [AuthsController, UsersController],
   imports: [
     //SignupModule.forRoot({ autoApprove: false }),
     RSExceptionModule.forRoot({ errorSet: ERRORS_RSUSER }),
@@ -25,11 +25,11 @@ import { UserService } from './user/user.service';
     }),
     AbilityModule,
     PrismaModule,
-    AuthModule,
-    UserModule,
+    AuthsModule,
+    UsersModule,
     RolesModule,
   ],
-  providers: [JwtService, ConfigService, UserService],
-  exports: [UserService],
+  providers: [JwtService, ConfigService, UsersService],
+  exports: [UsersService],
 })
-export class RumsanUserModule {}
+export class RumsanUsersModule {}

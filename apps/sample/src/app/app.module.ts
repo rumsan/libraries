@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
-// import { UserModule } from '../user/user.module';
+// import { UsersModule } from '../user/user.module';
 import { PrismaModule } from '@rumsan/prisma';
 
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RSExceptionModule, RumsanAppModule } from '@rumsan/core';
-import { AbilityModule, RumsanUserModule } from '@rumsan/user';
+import { AbilityModule, RumsanUsersModule } from '@rumsan/user';
 import { ERRORS } from '../constants/errors';
 import { ListenerModule } from '../listener/listener.module';
-import { AppUserModule } from '../user/user.module';
+import { AppUsersModule } from '../user/user.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -21,8 +21,8 @@ import { AppService } from './app.service';
     }),
     ListenerModule,
     PrismaModule,
-    AppUserModule,
-    RumsanUserModule,
+    AppUsersModule,
+    RumsanUsersModule,
     RSExceptionModule.forRoot({ errorSet: ERRORS }),
     RumsanAppModule,
     AbilityModule.forRoot({ subjects: { APP: 'app' } }),

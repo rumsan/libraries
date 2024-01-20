@@ -3,8 +3,8 @@ import { PaginatorTypes, paginator } from '@nodeteam/nestjs-prisma-pagination';
 import { Service, Signup, SignupStatus } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from '@rumsan/prisma';
-import { CreateUserDto } from '../user/dto';
-import { UserService } from '../user/user.service';
+import { CreateUserDto } from '../users/dto';
+import { UsersService } from '../users/users.service';
 import { SignupEmailDto, SignupListDto } from './dto';
 import { SignupApproveDto } from './dto/signup-approve.dto';
 import { SignupPhoneDto } from './dto/signup-phone.dto';
@@ -14,11 +14,11 @@ import { SignupConfig } from './interfaces/signup-config.interfaces';
 const paginate: PaginatorTypes.PaginateFunction = paginator({ perPage: 20 });
 
 @Injectable()
-export class SignupService {
+export class SignupsService {
   constructor(
     @Inject('SIGNUP_CONFIG') private config: SignupConfig,
     protected prisma: PrismaService,
-    private userService: UserService,
+    private userService: UsersService,
   ) {}
 
   async signup(dto: SignupEmailDto | SignupPhoneDto | SignupWalletDto) {

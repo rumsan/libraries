@@ -13,20 +13,20 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UUID } from 'crypto';
 import { CheckAbilities } from '../ability/ability.decorator';
 import { AbilitiesGuard, SkipAbilitiesGuard } from '../ability/ability.guard';
-import { CU, CurrentUser } from '../auth/decorator';
-import { JwtGuard } from '../auth/guard';
-import { CUI } from '../auth/interfaces/current-user.interface';
+import { CU, CurrentUser } from '../auths/decorator';
+import { JwtGuard } from '../auths/guard';
+import { CUI } from '../auths/interfaces/current-user.interface';
 import { ACTIONS, APP, SUBJECTS } from '../constants';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { UserListDto } from './dto/users-list.dto';
-import { UserService } from './user.service';
+import { UsersService } from './users.service';
 
 @Controller('users')
 @ApiTags('Users')
 @ApiBearerAuth(APP.JWT_BEARER)
 @UseGuards(JwtGuard, AbilitiesGuard)
-export class UserController {
-  constructor(private userService: UserService) {}
+export class UsersController {
+  constructor(private userService: UsersService) {}
 
   @CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.USER })
   @Get('')

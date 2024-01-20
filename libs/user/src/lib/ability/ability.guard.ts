@@ -8,7 +8,7 @@ import {
 import { Reflector } from '@nestjs/core';
 
 import { PrismaService } from '@rumsan/prisma';
-import { TokenDataInterface } from '../auth/interfaces/auth.interface';
+import { TokenDataInterface } from '../auths/interfaces/auth.interface';
 import { ACTIONS, SUBJECTS } from '../constants';
 import { CHECK_ABILITY, RequiredRule } from './ability.decorator';
 

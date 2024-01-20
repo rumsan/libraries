@@ -3,17 +3,17 @@ import { PaginatorTypes, paginator } from '@nodeteam/nestjs-prisma-pagination';
 import { Prisma, PrismaClient, Service, User } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 import { PrismaService } from '@rumsan/prisma';
-import { AuthService } from '../auth/auth.service';
+import { AuthsService } from '../auths/auths.service';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { UserListDto } from './dto/users-list.dto';
 
 const paginate: PaginatorTypes.PaginateFunction = paginator({ perPage: 20 });
 @Injectable()
-export class UserService {
+export class UsersService {
   private rsprisma;
   constructor(
     protected prisma: PrismaService,
-    public authService: AuthService,
+    public authService: AuthsService,
   ) {
     this.rsprisma = this.prisma.rsclient;
   }

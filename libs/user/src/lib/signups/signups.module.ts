@@ -1,14 +1,14 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { PrismaModule } from '@rumsan/prisma';
-import { UserModule } from '../user/user.module';
+import { UsersModule } from '../users/users.module';
 import { SignupConfig } from './interfaces/signup-config.interfaces';
-import { SignupController } from './signup.controller';
-import { SignupService } from './signup.service';
+import { SignupController } from './signups.controller';
+import { SignupsService } from './signups.service';
 
 @Module({
-  imports: [PrismaModule, UserModule],
+  imports: [PrismaModule, UsersModule],
   controllers: [SignupController],
-  exports: [SignupService],
+  exports: [SignupsService],
 })
 export class SignupModule {
   static forRoot(options: SignupConfig): DynamicModule {
@@ -20,7 +20,7 @@ export class SignupModule {
           provide: 'SIGNUP_CONFIG',
           useValue: options,
         },
-        SignupService,
+        SignupsService,
       ],
     };
   }

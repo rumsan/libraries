@@ -8,13 +8,13 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
-import { AuthService } from './auth.service';
+import { AuthsService } from './auths.service';
 import { ChallengeDto, OtpDto, OtpLoginDto, WalletLoginDto } from './dto';
 
 @Controller('auth')
 @ApiTags('Auth')
-export class AuthController {
-  constructor(private authService: AuthService) {}
+export class AuthsController {
+  constructor(private authService: AuthsService) {}
 
   _getRequestInfo(request: Request) {
     return {
