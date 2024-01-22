@@ -8,4 +8,9 @@ export class ListenerService {
   sendOTPEmail(data: any) {
     console.log('Use your messenger service!', data);
   }
+
+  @OnEvent(CONSTANTS_RSUSER.EVENTS.EMAIL_TO_VERIFY)
+  sendEmailVerification(data: any) {
+    console.log('Use your messenger service!', data);
+  }
 }

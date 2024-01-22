@@ -1,6 +1,6 @@
 {
   "name": "@rumsan/core",
-  "version": "0.0.1",
+  "version": "3.0.1",
   "description": "Rumsan core libraries and common utilities",
   "author": "rumsan.com",
   "license": "AGPL-3.0",
@@ -14,8 +14,17 @@
       "url": "https://www.rumsan.com.com"
     }
   ],
+  "peerDependencies": {},
   "dependencies": {
-    "tslib": "^2.3.0"
+    "@nestjs/common": "^10.0.2",
+    "@nestjs/config": "^3.1.1",
+    "@nestjs/swagger": "^7.1.17",
+    "@prisma/client": "^5.8.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.0",
+    "rxjs": "^7.8.0",
+    "uuid": "^9.0.1",
+    "zlib": "^1.0.5"
   },
   "type": "commonjs",
   "main": "./src/index.js",

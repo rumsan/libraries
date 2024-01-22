@@ -1,6 +1,6 @@
 {
   "name": "@rumsan/user",
-  "version": "0.0.1",
+  "version": "3.0.1",
   "description": "Rumsan user management library",
   "author": "rumsan.com",
   "license": "AGPL-3.0",
@@ -15,12 +15,26 @@
     }
   ],
   "dependencies": {
+    "@nestjs/event-emitter": "^2.0.3",
+    "@nestjs/jwt": "^10.2.0",
+    "@nestjs/passport": "^10.0.3",
+    "@nestjs/platform-express": "^10.0.2",
+    "@nodeteam/nestjs-prisma-pagination": "^1.0.6",
+    "@rumsan/core": "^3.0.1",
+    "@rumsan/prisma": "^1.0.1",
+    "ethers": "^6.9.1",
+    "passport-jwt": "^4.0.1",
     "tslib": "^2.3.0"
   },
   "peerDependencies": {
-    "@nestjs/event-emitter": "^2.0.3",
-    "@nestjs/jwt": "^10.2.0",
-    "@nestjs/passport": "^10.0.3"
+    "@nestjs/common": "^10.0.2",
+    "@nestjs/config": "^3.1.1",
+    "@nestjs/swagger": "^7.1.17",
+    "@prisma/client": "^5.8.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.0",
+    "rxjs": "^7.8.0",
+    "uuid": "^9.0.1"
   },
   "type": "commonjs",
   "main": "./src/index.ts",

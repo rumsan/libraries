@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Gender } from '@prisma/client';
-import { IsOptional, IsString } from 'class-validator';
+import { $Enums, Gender } from '@prisma/client';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class CreateUserDto {
   @ApiProperty({
@@ -18,6 +18,7 @@ export class CreateUserDto {
   })
   @IsOptional()
   @IsString()
+  @IsEnum($Enums.Gender)
   gender?: Gender;
 
   @ApiProperty({

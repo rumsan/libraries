@@ -11,6 +11,7 @@ import { ERRORS, WalletUtils } from '@rumsan/core';
 import { PrismaService } from '@rumsan/prisma';
 import { ethers } from 'ethers';
 import { getSecret } from '../../utils/configUtils';
+import { getServiceTypeByAddress } from '../../utils/service.utils';
 import { EVENTS } from '../constants';
 import { ChallengeDto, OtpDto, OtpLoginDto, WalletLoginDto } from './dto';
 import { TokenDataInterface } from './interfaces/auth.interface';
@@ -39,7 +40,7 @@ export class AuthsService {
 
   async getOtp(dto: OtpDto, requestInfo: RequestInfo) {
     if (!dto.service) {
-      dto.service = this.getServiceTypeByAddress(dto.address);
+      dto.service = getServiceTypeByAddress(dto.address);
     }
     const auth = await this.prisma.auth.findUnique({
       where: {
@@ -83,7 +84,7 @@ export class AuthsService {
     if (!challengeData.address)
       throw new ForbiddenException('Invalid credentials in challenge!');
     if (!dto.service) {
-      dto.service = this.getServiceTypeByAddress(challengeData.address);
+      dto.service = getServiceTypeByAddress(challengeData.address);
     }
 
     const auth = await this.getByServiceId(
@@ -258,22 +259,5 @@ export class AuthsService {
     return this.jwt.verify(token, {
       secret: getSecret(),
     });
-  }
-
-  getServiceTypeByAddress(input: string): Service | null {
-    // Regular expressions for email, Ethereum wallet address, and phone number
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const walletRegex = /^0x[a-fA-F0-9]{40}$/;
-    const phoneRegex = /^\+\d{11,}$/;
-
-    if (emailRegex.test(input)) {
-      return Service.EMAIL;
-    } else if (walletRegex.test(input)) {
-      return Service.WALLET;
-    } else if (phoneRegex.test(input)) {
-      return Service.PHONE;
-    } else {
-      throw new ForbiddenException('Invalid service!');
-    }
   }
 }

@@ -7,10 +7,13 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ERRORS } from '@rumsan/core';
 import { UUID } from 'crypto';
+import { Request } from 'express';
 import { CheckAbilities } from '../ability/ability.decorator';
 import { AbilitiesGuard, SkipAbilitiesGuard } from '../ability/ability.guard';
 import { CU, CurrentUser } from '../auths/decorator';
@@ -27,6 +30,12 @@ import { UsersService } from './users.service';
 @UseGuards(JwtGuard, AbilitiesGuard)
 export class UsersController {
   constructor(private userService: UsersService) {}
+  _getRequestInfo(request: Request) {
+    return {
+      ip: request.ip,
+      userAgent: request.get('user-agent'),
+    };
+  }
 
   @CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.USER })
   @Get('')
@@ -49,8 +58,27 @@ export class UsersController {
 
   @Patch('me')
   @SkipAbilitiesGuard()
-  updateMe(@CU() cu: CUI, @Body() dto: UpdateUserDto) {
-    return this.userService.updateById(cu.userId, dto);
+  updateMe(@CU() cu: CUI, @Body() dto: UpdateUserDto, @Req() request: Request) {
+    return this.userService.updateMe(
+      cu.userId,
+      dto,
+      this._getRequestInfo(request),
+    );
+  }
+
+  @Patch('me/update-auth')
+  @SkipAbilitiesGuard()
+  changePassword(
+    @CU() cu: CUI,
+    @Body() dto: UpdateUserDto,
+    @Req() request: Request,
+  ) {
+    throw ERRORS.NOT_IMPLEMENTED;
+    // return this.userService.changePassword(
+    //   cu.userId,
+    //   dto,
+    //   this._getRequestInfo(request),
+    // );
   }
 
   @Get(':uuid')

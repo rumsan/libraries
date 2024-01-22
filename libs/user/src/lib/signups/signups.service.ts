@@ -1,7 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PaginatorTypes, paginator } from '@nodeteam/nestjs-prisma-pagination';
-import { Service, Signup, SignupStatus } from '@prisma/client';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import {
+  Prisma,
+  PrismaClient,
+  Service,
+  Signup,
+  SignupStatus,
+} from '@prisma/client';
+import {
+  DefaultArgs,
+  PrismaClientKnownRequestError,
+} from '@prisma/client/runtime/library';
 import { PrismaService } from '@rumsan/prisma';
 import { CreateUserDto } from '../users/dto';
 import { UsersService } from '../users/users.service';
@@ -12,7 +21,10 @@ import { SignupWalletDto } from './dto/signup-wallet.dto';
 import { SignupConfig } from './interfaces/signup-config.interfaces';
 
 const paginate: PaginatorTypes.PaginateFunction = paginator({ perPage: 20 });
-
+type PrismaClientType = Omit<
+  PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
+  '$on' | '$connect' | '$disconnect' | '$use' | '$transaction' | '$extends'
+>;
 @Injectable()
 export class SignupsService {
   constructor(
@@ -83,21 +95,21 @@ export class SignupsService {
     try {
       const userData: CreateUserDto = <CreateUserDto>(signup.data as unknown);
 
-      const result = await this.userService.create(userData, {
-        callback: async (err, tx) => {
-          if (err) throw err;
-          await tx.signup.update({
-            where: {
-              uuid: dto.uuid,
-            },
-            data: {
-              status: SignupStatus.APPROVED,
-              rejectedReason: null,
-              approvedAt: new Date(),
-            },
-          });
-        },
-      });
+      const callback = async (err: any, tx: PrismaClientType) => {
+        if (err) throw err;
+        await tx.signup.update({
+          where: {
+            uuid: dto.uuid,
+          },
+          data: {
+            status: SignupStatus.APPROVED,
+            rejectedReason: null,
+            approvedAt: new Date(),
+          },
+        });
+      };
+
+      const result = await this.userService.create(userData, callback);
       return result;
     } catch (err) {
       let rejectedReason = 'Unknown';

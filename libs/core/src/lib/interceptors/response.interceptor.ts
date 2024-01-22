@@ -9,7 +9,7 @@ import { map } from 'rxjs/operators';
 
 export interface Response<T> {
   success: boolean;
-  meta?: unknown;
+  meta?: any;
   code?: string;
   data: T | null;
 }
@@ -32,10 +32,6 @@ export class ResponseTransformInterceptor<T>
           data: null,
         };
         if (retData === null) retData = { data: null };
-        const { meta, data, code, ...rest } = retData;
-        typeof data === 'undefined' || data === null
-          ? (resData.data = Object.keys(rest).length === 0 ? null : rest)
-          : (resData.data = data);
         if (
           typeof retData === 'string' ||
           typeof retData === 'number' ||
@@ -43,8 +39,15 @@ export class ResponseTransformInterceptor<T>
           Array.isArray(retData)
         )
           resData.data = retData as T;
-        resData.meta = meta;
-        resData.code = code;
+        else {
+          const { meta, data, code, ...rest } = retData;
+          typeof data === 'undefined' || data === null
+            ? (resData.data = Object.keys(rest).length === 0 ? null : rest)
+            : (resData.data = data);
+
+          resData.meta = meta;
+          resData.code = code;
+        }
 
         return resData;
       }),

@@ -1,7 +1,8 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { StringUtils } from '@rumsan/core';
+import { PaginationDto, StringUtils } from '@rumsan/core';
 import { Transform } from 'class-transformer';
 import {
+  IsIn,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -34,7 +35,15 @@ export class CreateRoleDto {
   permissions: PermissionSet;
 }
 
-export class EditRoleDto extends PartialType(CreateRoleDto) {}
+export class EditRoleDto extends PartialType(CreateRoleDto) {
+  override name: string;
+}
+
+export class RoleListDto extends PaginationDto {
+  @IsIn(['createdAt'])
+  override sort: string = 'createdAt';
+  override order: 'asc' | 'desc' = 'desc';
+}
 
 export class CreatePermissionDto {
   @ApiProperty({
@@ -77,4 +86,12 @@ export class UpdatePermissionDto {
   @IsOptional()
   @IsNumber()
   roleId: number;
+}
+
+export class PermissionSearchDto {
+  @IsString()
+  action: string;
+
+  @IsString()
+  subject: string;
 }

@@ -6,14 +6,21 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
+  ValidationPipe,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CheckAbilities } from '../ability/ability.decorator';
-import { AbilitiesGuard, SkipAbilitiesGuard } from '../ability/ability.guard';
+import { AbilitiesGuard } from '../ability/ability.guard';
 import { JwtGuard } from '../auths/guard';
 import { ACTIONS, APP, SUBJECTS } from '../constants';
-import { CreateRoleDto, EditRoleDto } from './dto';
+import {
+  CreateRoleDto,
+  EditRoleDto,
+  PermissionSearchDto,
+  RoleListDto,
+} from './dto';
 import { RolesService } from './roles.service';
 
 @Controller('roles')
@@ -23,47 +30,50 @@ import { RolesService } from './roles.service';
 export class RolesController {
   constructor(private roleService: RolesService) {}
 
-  @CheckAbilities({ action: ACTIONS.CREATE, subject: SUBJECTS.ROLE })
   @Post()
+  @CheckAbilities({ action: ACTIONS.CREATE, subject: SUBJECTS.ROLE })
   async createRole(@Body() dto: CreateRoleDto) {
     return this.roleService.create(dto);
   }
 
-  //@CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.PERMISSION })
-  @SkipAbilitiesGuard()
-  @Get('permissions')
-  listPermissions() {
-    console.log('ssss');
-    return this.roleService.listPermissions();
+  @Get()
+  @CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.ROLE })
+  async listRoles(@Query() dto: RoleListDto) {
+    return this.roleService.list(dto);
+  }
+
+  @Post('search-by-permission')
+  @CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.ROLE })
+  async searchRolesByPermission(
+    @Body(ValidationPipe) permissionQuery: PermissionSearchDto,
+  ) {
+    return this.roleService.getRolesByPermission(
+      permissionQuery.action,
+      permissionQuery.subject,
+    );
   }
 
   @CheckAbilities({ action: ACTIONS.UPDATE, subject: SUBJECTS.ROLE })
-  @Patch(':id')
-  updateRole(@Param('id') id: number, @Body() dto: EditRoleDto) {
-    return this.roleService.update(+id, dto);
+  @Patch(':name')
+  async updateRole(@Param('name') name: string, @Body() dto: EditRoleDto) {
+    return this.roleService.update(name, dto);
   }
 
   @CheckAbilities({ action: ACTIONS.DELETE, subject: SUBJECTS.ROLE })
   @Delete(':name')
-  deleteRole(@Param('name') name: string) {
+  async deleteRole(@Param('name') name: string) {
     return this.roleService.delete(name);
   }
 
   @CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.ROLE })
-  @Get()
-  listRoles() {
-    return this.roleService.list();
-  }
-
-  @CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.ROLE })
   @Get(':name')
-  getRole(@Param('name') name: string) {
+  async getRole(@Param('name') name: string) {
     return this.roleService.getRoleByName(name, true);
   }
 
   @CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.PERMISSION })
   @Get(':name/permissions')
-  listPermsByRole(@Param('name') name: string) {
+  async listPermsByRole(@Param('name') name: string) {
     return this.roleService.listPermissionsByRole(name);
   }
 }

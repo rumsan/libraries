@@ -6,13 +6,15 @@ export interface ChallengeInput {
   address?: string;
   clientId?: string;
   ip?: string;
+  data?: any;
 }
 
 export interface ChallengePayload {
   clientId: string;
-  ip: string | null;
   timestamp: number;
-  address: string | null;
+  ip?: string;
+  address?: string;
+  data?: any;
 }
 
 const ERRORS = {
@@ -20,27 +22,33 @@ const ERRORS = {
   EXPIRED: 'WalletUtils: Challenge has expired.',
 };
 
-export function createChallenge(secret: string, data: ChallengeInput) {
+export function createChallenge(secret: string, challengeData: ChallengeInput) {
   if (!secret) throw new Error(ERRORS.NO_SECRET);
 
   const payload: ChallengePayload = {
-    clientId: data.clientId || uuidv4(),
+    clientId: challengeData.clientId || uuidv4(),
     timestamp: getUnixTimestamp(),
-    ip: data.ip || null,
-    address: data.address || null,
   };
 
   //convert payload to array
-  const payloadArray = [
-    payload.clientId,
-    payload.timestamp,
-    payload.ip,
-    payload.address,
-  ];
+  const payloadArray = [payload.clientId, payload.timestamp];
+
+  if (challengeData.ip) {
+    payloadArray.push(challengeData.ip);
+    payload.ip = challengeData.ip;
+  }
+  if (challengeData.address) {
+    payloadArray.push(challengeData.address);
+    payload.address = challengeData.address;
+  }
+  if (challengeData.data) {
+    payloadArray.push(challengeData.data);
+    payload.data = challengeData.data;
+  }
 
   return {
     clientId: payload.clientId,
-    ip: data.ip,
+    ip: challengeData.ip,
     challenge: CryptoUtils.encrypt(JSON.stringify(payloadArray), secret),
   };
 }
@@ -52,7 +60,7 @@ export function decryptChallenge(
 ): ChallengePayload {
   if (!secret) throw new Error(ERRORS.NO_SECRET);
 
-  const [clientId, timestamp, ip, address] = JSON.parse(
+  const [clientId, timestamp, ip, address, data] = JSON.parse(
     CryptoUtils.decrypt(challenge, secret),
   );
   const payload: ChallengePayload = {
@@ -60,6 +68,7 @@ export function decryptChallenge(
     timestamp,
     ip,
     address,
+    data,
   };
 
   if (payload.timestamp + validationDurationInSeconds < getUnixTimestamp())

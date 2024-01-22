@@ -21,4 +21,10 @@ export const ERRORS_RSUSER = {
     400,
     { actions: 'manage, create, read, update, delete' },
   ),
+  SERVICE_TYPE_INVALID: RSE(
+    'Invalid service type. Valid types are {{types}}.',
+    'SERVICE_TYPE_INVALID',
+    400,
+    { types: 'wallet, email, phone' },
+  ),
 };

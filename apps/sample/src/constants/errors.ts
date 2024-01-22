@@ -10,5 +10,5 @@ export function RSE(
 }
 
 export const ERRORS = {
-  SSS_NO_MATCH_IP: RSE('SSS IP address does not match', 'NO_MATCH_IP', 403),
+  NO_MATCH_IP: RSE('IP address does not match', 'NO_MATCH_IP', 403),
 };
