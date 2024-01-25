@@ -27,22 +27,27 @@ export class BullMQTransport implements TransportInterface {
 
   async receiveMessage(
     queue: string,
-    callback: (data: unknown, j: unknown, k: unknown) => void,
+    callback: (data: unknown, job: unknown, worker: Worker) => void,
   ) {
     console.log('receiving message from bullmq', queue);
+
+    this.queue.
+
     const worker = new Worker(
       queue,
-      async (job) => {
-        // This is where you process your jobs
-        console.log('processing job', job.name, job.data);
+      async (job: any) => {
+        console.log('processing job', job.name, job.data, job);
         callback(job.data, job, worker);
       },
       this.config as WorkerOptions,
     );
-    // console.log('worker', worker);
+
+    worker.on('failed', (job, err) => {
+      console.log(`Job ${job.id} failed with ${err.message}`);
+    });
 
     worker.on('completed', (job) => {
-      console.log(`Job completed with result ${job.returnvalue}`);
+      console.log(`Job ${job.id} completed with result ${job.returnvalue}`);
     });
   }
 

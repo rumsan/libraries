@@ -8,9 +8,9 @@ import { BullMQTransport } from './transports/bull';
 @Module({})
 export class QueueModule {
   static forRoot<
-    U = IQueueModuleOptions['config'],
+    U, //= IQueueModuleOptions['config'],
     V = IQueueModuleOptions['transport'],
-  >(rootConfig: IQueueModuleOptions<U, V>) {
+  >(rootConfig: IQueueModuleOptions) {
     const Transport =
       rootConfig.transport ||
       new BullMQTransport(

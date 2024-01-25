@@ -17,11 +17,13 @@ import { AppService } from './app.service';
     QueueModule.forRoot({
       config: {
         queueName: 'APP_TEST',
-
+        useWorkerThreads: true,
+        
         connection: {
           host: 'localhost',
           port: 6379,
           password: 'raghav123',
+          db: 0,
         },
       },
     }),
