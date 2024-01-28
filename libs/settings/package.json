@@ -2,6 +2,7 @@
   "name": "@rumsan/settings",
   "version": "0.0.1",
   "dependencies": {
+    "@rumsan/core": "^3.0.101",
     "tslib": "^2.3.0"
   },
   "type": "commonjs",

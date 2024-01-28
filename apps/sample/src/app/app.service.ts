@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@rumsan/prisma';
-import { AbilitySubject } from '@rumsan/user';
-import { ERRORS } from '../constants/errors';
+import { SettingsService } from '@rumsan/settings';
 
 @Injectable()
 export class AppService {
   constructor(private prisma: PrismaService) {}
   async getData() {
-    throw ERRORS.NO_MATCH_IP;
-    return AbilitySubject.list();
-    const d = await this.prisma.user.findMany();
-    return { message: 'Hello API', data: d };
+    //throw ERRORS.NO_MATCH_IP;
+    //return AbilitySubject.list();
+    //const d = await this.prisma.user.findMany();
+    console.log(SettingsService.get('ISREADBLE2'));
+    return 'sss';
   }
 }

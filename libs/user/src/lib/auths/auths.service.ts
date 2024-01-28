@@ -9,10 +9,11 @@ import { JwtService } from '@nestjs/jwt';
 import { Service, User } from '@prisma/client';
 import { ERRORS, WalletUtils } from '@rumsan/core';
 import { PrismaService } from '@rumsan/prisma';
+import { SettingsService } from '@rumsan/settings';
 import { ethers } from 'ethers';
-import { getSecret } from '../../utils/configUtils';
-import { getServiceTypeByAddress } from '../../utils/service.utils';
 import { EVENTS } from '../constants';
+import { getSecret } from '../utils/configUtils';
+import { getServiceTypeByAddress } from '../utils/service.utils';
 import { ChallengeDto, OtpDto, OtpLoginDto, WalletLoginDto } from './dto';
 import { TokenDataInterface } from './interfaces/auth.interface';
 
@@ -28,12 +29,14 @@ export class AuthsService {
     private jwt: JwtService,
     private config: ConfigService,
     private eventEmitter: EventEmitter2,
+    private settingsService: SettingsService,
   ) {}
 
   getUserById(userId: number) {
     return this.prisma.user.findUnique({
       where: {
         id: userId,
+        deletedAt: null,
       },
     });
   }
@@ -61,17 +64,23 @@ export class AuthsService {
       },
     });
     const user = await this.getUserById(auth.userId);
+    const challenge = WalletUtils.createChallenge(getSecret(), {
+      address: dto.address,
+      clientId: dto.clientId,
+      ip: requestInfo.ip,
+    });
     this.eventEmitter.emit(EVENTS.OTP_CREATED, {
       ...dto,
       requestInfo,
       name: user?.name,
       otp,
     });
-    return WalletUtils.createChallenge(getSecret(), {
-      address: dto.address,
-      clientId: dto.clientId,
-      ip: requestInfo.ip,
+    this.eventEmitter.emit(EVENTS.CHALLENGE_CREATED, {
+      ...dto,
+      challenge,
     });
+
+    return challenge;
   }
 
   async loginByOtp(dto: OtpLoginDto, requestInfo: RequestInfo) {
@@ -91,8 +100,9 @@ export class AuthsService {
       challengeData.address,
       dto.service as Service,
     );
+
     if (!auth) throw new ForbiddenException('Invalid credentials!');
-    if (otp !== auth.challenge)
+    if (otp.toString() !== auth.challenge)
       throw new ForbiddenException('OTP did not match!');
     // Get user by authAddress
     const user = await this.getUserById(auth.userId);

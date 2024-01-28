@@ -1,17 +1,20 @@
 import { SUBJECTS } from '../constants';
 
+//TODO: register source of subjects
+const subjectsList: any = SUBJECTS;
+
 export const AbilitySubject = {
-  add: (subjects: { [key: string]: string }) => {
+  add: (subjects: { [key: string]: string }, source: string = '') => {
     Object.keys(subjects).forEach((key) => {
-      SUBJECTS[key] = subjects[key];
+      subjectsList[key] = subjects[key];
     });
   },
 
   list: () => {
     const result: { [key: string]: string } = {};
     Object.keys(SUBJECTS).forEach((key) => {
-      if (typeof SUBJECTS[key] === 'function') return;
-      result[key] = SUBJECTS[key];
+      if (typeof subjectsList[key] === 'function') return;
+      result[key] = subjectsList[key];
     });
     return result;
   },
@@ -19,8 +22,8 @@ export const AbilitySubject = {
   listArray: () => {
     const result: string[] = [];
     Object.keys(SUBJECTS).forEach((key) => {
-      if (typeof SUBJECTS[key] === 'function') return;
-      result.push(SUBJECTS[key]);
+      if (typeof subjectsList[key] === 'function') return;
+      result.push(subjectsList[key]);
     });
     return result;
   },

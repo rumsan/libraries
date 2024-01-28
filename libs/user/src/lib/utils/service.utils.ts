@@ -1,5 +1,5 @@
 import { Service } from '@prisma/client';
-import { ERRORS_RSUSER, EVENTS } from '../lib/constants';
+import { ERRORS, EVENTS } from '../constants';
 
 export function getServiceTypeByAddress(input: string): Service | null {
   // Regular expressions for email, Ethereum wallet address, and phone number
@@ -14,7 +14,7 @@ export function getServiceTypeByAddress(input: string): Service | null {
   } else if (phoneRegex.test(input)) {
     return Service.PHONE;
   } else {
-    throw ERRORS_RSUSER.SERVICE_TYPE_INVALID;
+    throw ERRORS.SERVICE_TYPE_INVALID;
   }
 }
 

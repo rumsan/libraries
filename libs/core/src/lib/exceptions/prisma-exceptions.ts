@@ -30,3 +30,20 @@ export const PrimsaFriendlyErrorMessage = (
   }
   return { message, httpCode };
 };
+
+// case 'P2002': {
+//   const status = HttpStatus.CONFLICT;
+//   response.status(status).send({
+//     statusCode: status,
+//     message: message,
+//   });
+//   break;
+// }
+// case 'P2025': {
+//   const status = HttpStatus.BAD_REQUEST;
+//   response.status(status).send({
+//     statusCode: status,
+//     message: message,
+//   });
+//   break;
+// }

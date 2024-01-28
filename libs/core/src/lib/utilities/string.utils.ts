@@ -11,3 +11,13 @@ export function isValidString(
   // Test the input against the regular expression
   return regex.test(input);
 }
+
+export function stringToArray(value: string | string[]): string[] {
+  if (typeof value === 'string') {
+    return value.split(',').map((v) => v.trim());
+  } else if (Array.isArray(value)) {
+    return value.map((v) => v.trim());
+  } else {
+    return [];
+  }
+}

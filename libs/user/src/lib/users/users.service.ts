@@ -5,11 +5,13 @@ import { Prisma, PrismaClient, Service, User } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 import { WalletUtils } from '@rumsan/core';
 import { PrismaService } from '@rumsan/prisma';
-import { getSecret } from '../../utils/configUtils';
+import { UUID } from 'crypto';
+import { ERRORS } from '../constants';
+import { getSecret } from '../utils/configUtils';
 import {
   getServiceTypeByAddress,
   getVerificationEventName,
-} from '../../utils/service.utils';
+} from '../utils/service.utils';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { UserListDto } from './dto/users-list.dto';
 
@@ -103,8 +105,12 @@ export class UsersService {
     });
   }
 
-  get(uuid: string) {
-    return this.prisma.user.findUnique({ where: { uuid, deletedAt: null } });
+  async get(uuid: string, throwIfNotFound = false) {
+    const user = await this.prisma.user.findUnique({
+      where: { uuid, deletedAt: null },
+    });
+    if (!user && throwIfNotFound) throw new Error('User not found.');
+    return user;
   }
 
   async update(uuid: string, dto: UpdateUserDto) {
@@ -113,9 +119,7 @@ export class UsersService {
         where: { uuid, deletedAt: null },
       });
 
-      if (!user) {
-        throw new Error('User not found.');
-      }
+      if (!user) throw ERRORS.USER_NOT_FOUND;
 
       // Update user details
       const updatedUser = await tx.user.update({
@@ -254,5 +258,12 @@ export class UsersService {
     } catch (err) {
       throw new Error('rs-user: User not found or deletion not permitted.');
     }
+  }
+
+  async listRoles(uuid: UUID) {
+    const user = await this.get(uuid, true);
+    return this.prisma.userRole.findMany({
+      where: { userId: user?.id },
+    });
   }
 }

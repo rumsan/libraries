@@ -38,7 +38,7 @@ export class SignupController {
 
   @Post('approve')
   @UseGuards(JwtGuard, AbilitiesGuard)
-  @CheckAbilities({ action: ACTIONS.MANAGE, subject: SUBJECTS.USER })
+  @CheckAbilities({ actions: ACTIONS.MANAGE, subject: SUBJECTS.USER })
   approve(@Body() dto: SignupApproveDto) {
     return this.service.approve(dto);
   }

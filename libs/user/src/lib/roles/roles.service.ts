@@ -4,13 +4,13 @@ import { Permission, Prisma, PrismaClient, Role } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 import { StringUtils } from '@rumsan/core';
 import { PrismaService } from '@rumsan/prisma';
+import { ERRORS } from '../constants';
+import { RSE } from '../constants/errors';
+import { PermissionSet } from '../interfaces';
 import {
   checkPermissionSet,
   convertToPermissionSet,
-} from '../../utils/permission.utils';
-import { ERRORS_RSUSER } from '../constants';
-import { RSE } from '../constants/errors';
-import { PermissionSet } from '../interfaces';
+} from '../utils/permission.utils';
 import { CreateRoleDto, EditRoleDto, RoleListDto } from './dto';
 
 const paginate: PaginatorTypes.PaginateFunction = paginator({ perPage: 20 });
@@ -24,8 +24,7 @@ export class RolesService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateRoleDto) {
-    if (!StringUtils.isValidString(dto.name))
-      throw ERRORS_RSUSER.ROLE_NAME_INVALID;
+    if (!StringUtils.isValidString(dto.name)) throw ERRORS.ROLE_NAME_INVALID;
     const { permissions, ...data } = dto;
     const { isValid, validSubjects } = checkPermissionSet(permissions);
     if (!isValid)

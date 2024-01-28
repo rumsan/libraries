@@ -1,23 +1,51 @@
 import {
   CanActivate,
   ExecutionContext,
-  HttpException,
   Injectable,
   SetMetadata,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
-import { PrismaService } from '@rumsan/prisma';
-import { TokenDataInterface } from '../auths/interfaces/auth.interface';
-import { ACTIONS, SUBJECTS } from '../constants';
+import { AbilityBuilder, createMongoAbility } from '@casl/ability';
+import { CurrentUserInterface } from '../auths/interfaces/current-user.interface';
+import { ACTIONS } from '../constants';
+import { RSE } from '../constants/errors';
 import { CHECK_ABILITY, RequiredRule } from './ability.decorator';
 
+const createForUser = (user: CurrentUserInterface) => {
+  const { permissions } = user;
+
+  const { can, build } = new AbilityBuilder(createMongoAbility);
+
+  // Define default rules for all users (e.g., unauthenticated users)
+  can('read', 'public'); // Example: Allow all users to read 'public' resources
+
+  // Define rules based on user-specific permissions
+  permissions.forEach((permission) => {
+    if (permission.inverted) {
+      can(permission.action, permission.subject, { inverted: true });
+    } else {
+      can(
+        permission.action,
+        permission.subject,
+        JSON.parse(permission.conditions),
+      );
+    }
+  });
+
+  return build();
+};
 @Injectable()
 export class AbilitiesGuard implements CanActivate {
-  constructor(private reflector: Reflector, private prisma: PrismaService) {}
+  constructor(private reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // Required rules sent from controller
+    const rules: any =
+      this.reflector.get<RequiredRule[]>(CHECK_ABILITY, context.getHandler()) ||
+      [];
+    const { actions, subject } = rules;
+
     const skipAbilitiesGuard = this.reflector.get<boolean>(
       'skipAbilitiesGuard',
       context.getHandler(),
@@ -27,80 +55,48 @@ export class AbilitiesGuard implements CanActivate {
       return true;
     }
 
-    try {
-      const rules: any =
-        this.reflector.get<RequiredRule[]>(
-          CHECK_ABILITY,
-          context.getHandler(),
-        ) || [];
-      const { action, subject } = rules[0];
-
-      // Get permissions of current user
-      const currentUser: TokenDataInterface = context
-        .switchToHttp()
-        .getRequest().user;
-
-      const userPermissions = currentUser.permissions;
-
-      const manageAll = this.canManageAll(userPermissions);
-      if (manageAll) return true;
-
-      const performOnAll = this.canPerformOnAll(userPermissions, action);
-      if (performOnAll) return true;
-
-      const accessSubject = this.hasSubjectAccess(userPermissions, subject);
-      if (!accessSubject)
-        throw new HttpException(
-          'You are not allowed to perform action on this subject!',
-          401,
-        );
-
-      // Calculate permissions with required actions
-      const perms = userPermissions.map((u) => u.action);
-      const permGrant = perms.includes(action);
-      if (!permGrant)
-        throw new HttpException(
-          'You are not allowed to perform this action!',
-          401,
-        );
-      return permGrant;
-    } catch (error) {
-      throw new HttpException('Authorization failed', 401);
-    }
-  }
-
-  canManageAll(userPermissions: any) {
-    for (const permission of userPermissions) {
-      if (
-        permission.action === ACTIONS.MANAGE &&
-        permission.subject === SUBJECTS.ALL
-      )
-        return true;
+    if (!subject || !actions) {
+      return false;
     }
 
-    return false;
-  }
+    const user: CurrentUserInterface = context.switchToHttp().getRequest().user;
 
-  hasSubjectAccess(userPermissions: any, subject: string) {
-    for (const permission of userPermissions) {
-      if (permission.subject === subject) return true;
+    if (!user) {
+      throw RSE('User not authenticated.');
     }
 
-    return false;
-  }
+    const ability = createForUser(user);
 
-  // Perform particular action on all subjects. Eg: Read all subjects
-  canPerformOnAll(userPermissions: any, requiredAction: string) {
-    for (const permission of userPermissions) {
-      if (
-        permission.action === requiredAction &&
-        permission.subject === SUBJECTS.ALL
-      )
-        return true;
+    if (!ability) {
+      throw RSE('User does not have the necessary permissions.');
     }
 
-    return false;
+    let routeActions = actions;
+    if (actions === '*') {
+      routeActions = [
+        ACTIONS.CREATE,
+        ACTIONS.READ,
+        ACTIONS.UPDATE,
+        ACTIONS.DELETE,
+      ];
+    }
+    const actionsArray = Array.isArray(routeActions)
+      ? routeActions
+      : [routeActions];
+    let isAllowed = false;
+
+    for (const action of actionsArray) {
+      if (ability.can(action, subject)) {
+        isAllowed = true;
+        break; // Exit the loop as soon as one action is allowed
+      }
+    }
+
+    if (!isAllowed) {
+      throw RSE('User does not have permission to perform this action.');
+    }
+
+    return isAllowed;
   }
 }
-
 export const SkipAbilitiesGuard = () => SetMetadata('skipAbilitiesGuard', true);

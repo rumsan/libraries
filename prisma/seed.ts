@@ -35,6 +35,12 @@ export const permissions: Array<{
     subject: 'user',
   },
   {
+    id: 3,
+    roleId: 2,
+    action: 'create',
+    subject: 'role',
+  },
+  {
     id: 4,
     roleId: 3,
     action: 'read',
@@ -63,6 +69,11 @@ export const users: Array<{
     name: 'Mr User',
     email: 'user@mailinator.com',
   },
+  {
+    id: 4,
+    name: 'Mrs Manager',
+    email: 'manager@mailinator.com',
+  },
 ];
 
 export const userRoles: Array<{
@@ -84,6 +95,11 @@ export const userRoles: Array<{
     id: 3,
     userId: 3,
     roleId: 3,
+  },
+  {
+    id: 4,
+    userId: 4,
+    roleId: 2,
   },
 ];
 
@@ -110,6 +126,12 @@ export const auths: Array<{
     userId: 3,
     service: Service.EMAIL,
     serviceId: 'user@mailinator.com',
+  },
+  {
+    id: 4,
+    userId: 4,
+    service: Service.EMAIL,
+    serviceId: 'manager@mailinator.com',
   },
 ];
 

@@ -52,3 +52,28 @@ export function decrypt(encryptedData: string, key: string): string {
 
   return decryptedText.toString('utf-8');
 }
+
+// Function to calculate the IPFS hash of a file buffer
+export const calculateIPFSHash = (fileBuffer: Buffer): string => {
+  // Generate the SHA-256 hash of the file buffer
+  // import { encode } from 'multihashes';
+  // const hash = encode(fileBuffer, 'sha2-256');
+  const hash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+
+  // Convert the hash to a hexadecimal string
+  const hashHex = hash.toString();
+
+  // Prefix the hash with the IPFS multihash identifier
+  const ipfsHash = `Qm${hashHex}`;
+
+  // Return the IPFS hash
+  return ipfsHash;
+};
+
+export const calculateIPFSHash1 = (data: Buffer): string => {
+  const hash = crypto.createHash('sha256');
+  hash.update(data);
+  let heshHex = hash.digest('hex');
+  console.log(heshHex);
+  return heshHex.toString();
+};

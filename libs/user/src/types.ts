@@ -1,15 +1,9 @@
 export { Permission, Role, Signup, UserRole } from '@prisma/client';
 
-export enum Service {
-  EMAIL = 'EMAIL',
-  PHONE = 'PHONE',
-  WALLET = 'WALLET',
-}
-
 export type Auth = {
   id: number;
   userId: number;
-  service: Service;
+  service: 'EMAIL' | 'PHONE' | 'WALLET';
   serviceId: string;
   details: any | null;
   challenge: string | null;
@@ -21,18 +15,11 @@ export type Auth = {
   updatedAt: Date | null;
 };
 
-export enum Gender {
-  MALE = 'MALE',
-  FEMALE = 'FEMALE',
-  OTHER = 'OTHER',
-  UNKNOWN = 'UNKNOWN',
-}
-
 export type User = {
   id: number;
   uuid: string;
   name: string | null;
-  gender: Gender;
+  gender: 'MALE' | 'FEMALE' | 'OTHER' | 'UNKNOWN';
   email: string | null;
   phone: string | null;
   wallet: string | null;

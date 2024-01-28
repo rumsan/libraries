@@ -1,7 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Gender } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsEmail, IsObject, IsOptional, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class SignupEmailDto {
   @ApiProperty({
@@ -25,7 +31,8 @@ export class SignupEmailDto {
   })
   @IsOptional()
   @Transform(({ value }) => value.toUpperCase())
-  gender: Gender = Gender.UNKNOWN;
+  @IsEnum(Gender)
+  gender: Gender;
 
   @ApiProperty({
     example: { address: 'Nepal', age: 20 },

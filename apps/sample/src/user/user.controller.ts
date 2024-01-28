@@ -1,7 +1,13 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AbilitiesGuard, CheckAbilities, JwtGuard } from '@rumsan/user';
-import { ACTIONS, APP, SUBJECTS } from '../constants';
+import {
+  ACTIONS,
+  AbilitiesGuard,
+  CheckAbilities,
+  JwtGuard,
+  SUBJECTS,
+} from '@rumsan/user';
+import { APP } from '../constants';
 import { AppUsersService } from './user.service';
 
 @Controller('users')
@@ -12,7 +18,7 @@ export class AppUsersController {
   constructor(private service: AppUsersService) {}
 
   @Get('app/nice')
-  @CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.USER })
+  @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
   test() {
     return this.service.Test({});
   }

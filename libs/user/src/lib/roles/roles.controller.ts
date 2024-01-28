@@ -31,19 +31,22 @@ export class RolesController {
   constructor(private roleService: RolesService) {}
 
   @Post()
-  @CheckAbilities({ action: ACTIONS.CREATE, subject: SUBJECTS.ROLE })
+  @CheckAbilities({ actions: ACTIONS.CREATE, subject: SUBJECTS.ROLE })
   async createRole(@Body() dto: CreateRoleDto) {
     return this.roleService.create(dto);
   }
 
   @Get()
-  @CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.ROLE })
+  @CheckAbilities({
+    actions: '*',
+    subject: SUBJECTS.ROLE,
+  })
   async listRoles(@Query() dto: RoleListDto) {
     return this.roleService.list(dto);
   }
 
   @Post('search-by-permission')
-  @CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.ROLE })
+  @CheckAbilities({ actions: '*', subject: SUBJECTS.ROLE })
   async searchRolesByPermission(
     @Body(ValidationPipe) permissionQuery: PermissionSearchDto,
   ) {
@@ -53,25 +56,25 @@ export class RolesController {
     );
   }
 
-  @CheckAbilities({ action: ACTIONS.UPDATE, subject: SUBJECTS.ROLE })
+  @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.ROLE })
   @Patch(':name')
   async updateRole(@Param('name') name: string, @Body() dto: EditRoleDto) {
     return this.roleService.update(name, dto);
   }
 
-  @CheckAbilities({ action: ACTIONS.DELETE, subject: SUBJECTS.ROLE })
+  @CheckAbilities({ actions: ACTIONS.DELETE, subject: SUBJECTS.ROLE })
   @Delete(':name')
   async deleteRole(@Param('name') name: string) {
     return this.roleService.delete(name);
   }
 
-  @CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.ROLE })
+  @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.ROLE })
   @Get(':name')
   async getRole(@Param('name') name: string) {
     return this.roleService.getRoleByName(name, true);
   }
 
-  @CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.PERMISSION })
+  @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.ROLE })
   @Get(':name/permissions')
   async listPermsByRole(@Param('name') name: string) {
     return this.roleService.listPermissionsByRole(name);

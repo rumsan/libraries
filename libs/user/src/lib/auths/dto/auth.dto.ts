@@ -17,7 +17,7 @@ export class OtpDto {
   service: Service | null;
 
   @ApiProperty({
-    example: '',
+    example: '105cd449-53f6-44e4-85f3-feaa7d762ffa',
   })
   @IsUUID()
   @IsOptional()
@@ -47,7 +47,7 @@ export class OtpLoginDto {
 
 export class ChallengeDto {
   @ApiProperty({
-    example: '',
+    example: '105cd449-53f6-44e4-85f3-feaa7d762ffa',
   })
   @IsUUID()
   @IsOptional()

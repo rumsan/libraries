@@ -9,7 +9,7 @@ export function RSE(
   return new RSError({ message, name, httpCode, srcModule: 'RS_USER', meta });
 }
 
-export const ERRORS_RSUSER = {
+export const ERRORS = {
   ROLE_NAME_INVALID: RSE(
     'Invalid characters in role name.',
     'ROLE_NAME_INVALID',
@@ -27,4 +27,5 @@ export const ERRORS_RSUSER = {
     400,
     { types: 'wallet, email, phone' },
   ),
+  USER_NOT_FOUND: RSE('User not found.', 'USER_NOT_FOUND', 404),
 };

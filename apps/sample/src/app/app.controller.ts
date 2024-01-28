@@ -1,9 +1,8 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 
-import { AppService } from './app.service';
-import { AbilitiesGuard, CheckAbilities, JwtGuard } from '@rumsan/user';
-import { ACTIONS, APP, SUBJECTS } from '../constants';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { APP } from '../constants';
+import { AppService } from './app.service';
 
 @Controller('app')
 @ApiTags('App')
@@ -11,8 +10,8 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @CheckAbilities({ action: ACTIONS.READ, subject: SUBJECTS.USER })
-  @UseGuards(JwtGuard, AbilitiesGuard)
+  // @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
+  // @UseGuards(JwtGuard, AbilitiesGuard)
   @Get()
   getData() {
     return this.appService.getData();

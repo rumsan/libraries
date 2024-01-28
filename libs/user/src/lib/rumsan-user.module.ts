@@ -3,11 +3,12 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { RSExceptionModule, RumsanAppModule } from '@rumsan/core';
 import { PrismaModule } from '@rumsan/prisma';
+import { SettingsService } from '@rumsan/settings';
 import { AbilityModule } from './ability/ability.module';
 import { AbilitySubject } from './ability/ability.subjects';
 import { AuthsController } from './auths/auths.controller';
 import { AuthsModule } from './auths/auths.module';
-import { ERRORS_RSUSER } from './constants';
+import { ERRORS } from './constants';
 import { RolesModule } from './roles/roles.module';
 import { UsersController } from './users/users.controller';
 import { UsersModule } from './users/users.module';
@@ -17,7 +18,7 @@ import { UsersService } from './users/users.service';
   controllers: [AuthsController, UsersController],
   imports: [
     //SignupModule.forRoot({ autoApprove: false }),
-    RSExceptionModule.forRoot({ errorSet: ERRORS_RSUSER }),
+    RSExceptionModule.forRoot({ errorSet: ERRORS }),
     RumsanAppModule.forRoot({
       controllers: {
         subjects: AbilitySubject.list,
@@ -32,4 +33,6 @@ import { UsersService } from './users/users.service';
   providers: [JwtService, ConfigService, UsersService],
   exports: [UsersService],
 })
-export class RumsanUsersModule {}
+export class RumsanUsersModule {
+  constructor(private readonly settingsService: SettingsService) {}
+}
