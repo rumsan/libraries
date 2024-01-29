@@ -31,7 +31,7 @@ export class BullMQTransport implements TransportInterface {
   ) {
     console.log('receiving message from bullmq', queue);
 
-    this.queue.
+    // this.queue.
 
     const worker = new Worker(
       queue,
@@ -41,14 +41,6 @@ export class BullMQTransport implements TransportInterface {
       },
       this.config as WorkerOptions,
     );
-
-    worker.on('failed', (job, err) => {
-      console.log(`Job ${job.id} failed with ${err.message}`);
-    });
-
-    worker.on('completed', (job) => {
-      console.log(`Job ${job.id} completed with result ${job.returnvalue}`);
-    });
   }
 
   async disconnect() {

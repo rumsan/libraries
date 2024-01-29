@@ -4,9 +4,27 @@
   "sourceRoot": "libs/queue/src",
   "projectType": "library",
   "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/queue",
+        "tsConfig": "libs/queue/tsconfig.lib.json",
+        "packageJson": "libs/queue/package.json",
+        "main": "libs/queue/src/index.ts",
+        "assets": ["libs/queue/*.md"]
+      }
+    },
+    "publish": {
+      "command": "node tools/scripts/publish.mjs queue {args.ver} {args.tag}",
+      "dependsOn": ["build"]
+    },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"]
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/queue/**/*.ts", "libs/queue/package.json"]
+      }
     },
     "test": {
       "executor": "@nx/jest:jest",
