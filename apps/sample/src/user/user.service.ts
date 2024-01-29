@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@rumsan/prisma';
 import { QueueService } from '@rumsan/queue';
 import { AuthService, UserService } from '@rumsan/user';
-import { Job } from 'bullmq';
 
 @Injectable()
 export class AppUserService extends UserService {
@@ -22,11 +21,11 @@ export class AppUserService extends UserService {
         name: 'test',
       },
     });
-    this.queueService.receiveMessage('USER_TEST', (data: Job) => {
-      console.log('data', data);
-      console.log(data.getState());
-      return data;
-    });
+    // this.queueService.receiveMessage('USER_TEST', (data: Job) => {
+    //   console.log('data', data);
+    //   console.log(data.getState());
+    //   return data;
+    // });
 
     return { message: 'success' };
   }
