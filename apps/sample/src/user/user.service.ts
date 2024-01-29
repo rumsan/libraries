@@ -15,7 +15,7 @@ export class AppUserService extends UserService {
 
   async Test(dto: any) {
     // console.log('queueService', { s: this.queueService });
-    this.queueService.sendMessage('USER_TEST', {
+    this.queueService.sendMessage('USER_Queue', {
       message: 'success',
       data: {
         name: 'test',
