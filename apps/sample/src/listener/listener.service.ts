@@ -1,15 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { AuthsService, EVENTS } from '@rumsan/user';
+import { EmailService } from './email.service';
+import { SlackService } from './slack.service';
 
 @Injectable()
 export class ListenerService {
   private otp: string;
-  constructor(private authService: AuthsService) {}
+  private readonly logger = new Logger(ListenerService.name);
+  constructor(
+    private authService: AuthsService,
+    private emailService: EmailService,
+    private slackService: SlackService,
+  ) {}
   @OnEvent(EVENTS.OTP_CREATED)
   async sendOTPEmail(data: any) {
     console.log('OTP: ' + data.otp);
     this.otp = data.otp;
+    // this.emailService.sendEmail(
+    //   data.address,
+    //   'OTP for login',
+    //   'OTP for login',
+    //   `<h1>OTP for login</h1><p>${data.otp}</p>`,
+    // );
+    this.logger.log('OTP sent to ' + data.address);
+    this.slackService.send(`OTP for login: ${data.otp}`);
   }
 
   //TODO PLEASE REMOVE THIS
@@ -27,6 +42,6 @@ export class ListenerService {
         userAgent: 'na',
       },
     );
-    console.log(auth);
+    this.slackService.send(auth.accessToken);
   }
 }
