@@ -14,6 +14,7 @@ export class AppUserService extends UserService {
     super(prisma, authService);
   }
 
+  // @OnMessage()
   async Test(dto: any) {
     // console.log('queueService', { s: this.queueService });
     this.queueService.sendMessage('QUEUE_TEST', {
