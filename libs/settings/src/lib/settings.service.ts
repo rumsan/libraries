@@ -1,21 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Prisma, PrismaClient, Setting, SettingDataType } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 import { PrismaService } from '@rumsan/prisma';
 import { CreateSettingDto } from './dto/create-setting.dto';
 
 function capitalizeObjectKeys(obj: any): any {
-  if (typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
-    const result: any = {};
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        const capitalizedKey = key.toUpperCase();
-        result[capitalizedKey] = obj[key];
-      }
-    }
-    return result;
+  if (typeof obj !== 'object' || obj === null) {
+    // Return the value if it's not an object
+    return obj;
   }
-  return obj;
+
+  if (Array.isArray(obj)) {
+    // Process each element in the array
+    return obj.map(capitalizeObjectKeys);
+  }
+
+  // Process each key-value pair in the object
+  const upperCaseObj: any = {};
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      upperCaseObj[key.toUpperCase()] = capitalizeObjectKeys(obj[key]);
+    }
+  }
+  return upperCaseObj;
 }
 
 function getDataType(
@@ -47,12 +54,19 @@ export class SettingsService {
   private static data: any = {};
   constructor(private prisma: PrismaService) {}
 
-  public static get(name: string) {
-    name = name.toUpperCase();
-    if (!SettingsService.data[name]) {
-      throw new Error(`Setting '${name}' not found.`);
+  public static get(path: string) {
+    const keys = path.split('.');
+    let value = SettingsService.data;
+
+    for (let key of keys) {
+      key = key.toUpperCase();
+      if (!value[key]) {
+        throw new Error(`Setting '${key}' not found.`);
+      }
+      value = value[key];
     }
-    return SettingsService.data[name];
+
+    return value;
   }
 
   async getPublic(name: string) {
@@ -84,7 +98,7 @@ export class SettingsService {
     for (const setting of publicSettings) {
       result[setting.name] = setting.value;
     }
-    console.log('===== Settings loaded from database =====');
+    Logger.log('Settings Loaded from Database', SettingsService.name);
     SettingsService.data = result;
   }
 
@@ -235,7 +249,7 @@ export class SettingsService {
     });
 
     if (existingSetting) {
-      throw new Error('Setting with this name already exists'); // 404 Not Found
+      throw new Error('Setting with this name already exists'); // 400 Bad Request
     }
     const newSetting = await prisma.setting.create({
       data: {

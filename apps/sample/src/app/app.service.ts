@@ -9,7 +9,7 @@ export class AppService {
     //throw ERRORS.NO_MATCH_IP;
     //return AbilitySubject.list();
     //const d = await this.prisma.user.findMany();
-    console.log(SettingsService.get('ISREADBLE2'));
+    console.log(SettingsService.get('SMTP.USERNAME'));
     return 'sss';
   }
 }

@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
-import { UpdateSettingDto } from './dto/create-setting.dto';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { CreateSettingDto, UpdateSettingDto } from './dto/create-setting.dto';
 import { SettingsService } from './settings.service';
 
 @Controller('settings')
@@ -11,10 +11,10 @@ export class SettingsController {
     return this.settingsService.listPublic();
   }
 
-  // @Post('')
-  // create(@Body() createSettingDto: CreateSettingDto) {
-  //   return this.settingsService.create(createSettingDto);
-  // }
+  @Post('')
+  create(@Body() createSettingDto: CreateSettingDto) {
+    return this.settingsService.create(createSettingDto);
+  }
 
   @Get(':name')
   getPublic(@Param('name') name: string) {
