@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 // import { UserModule } from '../user/user.module';
 import { PrismaModule } from '@rumsan/prisma';
 
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { QueueModule } from '@rumsan/queue';
 import { RumsanUserModule, SignupModule } from '@rumsan/user';
@@ -15,17 +15,25 @@ import { AppService } from './app.service';
 @Module({
   imports: [
     QueueModule.forRoot({
-      config: {
-        queueName: 'APP_TEST',
-        useWorkerThreads: true,
-        
-        connection: {
-          host: 'localhost',
-          port: 6379,
-          password: 'raghav123',
-          db: 0,
+      imports: [ConfigModule],
+      global: true,
+      useFactory: async (configService: ConfigService) => ({
+        config: {
+          connection: {
+            name: 'default',
+            host: configService.get<string>('REDIS_HOST'),
+            port: +configService.get<number>('REDIS_PORT'),
+            password: configService.get<string>('REDIS_PASSWORD'),
+            retryStrategy: (times) => {
+              // reconnect after
+              return Math.min(times * 50, 2000);
+            },
+            // might need to change on producttion
+            maxRetriesPerRequest: 1000,
+          },
         },
-      },
+      }),
+      inject: [ConfigService],
     }),
     ConfigModule.forRoot({ isGlobal: true }),
     EventEmitterModule.forRoot({ maxListeners: 10, ignoreErrors: false }),

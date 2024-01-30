@@ -1,50 +1,78 @@
-import { Queue, Worker, WorkerOptions } from 'bullmq';
-import { IQueueModuleOptions } from '../../interface/queue-config.interfaces';
+import { Injectable } from '@nestjs/common';
+import { Queue, Worker } from 'bullmq';
 import { TransportInterface } from '../../interface/transport.interface';
 
-export class BullMQTransport implements TransportInterface {
-  private queue: Queue;
-  private worker: Worker;
+@Injectable()
+export class BullMqService implements TransportInterface {
+  private name: string = 'QUEUE_TEST';
+  private queues: Record<string, Queue> = {};
+  private workers: Record<string, Worker> = {};
 
-  constructor(private config: IQueueModuleOptions['config']) {}
-
-  async connect() {
-    this.queue = new Queue(this.config.queueName, this.config);
-    this.worker = new Worker(
-      this.config.queueName as string,
-      async (job) => {
-        // This is where you process your jobs
-        console.log('processing job', job.name, job.data);
-      },
-      this.config as WorkerOptions,
-    );
+  constructor(private readonly config: any) {
+    this.connect();
+    if (this.config.name) {
+      this.name = this.config.name;
+    }
+    console.log('BullMqService -> constructor -> config', config);
   }
 
-  async sendMessage(queue: string, data: unknown) {
-    console.log('sending message to bullmq', queue, data);
-    await this.queue.add(queue, data);
+  async connect(): Promise<void> {
+    // Connect or perform any necessary setup
+    const queue = new Queue(this.name, {
+      // connection: this.config.connection,
+      connection: {
+        host: 'localhost',
+        port: 6379,
+        password: 'raghav123',
+      },
+    });
+    this.queues[this.name] = queue;
+
+    const worker = new Worker(
+      this.name,
+      async (job) => {
+        console.log('job', job);
+      },
+      {
+        connection: {
+          host: 'localhost',
+          port: 6379,
+          password: 'raghav123',
+        },
+      },
+    );
+    this.workers[this.name] = worker;
+  }
+
+  async sendMessage(name: string, data: any): Promise<void> {
+    if (!this.queues[name]) {
+      throw new Error(`Queue "${name}" not found.`);
+    }
+
+    await this.queues[name].add(name, data);
   }
 
   async receiveMessage(
-    queue: string,
-    callback: (data: unknown, job: unknown, worker: Worker) => void,
-  ) {
-    console.log('receiving message from bullmq', queue);
+    name: string,
+    callback: (data: any) => void,
+  ): Promise<void> {
+    if (!this.queues[name]) {
+      throw new Error(`Queue "${name}" not found.`);
+    }
 
-    // this.queue.
-
-    const worker = new Worker(
-      queue,
-      async (job: any) => {
-        console.log('processing job', job.name, job.data, job);
-        callback(job.data, job, worker);
-      },
-      this.config as WorkerOptions,
-    );
+    if (!this.workers[name]) {
+      this.workers[name] = new Worker(name, async (job) => {
+        callback(job.data);
+      });
+    }
   }
 
-  async disconnect() {
-    await this.queue.close();
-    await this.worker.close();
+  async disconnect(): Promise<void> {
+    // Disconnect or perform any necessary cleanup
+    await Promise.all(
+      Object.keys(this.queues).map(async (name) => {
+        await this.queues[name].close();
+      }),
+    );
   }
 }

@@ -1,32 +1,61 @@
-import { Global, Module } from '@nestjs/common';
-import { QueueOptions } from 'bullmq';
-import { IQueueModuleOptions } from './interface/queue-config.interfaces';
+// queue.module.ts
+
+import { DynamicModule, Global, Module } from '@nestjs/common';
 import { QueueService } from './queue.service';
-import { BullMQTransport } from './transports/bull';
+import { BullMqService } from './transports/bull';
 
 @Global()
 @Module({})
 export class QueueModule {
-  static forRoot<
-    U, //= IQueueModuleOptions['config'],
-    V = IQueueModuleOptions['transport'],
-  >(rootConfig: IQueueModuleOptions) {
-    const Transport =
-      rootConfig.transport ||
-      new BullMQTransport(
-        rootConfig.config as { queueName: string } & WorkerOptions &
-          QueueOptions,
-      );
+  private static transport: any = BullMqService;
+  private static options: any = {};
+
+  static forRoot(options: any): DynamicModule {
+    const Transport = options.transport || QueueModule.transport;
+
+    return {
+      module: QueueModule,
+      imports: [...options.imports],
+      global: options.isGlobal,
+      providers: [
+        {
+          provide: 'TRANSPORT',
+          useFactory: async (...args: any[]) => {
+            const config = await options.useFactory(...args);
+            this.options = config.config;
+            this.transport = Transport;
+          },
+          inject: options.inject,
+        },
+        QueueService,
+        ...(options.providers || []),
+      ],
+      exports: ['TRANSPORT', QueueService],
+    };
+  }
+
+  static registerQueue(options: Record<string, any>): DynamicModule {
+    console.log('this.options', this.options);
     return {
       module: QueueModule,
       providers: [
         {
           provide: 'TRANSPORT',
-          useFactory: () => Transport,
+          useFactory(...args) {
+            console.log('args', args);
+            return new QueueModule.transport({
+              ...options,
+              ...QueueModule.options,
+            });
+          },
+          // useValue: new QueueModule.transport({
+          //   ...options,
+          //   ...QueueModule.options,
+          // }),
         },
         QueueService,
       ],
-      exports: ['TRANSPORT', QueueService],
+      exports: [QueueService],
     };
   }
 }
