@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '@rumsan/prisma';
-import { QueueModule } from '@rumsan/queue'; // Ensure correct import path
+import { QueueModule, QueueService } from '@rumsan/queue';
 import { AuthModule } from '@rumsan/user';
 import { AppUserController } from './user.controller';
 import { UserProcessor } from './user.processor';
@@ -10,12 +10,12 @@ import { AppUserService } from './user.service';
   imports: [
     AuthModule,
     PrismaModule,
-    // QueueModule,
+    //QueueModule,
     QueueModule.registerQueue({
-      name: 'QUEUE_TEST',
+      name: 'APP_QUEUE',
     }),
   ],
   controllers: [AppUserController],
-  providers: [UserProcessor, AppUserService],
+  providers: [UserProcessor, AppUserService, QueueService],
 })
 export class UserModule {}

@@ -16,19 +16,17 @@ import { AppService } from './app.service';
   imports: [
     QueueModule.forRoot({
       imports: [ConfigModule],
-      global: true,
       useFactory: async (configService: ConfigService) => ({
         connection: {
-          name: 'default',
           host: configService.get<string>('REDIS_HOST'),
           port: +configService.get<number>('REDIS_PORT'),
           password: configService.get<string>('REDIS_PASSWORD'),
-          retryStrategy: (times) => {
-            // reconnect after
-            return Math.min(times * 50, 2000);
-          },
-          // might need to change on producttion
-          maxRetriesPerRequest: 1000,
+          // retryStrategy: (times) => {
+          //   // reconnect after
+          //   return Math.min(times * 50, 2000);
+          // },
+          // // might need to change on producttion
+          // maxRetriesPerRequest: 1000,
         },
       }),
       inject: [ConfigService],

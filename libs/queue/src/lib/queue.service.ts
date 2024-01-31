@@ -1,48 +1,37 @@
 // queue.service.ts
 
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 
 @Injectable()
-export class QueueService {
+export class QueueService implements OnModuleInit {
   constructor(
     @Inject('TRANSPORT')
     private readonly transport: any,
   ) {
-    console.log('transport', transport);
-    this.initializeTransport();
+    console.log('transport', this.transport);
   }
 
-  // Uncomment the following lines if you want to allow changing the transport
-  // setTransport(transport: TransportInterface) {
-  //   this.transport = transport;
-  // }
+  onModuleInit() {
+    console.log('transport', this.transport);
+    this.connect();
+  }
 
   async connect() {
     if (!this.transport) {
-      this.initializeTransport();
+      throw new Error('Transport is not defined');
     }
+    await this.transport.connect();
   }
 
   async sendMessage(queue: string, data: any) {
-    if (!this.transport) {
-      this.initializeTransport();
-    }
     await this.transport.sendMessage(queue, data);
   }
 
   async receiveMessage(queue: string, callback: (data: any) => void) {
-    if (!this.transport) {
-      this.initializeTransport();
-    }
     return this.transport.receiveMessage(queue, callback);
   }
 
   async disconnect() {
-    if (!this.transport) {
-      this.initializeTransport();
-    }
     await this.transport.disconnect();
   }
-
-  private async initializeTransport() {}
 }

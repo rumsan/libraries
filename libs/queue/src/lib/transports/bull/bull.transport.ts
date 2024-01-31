@@ -4,27 +4,21 @@ import { TransportInterface } from '../../interface/transport.interface';
 
 @Injectable()
 export class BullMqService implements TransportInterface {
-  private name: string = 'QUEUE_TEST';
+  private name: string;
   private queues: Record<string, Queue> = {};
   private workers: Record<string, Worker> = {};
 
   constructor(private readonly config: any) {
-    this.connect();
+    console.log('config', config);
     if (this.config.name) {
       this.name = this.config.name;
     }
-    console.log('BullMqService -> constructor -> config', config);
   }
 
   async connect(): Promise<void> {
     // Connect or perform any necessary setup
     const queue = new Queue(this.name, {
-      // connection: this.config.connection,
-      connection: {
-        host: 'localhost',
-        port: 6379,
-        password: 'raghav123',
-      },
+      connection: this.config.connection,
     });
     this.queues[this.name] = queue;
 
