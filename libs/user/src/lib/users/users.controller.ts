@@ -11,9 +11,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
-import { ERRORS } from '@rumsan/core';
+import { ERRORS, RequestDetails, TRequestDetails } from '@rumsan/core';
 import { UUID } from 'crypto';
-import { Request } from 'express';
 import { CheckAbilities } from '../ability/ability.decorator';
 import { AbilitiesGuard } from '../ability/ability.guard';
 import { CU, CurrentUser } from '../auths/decorator';
@@ -31,12 +30,6 @@ import { UsersService } from './users.service';
 @UseGuards(JwtGuard, AbilitiesGuard)
 export class UsersController {
   constructor(private userService: UsersService) {}
-  _getRequestInfo(request: Request) {
-    return {
-      ip: request.ip,
-      userAgent: request.get('user-agent'),
-    };
-  }
 
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
   @Get('')
@@ -59,12 +52,12 @@ export class UsersController {
 
   @Patch('me')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.PUBLIC })
-  updateMe(@CU() cu: CUI, @Body() dto: UpdateUserDto, @Req() request: Request) {
-    return this.userService.updateMe(
-      cu.userId,
-      dto,
-      this._getRequestInfo(request),
-    );
+  updateMe(
+    @CU() cu: CUI,
+    @Body() dto: UpdateUserDto,
+    @RequestDetails() rdetails: TRequestDetails,
+  ) {
+    return this.userService.updateMe(cu.userId, dto, rdetails);
   }
 
   @Patch('me/update-auth')

@@ -3,7 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PaginatorTypes, paginator } from '@nodeteam/nestjs-prisma-pagination';
 import { Prisma, PrismaClient, Service, User } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
-import { WalletUtils } from '@rumsan/core';
+import { TRequestDetails, WalletUtils } from '@rumsan/core';
 import { PrismaService } from '@rumsan/prisma';
 import { UUID } from 'crypto';
 import { ERRORS } from '../constants';
@@ -20,10 +20,7 @@ type PrismaClientType = Omit<
   PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
   '$on' | '$connect' | '$disconnect' | '$use' | '$transaction' | '$extends'
 >;
-type RequestInfo = {
-  ip: string | undefined;
-  userAgent: string | undefined;
-};
+
 @Injectable()
 export class UsersService {
   private rsprisma;
@@ -165,7 +162,11 @@ export class UsersService {
     }
   }
 
-  async updateMe(userId: number, dto: UpdateUserDto, requestInfo: RequestInfo) {
+  async updateMe(
+    userId: number,
+    dto: UpdateUserDto,
+    rdetails: TRequestDetails,
+  ) {
     return this.prisma.$transaction(async (tx) => {
       const user = await this.prisma.user.findUnique({
         where: { id: userId, deletedAt: null },
@@ -190,7 +191,7 @@ export class UsersService {
         if (address) {
           const { challenge } = WalletUtils.createChallenge(getSecret(), {
             address,
-            ip: requestInfo.ip,
+            ip: rdetails.ip,
             data: { userId: user.id },
           });
           this.eventEmitter.emit(getVerificationEventName(service), {
@@ -211,7 +212,7 @@ export class UsersService {
 
   async processVerificationChallenge(
     challenge: string,
-    requestInfo: RequestInfo,
+    rdetails: TRequestDetails,
   ) {
     const payload = WalletUtils.decryptChallenge(getSecret(), challenge, 1200);
 
@@ -219,7 +220,7 @@ export class UsersService {
       throw new Error('Invalid challenge');
     }
 
-    if (payload.ip !== requestInfo.ip) {
+    if (payload.ip !== rdetails.ip) {
       // IP in challenge doesn't match the incoming IP
       throw new Error('IP mismatch');
     }

@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
 import { Service, User } from '@prisma/client';
-import { ERRORS, WalletUtils } from '@rumsan/core';
+import { ERRORS, TRequestDetails, WalletUtils } from '@rumsan/core';
 import { PrismaService } from '@rumsan/prisma';
 import { SettingsService } from '@rumsan/settings';
 import { ethers } from 'ethers';
@@ -16,11 +16,6 @@ import { getSecret } from '../utils/configUtils';
 import { getServiceTypeByAddress } from '../utils/service.utils';
 import { ChallengeDto, OtpDto, OtpLoginDto, WalletLoginDto } from './dto';
 import { TokenDataInterface } from './interfaces/auth.interface';
-
-type RequestInfo = {
-  ip: string | undefined;
-  userAgent: string | undefined;
-};
 
 @Injectable()
 export class AuthsService {
@@ -41,7 +36,7 @@ export class AuthsService {
     });
   }
 
-  async getOtp(dto: OtpDto, requestInfo: RequestInfo) {
+  async getOtp(dto: OtpDto, requestInfo: TRequestDetails) {
     if (!dto.service) {
       dto.service = getServiceTypeByAddress(dto.address);
     }
@@ -83,7 +78,7 @@ export class AuthsService {
     return challenge;
   }
 
-  async loginByOtp(dto: OtpLoginDto, requestInfo: RequestInfo) {
+  async loginByOtp(dto: OtpLoginDto, requestInfo: TRequestDetails) {
     const { challenge, otp } = dto;
     const challengeData = WalletUtils.decryptChallenge(
       getSecret(),
@@ -123,14 +118,14 @@ export class AuthsService {
     return this.signToken(user, authority);
   }
 
-  getChallengeForWallet(dto: ChallengeDto, requestInfo: RequestInfo) {
+  getChallengeForWallet(dto: ChallengeDto, requestInfo: TRequestDetails) {
     return WalletUtils.createChallenge(getSecret(), {
       clientId: dto.clientId,
       ip: requestInfo.ip,
     });
   }
 
-  async loginByWallet(dto: WalletLoginDto, requestInfo: RequestInfo) {
+  async loginByWallet(dto: WalletLoginDto, requestInfo: TRequestDetails) {
     const challengeData = WalletUtils.decryptChallenge(
       getSecret(),
       dto.challenge,

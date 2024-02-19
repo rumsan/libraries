@@ -1,5 +1,33 @@
 import { PrismaClient, Service } from '@prisma/client';
-import { cloneDeep } from 'lodash';
+
+function cloneDeep<T>(obj: T): T {
+  if (obj === null || typeof obj !== 'object') {
+    return obj;
+  }
+
+  if (obj instanceof Date) {
+    return new Date(obj.getTime()) as T;
+  }
+
+  if (Array.isArray(obj)) {
+    const arrCopy: any[] = [];
+    obj.forEach((val, i) => {
+      arrCopy[i] = cloneDeep(val);
+    });
+    return arrCopy as T;
+  }
+
+  if (obj instanceof Object) {
+    const objCopy: { [key: string]: any } = {};
+    Object.keys(obj).forEach((key) => {
+      objCopy[key] = cloneDeep((obj as { [key: string]: any })[key]);
+    });
+    return objCopy as T;
+  }
+
+  throw new Error("Unable to copy obj! Its type isn't supported.");
+}
+
 export const roles: Array<{ id?: number; name: string; isSystem?: boolean }> = [
   {
     id: 1,
@@ -35,12 +63,6 @@ export const permissions: Array<{
     subject: 'user',
   },
   {
-    id: 3,
-    roleId: 2,
-    action: 'create',
-    subject: 'role',
-  },
-  {
     id: 4,
     roleId: 3,
     action: 'read',
@@ -69,11 +91,6 @@ export const users: Array<{
     name: 'Mr User',
     email: 'user@mailinator.com',
   },
-  {
-    id: 4,
-    name: 'Mrs Manager',
-    email: 'manager@mailinator.com',
-  },
 ];
 
 export const userRoles: Array<{
@@ -95,11 +112,6 @@ export const userRoles: Array<{
     id: 3,
     userId: 3,
     roleId: 3,
-  },
-  {
-    id: 4,
-    userId: 4,
-    roleId: 2,
   },
 ];
 
@@ -127,11 +139,20 @@ export const auths: Array<{
     service: Service.EMAIL,
     serviceId: 'user@mailinator.com',
   },
+];
+
+const projectTypes: Array<{
+  id?: number;
+  name: string;
+  description?: string;
+}> = [
   {
-    id: 4,
-    userId: 4,
-    service: Service.EMAIL,
-    serviceId: 'manager@mailinator.com',
+    id: 1,
+    name: 'anticipatory-action',
+  },
+  {
+    id: 2,
+    name: 'cva',
   },
 ];
 
