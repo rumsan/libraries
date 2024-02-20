@@ -18,6 +18,8 @@
     "paths": {
       "@rumsan/core": ["libs/core/src/index.ts"],
       "@rumsan/prisma": ["libs/prisma/src/index.ts"],
+      "@rumsan/sdk": ["libs/sdk/src/index.ts"],
+      "@rumsan/sdk/*": ["libs/sdk/src/*"],
       "@rumsan/settings": ["libs/settings/src/index.ts"],
       "@rumsan/user": ["libs/user/src/index.ts"]
     }
