@@ -2,7 +2,12 @@
   "name": "@rumsan/sdk",
   "version": "0.0.1",
   "dependencies": {
-    "tslib": "^2.3.0"
+    "@nestjs/swagger": "^7.1.17",
+    "@tanstack/react-query": "^5.22.2",
+    "axios": "^1.6.7",
+    "class-validator": "^0.14.0",
+    "tslib": "^2.3.0",
+    "zustand": "^4.5.1"
   },
   "type": "commonjs",
   "main": "./src/index.js",

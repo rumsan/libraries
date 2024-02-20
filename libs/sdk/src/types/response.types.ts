@@ -1,6 +1,6 @@
-export type TResponse<T> = {
-    success: boolean;
-    data: T;
-    message?: string;
-    meta?: Record<string, any>;
-}
+export type Response<T> = {
+  success: boolean;
+  data: T;
+  code?: string;
+  meta?: Record<string, any>;
+};

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Service } from '@prisma/client';
 import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { Service } from '../enums';
 
 export class OtpDto {
   @ApiProperty({
@@ -45,7 +45,7 @@ export class OtpLoginDto {
   service: Service | null;
 }
 
-export class ChallengeDto {
+export class WalletChallengeDto {
   @ApiProperty({
     example: '105cd449-53f6-44e4-85f3-feaa7d762ffa',
   })
@@ -62,4 +62,11 @@ export class WalletLoginDto {
   @IsString()
   @IsNotEmpty()
   challenge: string;
+}
+
+export class ChallengeDto {
+  clientId?: string;
+  ip?: string;
+  address?: string;
+  data?: Record<string, any>;
 }
