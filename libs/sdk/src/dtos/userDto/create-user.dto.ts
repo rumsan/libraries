@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Gender } from '@prisma/client';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { Gender } from '../../enums';
+import { TUser } from '../../types/user.types';
 
-export class CreateUserDto {
+export class CreateUserDto implements TUser{
   @ApiProperty({
     example: 'Jane',
     description: 'The full name of the User',

@@ -5,3 +5,5 @@
 //Auth
 //Role
 //Settings
+
+export * from './user.services';

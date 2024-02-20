@@ -1,6 +1,6 @@
 import { Gender } from '../enums';
 
-export type User = {
+export type TUser = {
   id?: number;
   uuid?: string;
   name: string;
