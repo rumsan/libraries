@@ -9,12 +9,18 @@ import { JwtService } from '@nestjs/jwt';
 import { Service, User } from '@prisma/client';
 import { ERRORS, TRequestDetails, WalletUtils } from '@rumsan/core';
 import { PrismaService } from '@rumsan/prisma';
+import {
+  ChallengeDto,
+  Enums,
+  OtpDto,
+  OtpLoginDto,
+  WalletLoginDto,
+} from '@rumsan/sdk';
 import { SettingsService } from '@rumsan/settings';
 import { ethers } from 'ethers';
 import { EVENTS } from '../constants';
 import { getSecret } from '../utils/configUtils';
 import { getServiceTypeByAddress } from '../utils/service.utils';
-import { ChallengeDto, OtpDto, OtpLoginDto, WalletLoginDto } from './dto';
 import { TokenDataInterface } from './interfaces/auth.interface';
 
 @Injectable()
@@ -38,7 +44,7 @@ export class AuthsService {
 
   async getOtp(dto: OtpDto, requestInfo: TRequestDetails) {
     if (!dto.service) {
-      dto.service = getServiceTypeByAddress(dto.address);
+      dto.service = getServiceTypeByAddress(dto.address) as Enums.Service;
     }
     const auth = await this.prisma.auth.findUnique({
       where: {
@@ -88,7 +94,9 @@ export class AuthsService {
     if (!challengeData.address)
       throw new ForbiddenException('Invalid credentials in challenge!');
     if (!dto.service) {
-      dto.service = getServiceTypeByAddress(challengeData.address);
+      dto.service = getServiceTypeByAddress(
+        challengeData.address,
+      ) as Enums.Service;
     }
 
     const auth = await this.getByServiceId(
