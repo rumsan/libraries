@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { Enums } from '@rumsan/sdk';
 import { AuthsService, EVENTS } from '@rumsan/user';
 import { EmailService } from './email.service';
 import { SlackService } from './slack.service';
@@ -34,7 +35,7 @@ export class ListenerService {
     const auth = await this.authService.loginByOtp(
       {
         challenge: data.challenge.challenge,
-        service: 'EMAIL',
+        service: Enums.Service.EMAIL,
         otp: this.otp,
       },
       {
