@@ -12,7 +12,9 @@
         "tsConfig": "libs/prisma/tsconfig.lib.json",
         "packageJson": "libs/prisma/package.json",
         "main": "libs/prisma/src/index.ts",
-        "assets": ["libs/prisma/*.md"]
+        "assets": ["libs/prisma/*.md"],
+        "updateBuildableProjectDepsInPackageJson": true,
+        "buildableProjectDepsInPackageJsonType": "dependencies"
       }
     },
     "publish": {

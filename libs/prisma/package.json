@@ -1,6 +1,6 @@
 {
   "name": "@rumsan/prisma",
-  "version": "1.0.101",
+  "version": "1.0.102",
   "description": "Rumsan prisma utilities",
   "author": "rumsan.com",
   "license": "AGPL-3.0",
@@ -14,12 +14,6 @@
       "url": "https://www.rumsan.com.com"
     }
   ],
-  "dependencies": {
-    "@nestjs/common": "^10.3.0",
-    "@prisma/client": "^5.8.1",
-    "tslib": "^2.3.0"
-  },
-  "peerDependencies": {},
   "type": "commonjs",
   "main": "./src/index.ts",
   "typings": "./src/index.d.ts"

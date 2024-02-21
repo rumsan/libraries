@@ -12,7 +12,9 @@
         "tsConfig": "libs/user/tsconfig.lib.json",
         "packageJson": "libs/user/package.json",
         "main": "libs/user/src/index.ts",
-        "assets": ["libs/user/*.md"]
+        "assets": ["libs/user/*.md"],
+        "updateBuildableProjectDepsInPackageJson": true,
+        "buildableProjectDepsInPackageJsonType": "dependencies"
       }
     },
     "publish": {

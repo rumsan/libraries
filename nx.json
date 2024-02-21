@@ -42,5 +42,10 @@
       "!{projectRoot}/eslint.config.js"
     ],
     "sharedGlobals": []
+  },
+  "pluginsConfig": {
+    "@nrwl/js": {
+      "analyzeSourceFiles": true
+    }
   }
 }
