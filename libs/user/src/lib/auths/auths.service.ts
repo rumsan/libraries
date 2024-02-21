@@ -14,7 +14,6 @@ import {
   WalletLoginDto,
 } from '@rumsan/sdk/dtos';
 import { createChallenge, decryptChallenge } from '@rumsan/sdk/utils';
-import { SettingsService } from '@rumsan/settings';
 import { ethers } from 'ethers';
 import { EVENTS } from '../constants';
 import { getSecret } from '../utils/configUtils';
@@ -27,7 +26,6 @@ export class AuthsService {
     private jwt: JwtService,
     private config: ConfigService,
     private eventEmitter: EventEmitter2,
-    private settingsService: SettingsService,
   ) {}
 
   getUserById(userId: number) {

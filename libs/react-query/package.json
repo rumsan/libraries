@@ -11,10 +11,8 @@
     },
     {
       "type": "Commercial License",
-      "url": "https://www.rumsan.com.com"
+      "url": "https://www.rumsan.com"
     }
   ],
-  "type": "commonjs",
-  "main": "./src/index.ts",
-  "typings": "./src/index.d.ts"
+  "typings": "./index.d.ts"
 }

@@ -1,6 +1,6 @@
 {
   "name": "@rumsan/settings",
-  "version": "0.0.105",
+  "version": "0.0.106",
   "type": "commonjs",
   "description": "Rumsan settings enables updating and retrieving settings from the database",
   "author": "rumsan.com",
@@ -12,9 +12,8 @@
     },
     {
       "type": "Commercial License",
-      "url": "https://www.rumsan.com.com"
+      "url": "https://www.rumsan.com"
     }
   ],
-  "main": "./src/index.ts",
-  "typings": "./src/index.d.ts"
+  "typings": "./index.d.ts"
 }

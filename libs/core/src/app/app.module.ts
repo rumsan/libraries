@@ -1,7 +1,7 @@
 import { DynamicModule, Global, Module } from '@nestjs/common';
+import { ERRORS } from '../exceptions';
+import { RSE } from '../exceptions/rs-errors';
 import { RumsanAppController } from './app.controller';
-import { ERRORS } from './exceptions';
-import { RSE } from './exceptions/rs-errors';
 
 type ControllerFunction = () => any;
 
