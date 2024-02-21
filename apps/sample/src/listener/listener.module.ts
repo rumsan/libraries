@@ -1,14 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { AuthsModule } from '@rumsan/user';
 import { DevService } from '../utils/develop.service';
 import { EmailService } from '../utils/email.service';
 import { ListenerService } from './listener.service';
 
 @Module({
   imports: [
-    AuthsModule,
     ClientsModule.registerAsync([
       {
         name: 'RAHAT_CLIENT',

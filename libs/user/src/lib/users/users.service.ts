@@ -137,7 +137,7 @@ export class UsersService {
     tx: PrismaClientType,
     user: User,
     service: Service,
-    newServiceId?: string,
+    newServiceId?: string | null,
   ): Promise<void> {
     if (newServiceId) {
       const existingAuth = await tx.auth.findFirst({
@@ -226,7 +226,7 @@ export class UsersService {
     }
 
     const user = await this.prisma.user.findUnique({
-      where: { id: payload.data.userId, deletedAt: null },
+      where: { id: payload.data['userId'], deletedAt: null },
     });
 
     if (!user) {

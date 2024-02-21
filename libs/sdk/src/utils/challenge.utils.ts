@@ -37,7 +37,7 @@ export function decryptChallenge(
   secret: string,
   challenge: string,
   validationDurationInSeconds: number = 300,
-): ChallengeDto {
+): Challenge {
   if (!secret) throw new Error(ERRORS.NO_SECRET);
 
   const [clientId, timestamp, ip, address, data] = JSON.parse(

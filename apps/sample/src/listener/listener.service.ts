@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { AuthsService, EVENTS } from '@rumsan/user';
+import { EVENTS } from '@rumsan/user';
 import { DevService } from '../utils/develop.service';
 import { EmailService } from '../utils/email.service';
 
@@ -9,7 +9,6 @@ export class ListenerService {
   private otp: string;
   private readonly logger = new Logger(ListenerService.name);
   constructor(
-    private authService: AuthsService,
     private emailService: EmailService,
     private readonly devService: DevService,
   ) {}
@@ -31,6 +30,7 @@ export class ListenerService {
     this.devService.otp({
       otp: this.otp,
       challenge: data.challenge.challenge,
+      requestInfo: data.requestInfo,
     });
   }
 }

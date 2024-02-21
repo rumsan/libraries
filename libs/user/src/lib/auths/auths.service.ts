@@ -75,6 +75,7 @@ export class AuthsService {
     });
     this.eventEmitter.emit(EVENTS.CHALLENGE_CREATED, {
       ...dto,
+      requestInfo,
       challenge,
     });
 
