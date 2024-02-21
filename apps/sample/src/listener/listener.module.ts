@@ -1,11 +1,29 @@
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AuthsModule } from '@rumsan/user';
-import { EmailService } from './email.service';
+import { DevService } from '../utils/develop.service';
+import { EmailService } from '../utils/email.service';
 import { ListenerService } from './listener.service';
-import { SlackService } from './slack.service';
 
 @Module({
-  imports: [AuthsModule],
-  providers: [ListenerService, EmailService, SlackService],
+  imports: [
+    AuthsModule,
+    ClientsModule.registerAsync([
+      {
+        name: 'RAHAT_CLIENT',
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.REDIS,
+          options: {
+            host: configService.get('REDIS_HOST'),
+            port: configService.get('REDIS_PORT'),
+            password: configService.get('REDIS_PASSWORD'),
+          },
+        }),
+        inject: [ConfigService],
+      },
+    ]),
+  ],
+  providers: [ListenerService, EmailService, DevService],
 })
 export class ListenerModule {}

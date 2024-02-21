@@ -5,14 +5,14 @@ import { JwtService } from '@nestjs/jwt';
 import { Service, User } from '@prisma/client';
 import { ERRORS, TRequestDetails } from '@rumsan/core';
 import { PrismaService } from '@rumsan/prisma';
+import { Enums } from '@rumsan/sdk';
+import { CONSTANTS } from '@rumsan/sdk/constants';
 import {
   ChallengeDto,
-  Enums,
   OtpDto,
   OtpLoginDto,
   WalletLoginDto,
-} from '@rumsan/sdk';
-import { CONSTANTS } from '@rumsan/sdk/constants';
+} from '@rumsan/sdk/dtos';
 import { createChallenge, decryptChallenge } from '@rumsan/sdk/utils';
 import { SettingsService } from '@rumsan/settings';
 import { ethers } from 'ethers';

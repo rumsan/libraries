@@ -1,5 +1,5 @@
 export class ChallengeDto {
-  clientId: string;
+  clientId?: string;
   ip?: string;
   address?: string;
   data?: Record<string, any>;
