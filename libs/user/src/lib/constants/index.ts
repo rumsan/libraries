@@ -21,3 +21,5 @@ export const SUBJECTS = {
 export const APP = {
   JWT_BEARER: 'JWT',
 };
+
+export const CLIENT_TOKEN_LIFETIME = 600

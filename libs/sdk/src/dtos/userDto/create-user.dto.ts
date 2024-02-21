@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { Gender } from '../../enums';
-import { TUser } from '../../types/user.types';
+import { User } from '../../types/user.types';
 
-export class CreateUserDto implements TUser{
+export class CreateUserDto implements User {
   @ApiProperty({
     example: 'Jane',
     description: 'The full name of the User',
@@ -20,7 +20,7 @@ export class CreateUserDto implements TUser{
   @IsOptional()
   @IsString()
   @IsEnum(Gender)
-  gender?: Gender;
+  gender: Gender;
 
   @ApiProperty({
     example: 'jane@rumsan.com',

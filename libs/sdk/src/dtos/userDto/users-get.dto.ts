@@ -1,7 +1,7 @@
-import { PaginationDto } from '@rumsan/core';
+import { PaginationDto } from '@rumsan/core/dtos';
 import { IsIn } from 'class-validator';
 
-export class JptDto extends PaginationDto {
+export class GetUserDto extends PaginationDto {
   @IsIn(['createdAt'])
   override sort: string = 'createdAt';
   override order: 'asc' | 'desc' = 'desc';

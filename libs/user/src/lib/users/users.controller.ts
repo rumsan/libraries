@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import { ERRORS, RequestDetails, TRequestDetails } from '@rumsan/core';
+import { CreateUserDto, GetUserDto, UpdateUserDto } from '@rumsan/sdk/dtos';
 import { UUID } from 'crypto';
 import { CheckAbilities } from '../ability/ability.decorator';
 import { AbilitiesGuard } from '../ability/ability.guard';
@@ -19,9 +20,6 @@ import { CU, CurrentUser } from '../auths/decorator';
 import { JwtGuard } from '../auths/guard';
 import { CUI } from '../auths/interfaces/current-user.interface';
 import { ACTIONS, APP, SUBJECTS } from '../constants';
-import { CreateUserDto, UpdateUserDto } from './dto';
-import { GetUserDto } from './dto/users-get';
-import { UserListDto } from './dto/users-list.dto';
 import { UsersService } from './users.service';
 
 @Controller('users')

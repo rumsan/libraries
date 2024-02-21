@@ -1,7 +1,9 @@
+import { Service } from '../enums';
+
 export type Auth = {
   id?: number;
   userId: number;
-  service: string;
+  service: Service;
   serviceId: string;
   details?: Record<string, any>;
   challenge?: string;
@@ -25,10 +27,3 @@ export type AuthSession = {
   createdAt: Date;
 };
 
-export type Challenge = {
-  clientId: string;
-  timestamp: number;
-  ip: string | null;
-  address: string | null;
-  data: Record<string, any>;
-};

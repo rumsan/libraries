@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
 import { Service, User } from '@prisma/client';
-import { ERRORS, TRequestDetails, WalletUtils } from '@rumsan/core';
+import { ERRORS, TRequestDetails } from '@rumsan/core';
 import { PrismaService } from '@rumsan/prisma';
 import {
   ChallengeDto,
@@ -16,6 +16,7 @@ import {
   OtpLoginDto,
   WalletLoginDto,
 } from '@rumsan/sdk';
+import { createChallenge, decryptChallenge } from '@rumsan/sdk/utils';
 import { SettingsService } from '@rumsan/settings';
 import { ethers } from 'ethers';
 import { EVENTS } from '../constants';
@@ -65,7 +66,7 @@ export class AuthsService {
       },
     });
     const user = await this.getUserById(auth.userId);
-    const challenge = WalletUtils.createChallenge(getSecret(), {
+    const challenge = createChallenge(getSecret(), {
       address: dto.address,
       clientId: dto.clientId,
       ip: requestInfo.ip,
@@ -86,7 +87,7 @@ export class AuthsService {
 
   async loginByOtp(dto: OtpLoginDto, requestInfo: TRequestDetails) {
     const { challenge, otp } = dto;
-    const challengeData = WalletUtils.decryptChallenge(
+    const challengeData = decryptChallenge(
       getSecret(),
       challenge,
       CONSTANTS.CLIENT_TOKEN_LIFETIME,
@@ -127,14 +128,14 @@ export class AuthsService {
   }
 
   getChallengeForWallet(dto: ChallengeDto, requestInfo: TRequestDetails) {
-    return WalletUtils.createChallenge(getSecret(), {
+    return createChallenge(getSecret(), {
       clientId: dto.clientId,
       ip: requestInfo.ip,
     });
   }
 
   async loginByWallet(dto: WalletLoginDto, requestInfo: TRequestDetails) {
-    const challengeData = WalletUtils.decryptChallenge(
+    const challengeData = decryptChallenge(
       getSecret(),
       dto.challenge,
       CONSTANTS.CLIENT_TOKEN_LIFETIME,

@@ -1,14 +1,13 @@
+import { decrypt, encrypt, getUnixTimestamp } from '@rumsan/core/utilities';
 import { v4 as uuidv4 } from 'uuid';
 import { ChallengeDto } from '../dtos';
 import { Challenge } from '../types';
-import { getUnixTimestamp } from './date.utils';
-import { CryptoUtils } from './index';
 const ERRORS = {
   NO_SECRET: 'WalletUtils: Must send secret in to generate challenge data.',
   EXPIRED: 'WalletUtils: Challenge has expired.',
 };
 
-export function createChallenge(secret: string, challengeData: ChallengeDto) {
+export function createChallenge(secret: string, challengeData: Challenge) {
   if (!secret) throw new Error(ERRORS.NO_SECRET);
 
   const payload: Challenge = {
@@ -30,7 +29,7 @@ export function createChallenge(secret: string, challengeData: ChallengeDto) {
   return {
     clientId: payload.clientId,
     ip: challengeData.ip,
-    challenge: CryptoUtils.encrypt(JSON.stringify(payloadArray), secret),
+    challenge: encrypt(JSON.stringify(payloadArray), secret),
   };
 }
 
@@ -38,11 +37,11 @@ export function decryptChallenge(
   secret: string,
   challenge: string,
   validationDurationInSeconds: number = 300,
-): Challenge {
+): ChallengeDto {
   if (!secret) throw new Error(ERRORS.NO_SECRET);
 
   const [clientId, timestamp, ip, address, data] = JSON.parse(
-    CryptoUtils.decrypt(challenge, secret),
+    decrypt(challenge, secret),
   );
   const payload: Challenge = {
     clientId,
