@@ -1,6 +1,3 @@
-const CONSTANTS = {
-  CLIENT_TOKEN_LIFETIME: 600,
-};
 
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -16,6 +13,7 @@ import {
   OtpLoginDto,
   WalletLoginDto,
 } from '@rumsan/sdk';
+import { CONSTANTS } from '@rumsan/sdk/constants';
 import { createChallenge, decryptChallenge } from '@rumsan/sdk/utils';
 import { SettingsService } from '@rumsan/settings';
 import { ethers } from 'ethers';
@@ -23,7 +21,6 @@ import { EVENTS } from '../constants';
 import { getSecret } from '../utils/configUtils';
 import { getServiceTypeByAddress } from '../utils/service.utils';
 import { TokenDataInterface } from './interfaces/auth.interface';
-
 @Injectable()
 export class AuthsService {
   constructor(
