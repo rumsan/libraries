@@ -14,7 +14,7 @@ import {
   WalletLoginDto,
 } from '@rumsan/sdk/dtos';
 import { createChallenge, decryptChallenge } from '@rumsan/sdk/utils';
-import { ethers } from 'ethers';
+import { hashMessage, recoverAddress } from 'viem';
 import { EVENTS } from '../constants';
 import { getSecret } from '../utils/configUtils';
 import { getServiceTypeByAddress } from '../utils/service.utils';
@@ -137,8 +137,11 @@ export class AuthsService {
     );
     if (requestInfo.ip !== challengeData.ip) throw ERRORS.NO_MATCH_IP;
 
-    const messageHash = ethers?.hashMessage(ethers?.toUtf8Bytes(dto.challenge));
-    const walletAddress = ethers?.recoverAddress(messageHash, dto.signature);
+    const hash = hashMessage(dto.challenge);
+    const walletAddress = await recoverAddress({
+      hash,
+      signature: dto.signature,
+    });
 
     const auth = await this.getByServiceId(walletAddress, Service.WALLET);
     if (!auth) throw new ForbiddenException('Invalid credentials!');

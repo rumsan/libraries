@@ -72,7 +72,7 @@ export const permissions: Array<{
 
 export const users: Array<{
   id?: number;
-  name?: string;
+  name: string;
   email?: string;
   wallet?: string;
 }> = [
