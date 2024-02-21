@@ -26,4 +26,3 @@ export type AuthSession = {
   userAgent?: string;
   createdAt: Date;
 };
-

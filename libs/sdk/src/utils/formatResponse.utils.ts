@@ -7,4 +7,3 @@ export const formatResponse = <T>(response: AxiosResponse) => {
     httpReponse: response,
   };
 };
- 

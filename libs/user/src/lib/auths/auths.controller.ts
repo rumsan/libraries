@@ -1,7 +1,12 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { RequestDetails, TRequestDetails } from '@rumsan/core';
-import { ChallengeDto, OtpDto, OtpLoginDto, WalletLoginDto } from '@rumsan/sdk/dtos';
+import {
+  ChallengeDto,
+  OtpDto,
+  OtpLoginDto,
+  WalletLoginDto,
+} from '@rumsan/sdk/dtos';
 import { AuthsService } from './auths.service';
 
 @Controller('auth')

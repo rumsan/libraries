@@ -19,5 +19,5 @@ export default class RumsanClient {
   }
   public static User = Users;
 
-  public static Auth = Auths
+  public static Auth = Auths;
 }
