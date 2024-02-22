@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { Auths, Users } from './services';
-class RumsanClient {
+class RumsanClientClass {
   private axiosInstance: AxiosInstance | null = null;
   public User = Users;
   public Auth = Auths;
@@ -30,4 +30,4 @@ class RumsanClient {
   }
 }
 
-export default new RumsanClient();
+export const RumsanClient = new RumsanClientClass();
