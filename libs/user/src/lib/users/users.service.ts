@@ -248,7 +248,7 @@ export class UsersService {
       await tx.user.update({
         where: { id: user.id },
         data,
-        });
+      });
     });
   }
 

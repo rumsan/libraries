@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
-import { Users } from './services';
+import { Auths, Users } from './services';
 export default class RumsanClient {
   private static axiosInstance: AxiosInstance | null = null;
 
@@ -18,5 +18,5 @@ export default class RumsanClient {
     return this.axiosInstance;
   }
   public static User = Users;
-
+  public static Auth = Auths;
 }

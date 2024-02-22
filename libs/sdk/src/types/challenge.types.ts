@@ -5,5 +5,3 @@ export type Challenge = {
   address: string | null;
   data: Record<string, any>;
 };
-
-``;

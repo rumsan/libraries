@@ -1,2 +1,2 @@
-export * from './challenge.types';
 export * from './request.types';
+export * from './response.types';

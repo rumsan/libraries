@@ -1,4 +1,4 @@
-import { PaginationDto } from '@rumsan/core/dtos';
+import { PaginationDto } from '@rumsan/core';
 import { IsIn } from 'class-validator';
 
 export class ListUserDto extends PaginationDto {

@@ -6,13 +6,7 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-
-export interface Response<T> {
-  success: boolean;
-  meta?: any;
-  code?: string;
-  data: T | null;
-}
+import { Response } from '../types';
 
 @Injectable()
 export class ResponseTransformInterceptor<T>
