@@ -1,4 +1,4 @@
-import { decrypt, encrypt, getUnixTimestamp } from '@rumsan/core/utilities';
+import { CryptoUtils, DateUtils } from '@rumsan/core';
 import { v4 as uuidv4 } from 'uuid';
 import { ChallengeDto } from '../dtos';
 import { Challenge } from '../types';
@@ -12,7 +12,7 @@ export function createChallenge(secret: string, challengeData: ChallengeDto) {
 
   const payload: Challenge = {
     clientId: challengeData.clientId || uuidv4(),
-    timestamp: getUnixTimestamp(),
+    timestamp: DateUtils.getUnixTimestamp(),
     ip: challengeData.ip || null,
     address: challengeData.address || null,
     data: challengeData.data || {},
@@ -29,7 +29,7 @@ export function createChallenge(secret: string, challengeData: ChallengeDto) {
   return {
     clientId: payload.clientId,
     ip: challengeData.ip,
-    challenge: encrypt(JSON.stringify(payloadArray), secret),
+    challenge: CryptoUtils.encrypt(JSON.stringify(payloadArray), secret),
   };
 }
 
@@ -41,7 +41,7 @@ export function decryptChallenge(
   if (!secret) throw new Error(ERRORS.NO_SECRET);
 
   const [clientId, timestamp, ip, address, data] = JSON.parse(
-    decrypt(challenge, secret),
+    CryptoUtils.decrypt(challenge, secret),
   );
   const payload: Challenge = {
     clientId,
@@ -51,7 +51,10 @@ export function decryptChallenge(
     data,
   };
 
-  if (payload.timestamp + validationDurationInSeconds < getUnixTimestamp())
+  if (
+    payload.timestamp + validationDurationInSeconds <
+    DateUtils.getUnixTimestamp()
+  )
     throw new Error(ERRORS.EXPIRED);
 
   return payload;

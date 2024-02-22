@@ -18,6 +18,5 @@ export default class RumsanClient {
     return this.axiosInstance;
   }
   public static User = Users;
-
   public static Auth = Auths;
 }

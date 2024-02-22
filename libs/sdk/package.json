@@ -4,6 +4,9 @@
   "description": "Rumsan sdk types, dtos and services for rumsan libraries",
   "author": "rumsan.com",
   "license": "AGPL-3.0",
+  "dependencies": {
+    "@rumsan/core": "^0.0.10"
+  },
   "licenses": [
     {
       "type": "AGPL-3.0",

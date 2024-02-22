@@ -3,9 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
 import { Service, User } from '@prisma/client';
-import { ERRORS, TRequestDetails } from '@rumsan/core';
+import { ERRORS, Enums, TRequestDetails } from '@rumsan/core';
 import { PrismaService } from '@rumsan/prisma';
-import { Enums } from '@rumsan/sdk';
 import { CONSTANTS } from '@rumsan/sdk/constants';
 import {
   ChallengeDto,
