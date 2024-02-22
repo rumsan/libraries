@@ -1,15 +1,26 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { Auths, Users } from './services';
-export default class RumsanClient {
-  private static axiosInstance: AxiosInstance | null = null;
+class RumsanClient {
+  private axiosInstance: AxiosInstance | null = null;
+  public User = Users;
+  public Auth = Auths;
 
-  public static setup(config?: AxiosRequestConfig) {
+  public setup(config?: AxiosRequestConfig) {
     if (!this.axiosInstance) {
       this.axiosInstance = axios.create(config);
     }
   }
 
-  public static get getAxiosInstance() {
+  public set accessToken(token: string | null) {
+    if (this.axiosInstance) {
+      if (token) {
+        this.axiosInstance.defaults.headers['Authorization'] =
+          `Bearer ${token}`;
+      }
+    }
+  }
+
+  public get getAxiosInstance() {
     if (!this.axiosInstance) {
       throw new Error(
         'RumsanClient not setup. Please call RumsanClient.setup() before using it.',
@@ -17,6 +28,6 @@ export default class RumsanClient {
     }
     return this.axiosInstance;
   }
-  public static User = Users;
-  public static Auth = Auths;
 }
+
+export default new RumsanClient();
