@@ -5,17 +5,16 @@ import { JwtService } from '@nestjs/jwt';
 import { Service, User } from '@prisma/client';
 import { ERRORS, TRequestDetails } from '@rumsan/core';
 import { PrismaService } from '@rumsan/prisma';
+import { Enums } from '@rumsan/sdk';
+import { CONSTANTS } from '@rumsan/sdk/constants';
 import {
   ChallengeDto,
-  Enums,
   OtpDto,
   OtpLoginDto,
   WalletLoginDto,
-} from '@rumsan/sdk';
-import { CONSTANTS } from '@rumsan/sdk/constants';
+} from '@rumsan/sdk/dtos';
 import { createChallenge, decryptChallenge } from '@rumsan/sdk/utils';
-import { SettingsService } from '@rumsan/settings';
-import { ethers } from 'ethers';
+import { hashMessage, recoverAddress } from 'viem';
 import { EVENTS } from '../constants';
 import { getSecret } from '../utils/configUtils';
 import { getServiceTypeByAddress } from '../utils/service.utils';
@@ -27,7 +26,6 @@ export class AuthsService {
     private jwt: JwtService,
     private config: ConfigService,
     private eventEmitter: EventEmitter2,
-    private settingsService: SettingsService,
   ) {}
 
   getUserById(userId: number) {
@@ -75,6 +73,7 @@ export class AuthsService {
     });
     this.eventEmitter.emit(EVENTS.CHALLENGE_CREATED, {
       ...dto,
+      requestInfo,
       challenge,
     });
 
@@ -138,8 +137,11 @@ export class AuthsService {
     );
     if (requestInfo.ip !== challengeData.ip) throw ERRORS.NO_MATCH_IP;
 
-    const messageHash = ethers?.hashMessage(ethers?.toUtf8Bytes(dto.challenge));
-    const walletAddress = ethers?.recoverAddress(messageHash, dto.signature);
+    const hash = hashMessage(dto.challenge);
+    const walletAddress = await recoverAddress({
+      hash,
+      signature: dto.signature,
+    });
 
     const auth = await this.getByServiceId(walletAddress, Service.WALLET);
     if (!auth) throw new ForbiddenException('Invalid credentials!');

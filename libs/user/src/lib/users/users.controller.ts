@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import { ERRORS, RequestDetails, TRequestDetails } from '@rumsan/core';
-import { CreateUserDto, GetUserDto, UpdateUserDto } from '@rumsan/sdk/dtos';
+import { CreateUserDto, ListUserDto, UpdateUserDto } from '@rumsan/sdk/dtos';
 import { UUID } from 'crypto';
 import { CheckAbilities } from '../ability/ability.decorator';
 import { AbilitiesGuard } from '../ability/ability.guard';
@@ -31,7 +31,7 @@ export class UsersController {
 
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
   @Get('')
-  list(@Query() dto: UserListDto) {
+  list(@Query() dto: ListUserDto) {
     return this.userService.list(dto);
   }
 
@@ -100,8 +100,8 @@ export class UsersController {
   })
   @Get(':uuid/roles')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
-  getRoles(@Param() dto: GetUserDto) {
-    return this.userService.listRoles(dto.uuid);
+  getRoles(@Param() uuid: UUID) {
+    return this.userService.listRoles(uuid);
   }
 
   @Post(':uuid/roles')

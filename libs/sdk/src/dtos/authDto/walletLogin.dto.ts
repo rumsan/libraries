@@ -2,7 +2,7 @@ import { IsNotEmpty, IsString } from 'class-validator';
 export class WalletLoginDto {
   @IsString()
   @IsNotEmpty()
-  signature: string;
+  signature: `0x${string}`;
 
   @IsString()
   @IsNotEmpty()

@@ -3,8 +3,10 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PaginatorTypes, paginator } from '@nodeteam/nestjs-prisma-pagination';
 import { Prisma, PrismaClient, Service, User } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
-import { TRequestDetails, WalletUtils } from '@rumsan/core';
+import { TRequestDetails } from '@rumsan/core';
 import { PrismaService } from '@rumsan/prisma';
+import { CreateUserDto, ListUserDto, UpdateUserDto } from '@rumsan/sdk/dtos';
+import { createChallenge, decryptChallenge } from '@rumsan/sdk/utils';
 import { UUID } from 'crypto';
 import { ERRORS } from '../constants';
 import { getSecret } from '../utils/configUtils';
@@ -12,8 +14,6 @@ import {
   getServiceTypeByAddress,
   getVerificationEventName,
 } from '../utils/service.utils';
-import { CreateUserDto, UpdateUserDto } from './dto';
-import { UserListDto } from './dto/users-list.dto';
 
 const paginate: PaginatorTypes.PaginateFunction = paginator({ perPage: 20 });
 type PrismaClientType = Omit<
@@ -78,7 +78,7 @@ export class UsersService {
     }
   }
 
-  async list(dto: UserListDto): Promise<PaginatorTypes.PaginatedResult<User>> {
+  async list(dto: ListUserDto): Promise<PaginatorTypes.PaginatedResult<User>> {
     const orderBy: Record<string, 'asc' | 'desc'> = {};
     orderBy[dto.sort] = dto.order;
     return paginate(
@@ -137,7 +137,7 @@ export class UsersService {
     tx: PrismaClientType,
     user: User,
     service: Service,
-    newServiceId?: string,
+    newServiceId?: string | null,
   ): Promise<void> {
     if (newServiceId) {
       const existingAuth = await tx.auth.findFirst({
@@ -189,7 +189,7 @@ export class UsersService {
         address?: string,
       ) => {
         if (address) {
-          const { challenge } = WalletUtils.createChallenge(getSecret(), {
+          const { challenge } = createChallenge(getSecret(), {
             address,
             ip: rdetails.ip,
             data: { userId: user.id },
@@ -214,7 +214,7 @@ export class UsersService {
     challenge: string,
     rdetails: TRequestDetails,
   ) {
-    const payload = WalletUtils.decryptChallenge(getSecret(), challenge, 1200);
+    const payload = decryptChallenge(getSecret(), challenge, 1200);
 
     if (!payload.address) {
       throw new Error('Invalid challenge');
@@ -226,7 +226,7 @@ export class UsersService {
     }
 
     const user = await this.prisma.user.findUnique({
-      where: { id: payload.data.userId, deletedAt: null },
+      where: { id: payload.data['userId'], deletedAt: null },
     });
 
     if (!user) {
@@ -248,7 +248,7 @@ export class UsersService {
       await tx.user.update({
         where: { id: user.id },
         data,
-      });
+        });
     });
   }
 

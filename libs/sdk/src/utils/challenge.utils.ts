@@ -1,4 +1,4 @@
-import { decrypt, encrypt, getUnixTimestamp } from '@rumsan/core/utilities';
+import { decrypt, encrypt, getUnixTimestamp } from '@rumsan/core';
 import { v4 as uuidv4 } from 'uuid';
 import { ChallengeDto } from '../dtos';
 import { Challenge } from '../types';
@@ -7,7 +7,7 @@ const ERRORS = {
   EXPIRED: 'WalletUtils: Challenge has expired.',
 };
 
-export function createChallenge(secret: string, challengeData: Challenge) {
+export function createChallenge(secret: string, challengeData: ChallengeDto) {
   if (!secret) throw new Error(ERRORS.NO_SECRET);
 
   const payload: Challenge = {
@@ -37,7 +37,7 @@ export function decryptChallenge(
   secret: string,
   challenge: string,
   validationDurationInSeconds: number = 300,
-): ChallengeDto {
+): Challenge {
   if (!secret) throw new Error(ERRORS.NO_SECRET);
 
   const [clientId, timestamp, ip, address, data] = JSON.parse(

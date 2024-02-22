@@ -11,8 +11,11 @@
         "outputPath": "dist/libs/settings",
         "tsConfig": "libs/settings/tsconfig.lib.json",
         "packageJson": "libs/settings/package.json",
-        "main": "libs/settings/src/index.ts",
-        "assets": ["libs/settings/*.md"]
+        "main": "libs/settings/index.ts",
+        "rootDir": "libs/settings/src",
+        "assets": ["libs/settings/*.md"],
+        "updateBuildableProjectDepsInPackageJson": true,
+        "buildableProjectDepsInPackageJsonType": "dependencies"
       }
     },
     "publish": {

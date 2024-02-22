@@ -6,9 +6,11 @@ export const RequestDetails = createParamDecorator(
     const request = ctx.switchToHttp().getRequest();
     const ip = request.connection.remoteAddress;
     const userAgent = request.headers['user-agent'];
+    const origin = request.headers['origin'];
     const details: TRequestDetails = {
       ip,
       userAgent,
+      origin,
     };
     return details;
   },

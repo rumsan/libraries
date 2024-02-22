@@ -12,7 +12,7 @@ import {
   PrismaClientKnownRequestError,
 } from '@prisma/client/runtime/library';
 import { PrismaService } from '@rumsan/prisma';
-import { CreateUserDto } from '../users/dto';
+import { CreateUserDto } from '@rumsan/sdk/dtos';
 import { UsersService } from '../users/users.service';
 import { SignupEmailDto, SignupListDto } from './dto';
 import { SignupApproveDto } from './dto/signup-approve.dto';
