@@ -6,7 +6,7 @@ import { getConstantController } from './app.module';
 @ApiTags('App')
 export class RumsanAppController {
   @Get('constants/:name')
-  listErrors(@Param('name') name: string) {
+  listConstants(@Param('name') name: string) {
     return getConstantController(name);
   }
 }

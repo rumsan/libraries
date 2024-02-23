@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
-import { CreateSettingDto, UpdateSettingDto } from './dto/create-setting.dto';
+import { CreateSettingDto, UpdateSettingDto } from '@rumsan/sdk/dtos';
 import { SettingsService } from './settings.service';
 
 @Controller('settings')
@@ -22,7 +22,7 @@ export class SettingsController {
   }
 
   @Patch(':name')
-  update(@Param('name') name: string, @Body() dto: UpdateSettingDto) {
+  udpdate(@Param('name') name: string, @Body() dto: UpdateSettingDto) {
     return this.settingsService.update(name, dto.value);
   }
 }

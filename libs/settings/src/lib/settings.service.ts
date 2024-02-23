@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Prisma, PrismaClient, Setting, SettingDataType } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 import { PrismaService } from '@rumsan/prisma';
-import { CreateSettingDto } from './dto/create-setting.dto';
+import { CreateSettingDto } from '@rumsan/sdk/dtos';
 
 function capitalizeObjectKeys(obj: any): any {
   if (typeof obj !== 'object' || obj === null) {
@@ -89,6 +89,7 @@ export class SettingsService {
     for (const setting of publicSettings) {
       result[setting.name] = setting.value;
     }
+    console.log({ result });
     return result;
   }
 
@@ -110,6 +111,8 @@ export class SettingsService {
     const existingSetting = await this.prisma.setting.findUnique({
       where: { name: uppercaseName },
     });
+
+    console.log({ existingSetting });
 
     if (!existingSetting) {
       throw new Error(
