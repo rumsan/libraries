@@ -49,7 +49,7 @@ export const Users = {
       headers: config?.headers,
       ...config,
     });
-    return formatResponse<User>(response);
+    return formatResponse<User[]>(response);
   },
 
   getMe: async (config?: AxiosRequestConfig) => {

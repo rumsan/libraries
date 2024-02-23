@@ -11,16 +11,16 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { CheckAbilities } from '../ability/ability.decorator';
-import { AbilitiesGuard } from '../ability/ability.guard';
-import { JwtGuard } from '../auths/guard';
-import { ACTIONS, APP, SUBJECTS } from '../constants';
 import {
   CreateRoleDto,
   EditRoleDto,
   PermissionSearchDto,
   RoleListDto,
-} from './dto';
+} from '@rumsan/sdk/dtos';
+import { CheckAbilities } from '../ability/ability.decorator';
+import { AbilitiesGuard } from '../ability/ability.guard';
+import { JwtGuard } from '../auths/guard';
+import { ACTIONS, APP, SUBJECTS } from '../constants';
 import { RolesService } from './roles.service';
 
 @Controller('roles')
