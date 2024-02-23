@@ -1,6 +1,6 @@
 import { AxiosRequestConfig } from 'axios';
 import { CreateSettingDto, UpdateSettingDto } from '../dtos';
-import RumsanClient from '../rumsan.client';
+import { RumsanClient } from '../rumsan.client';
 import { Setting, UpdateSetting } from '../types';
 import { formatResponse } from '../utils';
 

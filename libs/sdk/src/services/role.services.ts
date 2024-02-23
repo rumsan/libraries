@@ -6,7 +6,7 @@ import {
   ListRoleDto,
   SearchPermissionDto,
 } from '../dtos';
-import RumsanClient from '../rumsan.client';
+import { RumsanClient } from '../rumsan.client';
 import { Permission, Role, RoleWithPermission } from '../types';
 import { formatResponse } from '../utils';
 

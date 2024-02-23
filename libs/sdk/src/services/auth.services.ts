@@ -1,6 +1,6 @@
 import { AxiosRequestConfig } from 'axios';
 import { ChallengeDto, OtpDto, OtpLoginDto, WalletLoginDto } from '../dtos';
-import RumsanClient from '../rumsan.client';
+import { RumsanClient } from '../rumsan.client';
 import { AuthResponse, LoginResponse } from '../types';
 import { formatResponse } from '../utils';
 
