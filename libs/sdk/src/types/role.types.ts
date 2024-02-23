@@ -1,7 +1,10 @@
+import { Permission, PermissionSet } from '.';
+
 export type Role = {
   id?: number;
   name: string;
-  permissions: Permission[];
+  isSystem?: boolean;
+  permissions?: Permission[];
   description?: string;
   createdAt: Date;
   updatedAt?: Date;
@@ -10,14 +13,7 @@ export type Role = {
   updatedBy?: number;
 };
 
-export type Permission = {
-  id?: number;
-  roleId: number;
-  action: string;
-  subject: string;
-  inverted: boolean;
-  conditions: Record<string, any>;
-  reason?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+export type RoleWithPermission = {
+  role: Role;
+  permissions: PermissionSet;
 };

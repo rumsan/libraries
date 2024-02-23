@@ -64,6 +64,7 @@ export class AuthsService {
       clientId: dto.clientId,
       ip: requestInfo.ip,
     });
+    console.log({ otp });
     this.eventEmitter.emit(EVENTS.OTP_CREATED, {
       ...dto,
       requestInfo,
