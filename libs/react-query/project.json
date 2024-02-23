@@ -8,6 +8,8 @@
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
+        "generateExportsField": true,
+        "generatePackageJson": true,
         "outputPath": "dist/libs/react-query",
         "main": "libs/react-query/index.ts",
         "rootDir": "libs/react-query/src",
