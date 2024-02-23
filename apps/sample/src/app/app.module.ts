@@ -10,6 +10,8 @@ import {
   AbilityModule,
   AuthsModule,
   RSUserModule,
+  RolesModule,
+  SignupModule,
   UsersModule,
 } from '@rumsan/user';
 import { APP_SUBJECTS } from '../constants';
@@ -27,7 +29,12 @@ import { AppService } from './app.service';
     }),
     ListenerModule,
     PrismaModule,
-    RSUserModule.forRoot([UsersModule, AuthsModule]),
+    RSUserModule.forRoot([
+      UsersModule,
+      AuthsModule,
+      RolesModule,
+      SignupModule.forRoot({ autoApprove: false }),
+    ]),
     RSExceptionModule.forRoot({ errorSet: ERRORS }),
     AbilityModule.forRoot({ subjects: APP_SUBJECTS }),
     SettingsModule,

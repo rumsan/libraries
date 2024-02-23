@@ -14,12 +14,12 @@ export class OtpDto {
   @ApiProperty({
     example: 'EMAIL',
   })
-  service: Service | null;
+  service?: Service | null;
 
   @ApiProperty({
     example: '105cd449-53f6-44e4-85f3-feaa7d762ffa',
   })
   @IsUUID()
   @IsOptional()
-  clientId: string;
+  clientId?: string;
 }

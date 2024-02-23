@@ -20,7 +20,6 @@ export const Auths = {
       data,
       config,
     );
-    console.log({ response });
     return formatResponse<AuthResponse>(response);
   },
 

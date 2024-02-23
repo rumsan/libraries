@@ -1,4 +1,4 @@
-import { OtpDto } from '@rumsan/sdk';
+import { OtpDto } from '@rumsan/sdk/dtos';
 import { useMutation } from '@tanstack/react-query';
 import { useErrorStore } from '../utils';
 import { useAuthStore } from './auth.store';
