@@ -4,6 +4,15 @@
   "description": "Zustand and tanstack powered state management for Rumsan services",
   "author": "rumsan.com",
   "license": "AGPL-3.0",
+  "dependencies": {
+    "@swc/helpers": "~0.5.2",
+    "@tanstack/react-query-devtools": "^5.18.1",
+    "@tanstack/react-query": "^5.18.1",
+    "zustand": "^4.5.0",
+    "jsonwebtoken": "^9.0.2",
+    "@rumsan/sdk": "^0.0.2",
+    "@rumsan/core": "1.0.603"
+  },
   "licenses": [
     {
       "type": "AGPL-3.0",
