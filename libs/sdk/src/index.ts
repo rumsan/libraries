@@ -1,1 +1,1 @@
-export * from './rumsan.client';
+export { RumsanClient } from './rumsan.client';
