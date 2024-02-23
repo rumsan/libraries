@@ -1,7 +1,7 @@
 import { AxiosRequestConfig } from 'axios';
 import { UUID } from 'crypto';
 import { CreateUserDto, ListUserDto, UpdateUserDto } from '../dtos';
-import RumsanClient from '../rumsan.client';
+import { RumsanClient } from '../rumsan.client';
 import { User } from '../types';
 import { formatResponse } from '../utils';
 export const Users = {

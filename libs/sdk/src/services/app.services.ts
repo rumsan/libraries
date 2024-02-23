@@ -1,5 +1,5 @@
 import { AxiosRequestConfig } from 'axios';
-import RumsanClient from '../rumsan.client';
+import { RumsanClient } from '../rumsan.client';
 import { formatResponse } from '../utils';
 
 export const Apps = {

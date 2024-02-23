@@ -14,8 +14,8 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
   CreateRoleDto,
   EditRoleDto,
-  PermissionSearchDto,
-  RoleListDto,
+  ListRoleDto,
+  SearchPermissionDto,
 } from '@rumsan/sdk/dtos';
 import { CheckAbilities } from '../ability/ability.decorator';
 import { AbilitiesGuard } from '../ability/ability.guard';
@@ -41,14 +41,14 @@ export class RolesController {
     actions: '*',
     subject: SUBJECTS.ROLE,
   })
-  async listRoles(@Query() dto: RoleListDto) {
+  async listRoles(@Query() dto: ListRoleDto) {
     return this.roleService.list(dto);
   }
 
   @Post('search-by-permission')
   @CheckAbilities({ actions: '*', subject: SUBJECTS.ROLE })
   async searchRolesByPermission(
-    @Body(ValidationPipe) permissionQuery: PermissionSearchDto,
+    @Body(ValidationPipe) permissionQuery: SearchPermissionDto,
   ) {
     return this.roleService.getRolesByPermission(
       permissionQuery.action,
