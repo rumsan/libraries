@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { TRequestDetails } from '../types/request.types';
+import { Request } from '../types';
 
 export const RequestDetails = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
@@ -7,7 +7,7 @@ export const RequestDetails = createParamDecorator(
     const ip = request.connection.remoteAddress;
     const userAgent = request.headers['user-agent'];
     const origin = request.headers['origin'];
-    const details: TRequestDetails = {
+    const details: Request = {
       ip,
       userAgent,
       origin,

@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
 import { Service, User } from '@prisma/client';
-import { ERRORS, Enums, TRequestDetails } from '@rumsan/core';
+import { ERRORS, Enums, Request } from '@rumsan/core';
 import { PrismaService } from '@rumsan/prisma';
 import { CONSTANTS } from '@rumsan/sdk/constants';
 import {
@@ -36,7 +36,7 @@ export class AuthsService {
     });
   }
 
-  async getOtp(dto: OtpDto, requestInfo: TRequestDetails) {
+  async getOtp(dto: OtpDto, requestInfo: Request) {
     if (!dto.service) {
       dto.service = getServiceTypeByAddress(dto.address) as Enums.Service;
     }
@@ -80,7 +80,7 @@ export class AuthsService {
     return challenge;
   }
 
-  async loginByOtp(dto: OtpLoginDto, requestInfo: TRequestDetails) {
+  async loginByOtp(dto: OtpLoginDto, requestInfo: Request) {
     const { challenge, otp } = dto;
     const challengeData = decryptChallenge(
       getSecret(),
@@ -122,14 +122,14 @@ export class AuthsService {
     return this.signToken(user, authority);
   }
 
-  getChallengeForWallet(dto: ChallengeDto, requestInfo: TRequestDetails) {
+  getChallengeForWallet(dto: ChallengeDto, requestInfo: Request) {
     return createChallenge(getSecret(), {
       clientId: dto.clientId,
       ip: requestInfo.ip,
     });
   }
 
-  async loginByWallet(dto: WalletLoginDto, requestInfo: TRequestDetails) {
+  async loginByWallet(dto: WalletLoginDto, requestInfo: Request) {
     const challengeData = decryptChallenge(
       getSecret(),
       dto.challenge,

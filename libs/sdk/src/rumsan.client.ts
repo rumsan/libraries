@@ -35,3 +35,4 @@ class RumsanClientClass {
 }
 
 export const RumsanClient = new RumsanClientClass();
+

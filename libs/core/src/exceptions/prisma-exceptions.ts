@@ -1,12 +1,6 @@
 import { Prisma } from '@prisma/client';
+import { PrismaUtils } from '../utilities';
 
-const shortenPrismaMessage = (message: string): string => {
-  const shortMessage = message.substring(message.indexOf('→'));
-  return shortMessage
-    .substring(shortMessage.indexOf('\n'))
-    .replace(/\n/g, '')
-    .trim();
-};
 
 export const PrimsaFriendlyErrorMessage = (
   exception: Prisma.PrismaClientKnownRequestError,
@@ -26,7 +20,7 @@ export const PrimsaFriendlyErrorMessage = (
   } else if (exception.code === 'P2025') {
     httpCode = 404;
   } else {
-    message = shortenPrismaMessage(exception.message);
+    message = PrismaUtils.shortenPrismaMessage(exception.message);
   }
   return { message, httpCode };
 };

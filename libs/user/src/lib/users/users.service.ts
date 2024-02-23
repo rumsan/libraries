@@ -3,7 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PaginatorTypes, paginator } from '@nodeteam/nestjs-prisma-pagination';
 import { Prisma, PrismaClient, Service, User } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
-import { TRequestDetails } from '@rumsan/core';
+import { Request } from '@rumsan/core';
 import { PrismaService } from '@rumsan/prisma';
 import { CreateUserDto, ListUserDto, UpdateUserDto } from '@rumsan/sdk/dtos';
 import { createChallenge, decryptChallenge } from '@rumsan/sdk/utils';
@@ -165,7 +165,7 @@ export class UsersService {
   async updateMe(
     userId: number,
     dto: UpdateUserDto,
-    rdetails: TRequestDetails,
+    rdetails: Request,
   ) {
     return this.prisma.$transaction(async (tx) => {
       const user = await this.prisma.user.findUnique({
@@ -212,7 +212,7 @@ export class UsersService {
 
   async processVerificationChallenge(
     challenge: string,
-    rdetails: TRequestDetails,
+    rdetails: Request,
   ) {
     const payload = decryptChallenge(getSecret(), challenge, 1200);
 
