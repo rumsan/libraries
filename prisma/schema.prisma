@@ -180,7 +180,7 @@ enum SignupStatus {
 
 // ++++++++++++++++++ END: @rumsan/user - Signup +++++++++++++++++++++++++++
 
-// ++++++++++++++++++ START: @rumsan/settings +++++++++++++++++++++++++++
+// ++++++++++++++++++ START: @rumsan/extensions/settings +++++++++++++++++++++++++++
 
 model Setting {
   name           String          @id @unique
@@ -200,4 +200,4 @@ enum SettingDataType {
   OBJECT
 }
 
-// ++++++++++++++++++ END: @rumsan/settings +++++++++++++++++++++++++++
+// ++++++++++++++++++ END: @rumsan/extensions/settings +++++++++++++++++++++++++++

@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
-import { ERRORS, RequestDetails, TRequestDetails } from '@rumsan/core';
+import { ERRORS, Request, RequestDetails } from '@rumsan/core';
 import { CreateUserDto, ListUserDto, UpdateUserDto } from '@rumsan/sdk/dtos';
 import { UUID } from 'crypto';
 import { CheckAbilities } from '../ability/ability.decorator';
@@ -53,7 +53,7 @@ export class UsersController {
   updateMe(
     @CU() cu: CUI,
     @Body() dto: UpdateUserDto,
-    @RequestDetails() rdetails: TRequestDetails,
+    @RequestDetails() rdetails: Request,
   ) {
     return this.userService.updateMe(cu.userId, dto, rdetails);
   }

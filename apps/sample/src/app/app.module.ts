@@ -5,7 +5,7 @@ import { PrismaModule } from '@rumsan/prisma';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RSExceptionModule } from '@rumsan/core';
-import { SettingsModule } from '@rumsan/settings';
+import { SettingsModule } from '@rumsan/extensions/settings';
 import {
   AbilityModule,
   AuthsModule,

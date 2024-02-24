@@ -1,11 +1,5 @@
-export type RSErrorInfo = {
-  name: string;
-  message: string;
-  type?: string;
-  httpCode: number;
-  srcModule?: string;
-  meta?: any;
-};
+
+import { RSErrorInfo } from '../types';
 
 export class RSError extends Error {
   public httpCode: number;

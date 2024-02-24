@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { SettingsService } from '@rumsan/extensions/settings';
 import { PrismaService } from '@rumsan/prisma';
-import { SettingsService } from '@rumsan/settings';
 
 @Injectable()
 export class AppService {
