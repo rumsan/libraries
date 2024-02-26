@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Enums } from '@rumsan/sdk/enums';
 import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
-import { Service } from '../../enums';
 
 export class OtpDto {
   @ApiProperty({
@@ -14,7 +14,7 @@ export class OtpDto {
   @ApiProperty({
     example: 'EMAIL',
   })
-  service?: Service | null;
+  service?: Enums.Service | null;
 
   @ApiProperty({
     example: '105cd449-53f6-44e4-85f3-feaa7d762ffa',

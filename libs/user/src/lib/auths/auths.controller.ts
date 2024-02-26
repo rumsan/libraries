@@ -1,12 +1,13 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Request, RequestDetails } from '@rumsan/core';
+import { RequestDetails } from '@rumsan/extensions/decorators';
 import {
   ChallengeDto,
   OtpDto,
   OtpLoginDto,
   WalletLoginDto,
 } from '@rumsan/sdk/dtos';
+import { Request } from '@rumsan/sdk/types';
 import { AuthsService } from './auths.service';
 
 @Controller('auth')
@@ -16,10 +17,7 @@ export class AuthsController {
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  loginOtp(
-    @Body() dto: OtpLoginDto,
-    @RequestDetails() rdetails: Request,
-  ) {
+  loginOtp(@Body() dto: OtpLoginDto, @RequestDetails() rdetails: Request) {
     return this.authService.loginByOtp(dto, rdetails);
   }
 
@@ -38,10 +36,7 @@ export class AuthsController {
   }
 
   @Post('challenge')
-  getChallenge(
-    @Body() dto: ChallengeDto,
-    @RequestDetails() rdetails: Request,
-  ) {
+  getChallenge(@Body() dto: ChallengeDto, @RequestDetails() rdetails: Request) {
     return this.authService.getChallengeForWallet(dto, rdetails);
   }
 }

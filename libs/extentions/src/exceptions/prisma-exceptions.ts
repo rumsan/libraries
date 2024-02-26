@@ -1,6 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { PrismaUtils } from '../utilities';
-
+import { PrismaUtils } from '@rumsan/core';
 
 export const PrimsaFriendlyErrorMessage = (
   exception: Prisma.PrismaClientKnownRequestError,

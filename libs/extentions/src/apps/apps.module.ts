@@ -1,8 +1,8 @@
 import { DynamicModule, Global, Module } from '@nestjs/common';
+import { ControllerFunction } from '@rumsan/sdk/types';
 import { ConstantControllers } from '../constants';
-import { ControllerFunction } from '../types';
 import { ConstantControllerUtils } from '../utilities';
-import { RumsanAppController } from './app.controller';
+import { RumsanAppController } from './apps.controller';
 
 @Global()
 @Module({})

@@ -4,9 +4,9 @@ import {
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
+import { Response } from '@rumsan/sdk/types';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Response } from '../types';
 
 @Injectable()
 export class ResponseTransformInterceptor<T>

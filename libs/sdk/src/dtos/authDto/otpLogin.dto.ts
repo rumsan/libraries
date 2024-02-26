@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
-import { Service } from '../../enums';
+import { Enums } from '../../enums';
 export class OtpLoginDto {
   @ApiProperty({
     example: '',
@@ -19,5 +19,5 @@ export class OtpLoginDto {
   @ApiProperty({
     example: 'EMAIL',
   })
-  service: Service | null;
+  service: Enums.Service | null;
 }
