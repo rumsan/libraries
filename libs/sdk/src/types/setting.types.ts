@@ -13,8 +13,8 @@ export type UpdateSetting = {
 export type Setting = {
   name: string;
   value: Record<string, any>;
-  dataType: string;
-  requiredFields: string[];
-  isReadOnly: boolean;
-  isPrivate: boolean;
+  dataType?: string;
+  requiredFields?: string[];
+  isReadOnly?: boolean;
+  isPrivate?: boolean;
 };

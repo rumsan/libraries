@@ -6,7 +6,10 @@ const ERRORS = {
   EXPIRED: 'WalletUtils: Challenge has expired.',
 };
 
-export function createChallenge(secret: string, challengeData: CreateChallenge) {
+export function createChallenge(
+  secret: string,
+  challengeData: CreateChallenge,
+) {
   if (!secret) throw new Error(ERRORS.NO_SECRET);
 
   const payload: Challenge = {

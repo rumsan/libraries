@@ -1,11 +1,10 @@
 import { AxiosRequestConfig } from 'axios';
 import { UUID } from 'crypto';
-import { CreateUserDto, ListUserDto, UpdateUserDto } from '../dtos';
 import { RumsanClient } from '../rumsan.client';
-import { User } from '../types';
+import { Pagination, User } from '../types';
 import { formatResponse } from '../utils';
 export const Users = {
-  create: async (data: CreateUserDto, config?: AxiosRequestConfig) => {
+  create: async (data: User, config?: AxiosRequestConfig) => {
     const response = await RumsanClient.getAxiosInstance.post(
       '/users',
       data,
@@ -22,11 +21,7 @@ export const Users = {
     return formatResponse<User>(response);
   },
 
-  update: async (
-    uuid: UUID,
-    data: UpdateUserDto,
-    config?: AxiosRequestConfig,
-  ) => {
+  update: async (uuid: UUID, data: User, config?: AxiosRequestConfig) => {
     const response = await RumsanClient.getAxiosInstance.patch(
       `/users/${uuid}`,
       data,
@@ -43,7 +38,7 @@ export const Users = {
     return formatResponse<User>(response);
   },
 
-  list: async (data?: ListUserDto, config?: AxiosRequestConfig) => {
+  list: async (data?: Pagination, config?: AxiosRequestConfig) => {
     const response = await RumsanClient.getAxiosInstance.get('/users', {
       params: data,
       headers: config?.headers,
@@ -60,7 +55,7 @@ export const Users = {
     return formatResponse<User>(response);
   },
 
-  updateMe: async (data: UpdateUserDto, config?: AxiosRequestConfig) => {
+  updateMe: async (data: User, config?: AxiosRequestConfig) => {
     const response = await RumsanClient.getAxiosInstance.patch(
       '/users/me',
       data,
@@ -77,11 +72,7 @@ export const Users = {
   //   return formatResponse<>(response);
   // },
 
-  addRoles: async (
-    uuid: UUID,
-    data: UpdateUserDto,
-    config?: AxiosRequestConfig,
-  ) => {
+  addRoles: async (uuid: UUID, data: User, config?: AxiosRequestConfig) => {
     const response = await RumsanClient.getAxiosInstance.post(
       `/users/${uuid}/roles`,
       data,
