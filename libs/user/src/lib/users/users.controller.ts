@@ -11,8 +11,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
-import { ERRORS } from '@rumsan/core';
 import { RequestDetails } from '@rumsan/extensions/decorators';
+import { ERRORS } from '@rumsan/extensions/exceptions';
 import { CreateUserDto, ListUserDto, UpdateUserDto } from '@rumsan/sdk/dtos';
 import { Request } from '@rumsan/sdk/types';
 import { UUID } from 'crypto';

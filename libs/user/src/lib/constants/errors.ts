@@ -1,4 +1,4 @@
-import { RSError } from '@rumsan/core';
+import { RSError } from '@rumsan/extensions/exceptions';
 
 export function RSE(
   message: string,

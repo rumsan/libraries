@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
 import { Service, User } from '@prisma/client';
-import { ERRORS, Enums, Request } from '@rumsan/core';
+import { ERRORS } from '@rumsan/extensions/exceptions';
 import { PrismaService } from '@rumsan/prisma';
 import { CONSTANTS } from '@rumsan/sdk/constants';
 import {
@@ -12,6 +12,8 @@ import {
   OtpLoginDto,
   WalletLoginDto,
 } from '@rumsan/sdk/dtos';
+import { Enums } from '@rumsan/sdk/enums';
+import { Request } from '@rumsan/sdk/types';
 import { createChallenge, decryptChallenge } from '@rumsan/sdk/utils';
 import { hashMessage, recoverAddress } from 'viem';
 import { EVENTS } from '../constants';

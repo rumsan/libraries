@@ -10,6 +10,8 @@ export * from './roleDto/createRole.dto';
 export * from './roleDto/editRole.dto';
 export * from './roleDto/listRole.dto';
 export * from './settingDto/createSetting.dto';
+export * from './shared/pagination.dto';
+export * from './shared/wallet.dto';
 export * from './userDto/create-user.dto';
 export * from './userDto/update-user.dto';
 export * from './userDto/users-get.dto';

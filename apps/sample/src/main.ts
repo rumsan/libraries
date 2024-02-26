@@ -8,7 +8,8 @@ import { NestFactory } from '@nestjs/core';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ResponseTransformInterceptor, RsExceptionFilter } from '@rumsan/core';
+import { RsExceptionFilter } from '@rumsan/extensions/exceptions';
+import { ResponseTransformInterceptor } from '@rumsan/extensions/interceptors';
 import { WinstonModule } from 'nest-winston';
 import { AppModule } from './app/app.module';
 import { APP } from './constants';

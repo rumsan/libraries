@@ -1,6 +1,6 @@
 import { DynamicModule, Global, Module } from '@nestjs/common';
-import { RSExceptionModule } from '@rumsan/core';
 import { RumsanAppModule } from '@rumsan/extensions/apps';
+import { RSExceptionModule } from '@rumsan/extensions/exceptions';
 import { AbilitySubject } from './ability/ability.subjects';
 import { ERRORS } from './constants';
 
