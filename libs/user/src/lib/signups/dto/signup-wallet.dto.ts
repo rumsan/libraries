@@ -1,5 +1,5 @@
 import { IntersectionType, OmitType } from '@nestjs/swagger';
-import { WalletDto } from '@rumsan/core';
+import { WalletDto } from '@rumsan/extensions/dtos';
 import { SignupEmailDto } from './signup-email.dto';
 
 export class SignupWalletDto extends IntersectionType(

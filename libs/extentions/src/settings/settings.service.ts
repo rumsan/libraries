@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Prisma, PrismaClient, Setting, SettingDataType } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 import { PrismaService } from '@rumsan/prisma';
-import { CreateSettingDto } from '@rumsan/sdk/dtos';
+import { CreateSettingDto } from '../dtos';
 
 function capitalizeObjectKeys(obj: any): any {
   if (typeof obj !== 'object' || obj === null) {
