@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { PaginatorTypes, paginator } from '@nodeteam/nestjs-prisma-pagination';
 import { Prisma, PrismaClient, Service, User } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 import {
@@ -8,7 +7,7 @@ import {
   ListUserDto,
   UpdateUserDto,
 } from '@rumsan/extensions/dtos';
-import { PrismaService } from '@rumsan/prisma';
+import { PaginatorTypes, PrismaService, paginator } from '@rumsan/prisma';
 import { Request } from '@rumsan/sdk/types';
 import { createChallenge, decryptChallenge } from '@rumsan/sdk/utils';
 import { UUID } from 'crypto';
