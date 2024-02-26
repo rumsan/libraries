@@ -16,7 +16,7 @@ import {
   EditRoleDto,
   ListRoleDto,
   SearchPermissionDto,
-} from '@rumsan/sdk/dtos';
+} from '@rumsan/extensions/dtos';
 import { CheckAbilities } from '../ability/ability.decorator';
 import { AbilitiesGuard } from '../ability/ability.guard';
 import { JwtGuard } from '../auths/guard';

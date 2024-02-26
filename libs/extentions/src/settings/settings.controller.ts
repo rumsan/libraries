@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
-import { CreateSettingDto, UpdateSettingDto } from '@rumsan/sdk/dtos';
+import { CreateSettingDto, UpdateSettingDto } from '../dtos';
 import { SettingsService } from './settings.service';
 
 @Controller('settings')
