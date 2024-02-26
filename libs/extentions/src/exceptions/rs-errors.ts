@@ -1,4 +1,4 @@
-import { RSErrorInfo } from '../types';
+import { RSErrorInfo } from '@rumsan/sdk/types';
 
 export class RSError extends Error {
   public httpCode: number;

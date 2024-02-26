@@ -162,11 +162,7 @@ export class UsersService {
     }
   }
 
-  async updateMe(
-    userId: number,
-    dto: UpdateUserDto,
-    rdetails: Request,
-  ) {
+  async updateMe(userId: number, dto: UpdateUserDto, rdetails: Request) {
     return this.prisma.$transaction(async (tx) => {
       const user = await this.prisma.user.findUnique({
         where: { id: userId, deletedAt: null },
@@ -210,10 +206,7 @@ export class UsersService {
     });
   }
 
-  async processVerificationChallenge(
-    challenge: string,
-    rdetails: Request,
-  ) {
+  async processVerificationChallenge(challenge: string, rdetails: Request) {
     const payload = decryptChallenge(getSecret(), challenge, 1200);
 
     if (!payload.address) {

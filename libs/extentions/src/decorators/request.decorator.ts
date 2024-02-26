@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { Request } from '../types';
+import { Request } from '@rumsan/sdk/types';
 
 export const RequestDetails = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
