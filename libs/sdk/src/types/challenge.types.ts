@@ -11,4 +11,4 @@ export type CreateChallenge = {
   ip?: string;
   address?: string;
   data?: Record<string, any>;
-}
+};

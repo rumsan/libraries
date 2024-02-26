@@ -12,7 +12,11 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import { RequestDetails } from '@rumsan/extensions/decorators';
-import { CreateUserDto, ListUserDto, UpdateUserDto } from '@rumsan/extensions/dtos';
+import {
+  CreateUserDto,
+  ListUserDto,
+  UpdateUserDto,
+} from '@rumsan/extensions/dtos';
 import { ERRORS } from '@rumsan/extensions/exceptions';
 import { Request } from '@rumsan/sdk/types';
 import { UUID } from 'crypto';

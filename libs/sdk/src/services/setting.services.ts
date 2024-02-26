@@ -1,5 +1,4 @@
 import { AxiosRequestConfig } from 'axios';
-import { CreateSettingDto, UpdateSettingDto } from '../dtos';
 import { RumsanClient } from '../rumsan.client';
 import { Setting, UpdateSetting } from '../types';
 import { formatResponse } from '../utils';
@@ -13,7 +12,7 @@ export const Settings = {
     return formatResponse<unknown>(response);
   },
 
-  create: async (data: CreateSettingDto, config?: AxiosRequestConfig) => {
+  create: async (data: Setting, config?: AxiosRequestConfig) => {
     const response = await RumsanClient.getAxiosInstance.post(
       '/settings',
       data,
@@ -30,11 +29,7 @@ export const Settings = {
     return formatResponse<Setting>(response);
   },
 
-  update: async (
-    name: string,
-    data: UpdateSettingDto,
-    config?: AxiosRequestConfig,
-  ) => {
+  update: async (name: string, data: Setting, config?: AxiosRequestConfig) => {
     const response = await RumsanClient.getAxiosInstance.patch(
       `/settings/${name}`,
       data,

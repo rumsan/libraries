@@ -1,22 +1,24 @@
 import { AxiosRequestConfig } from 'axios';
 import { UUID } from 'crypto';
-import {
-  CreateRoleDto,
-  EditRoleDto,
-  ListRoleDto,
-  SearchPermissionDto,
-} from '../dtos';
 import { RumsanClient } from '../rumsan.client';
-import { Permission, Role, RoleWithPermission } from '../types';
+import {
+  CreateRole,
+  EditRole,
+  ListRole,
+  Permission,
+  Role,
+  RoleWithPermission,
+  SearchPermission,
+} from '../types';
 import { formatResponse } from '../utils';
 
 export const Roles = {
-  createRole: async (role: CreateRoleDto) => {
+  createRole: async (role: CreateRole) => {
     const response = await RumsanClient.getAxiosInstance.post('/roles', role);
     return formatResponse<Role>(response);
   },
 
-  listRole: async (data?: ListRoleDto, config?: AxiosRequestConfig) => {
+  listRole: async (data?: ListRole, config?: AxiosRequestConfig) => {
     const response = await RumsanClient.getAxiosInstance.get('/roles', {
       params: data,
       ...config,
@@ -25,7 +27,7 @@ export const Roles = {
   },
 
   searchRoleByPermission: async (
-    data: SearchPermissionDto,
+    data: SearchPermission,
     config?: AxiosRequestConfig,
   ) => {
     const response = await RumsanClient.getAxiosInstance.post(
@@ -38,7 +40,7 @@ export const Roles = {
 
   updateRole: async (
     uuid: UUID,
-    data: EditRoleDto,
+    data: EditRole,
     config?: AxiosRequestConfig,
   ) => {
     const response = await RumsanClient.getAxiosInstance.patch(
