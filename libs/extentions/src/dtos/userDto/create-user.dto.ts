@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Enums } from '@rumsan/sdk/enums';
+import { User } from '@rumsan/sdk/types';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { Enums } from '../../enums';
-import { User } from '../../types/user.types';
 
 export class CreateUserDto implements User {
   @ApiProperty({

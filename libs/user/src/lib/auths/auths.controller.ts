@@ -6,7 +6,7 @@ import {
   OtpDto,
   OtpLoginDto,
   WalletLoginDto,
-} from '@rumsan/sdk/dtos';
+} from '@rumsan/extensions/dtos';
 import { Request } from '@rumsan/sdk/types';
 import { AuthsService } from './auths.service';
 

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Enums } from '@rumsan/sdk/enums';
 import { IsNotEmpty, IsString } from 'class-validator';
-import { Enums } from '../../enums';
 export class OtpLoginDto {
   @ApiProperty({
     example: '',

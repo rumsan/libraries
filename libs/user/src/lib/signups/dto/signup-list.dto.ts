@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { SignupStatus } from '@prisma/client';
-import { PaginationDto } from '@rumsan/core';
+import { PaginationDto } from '@rumsan/extensions/dtos';
 import { Transform } from 'class-transformer';
 import { IsEnum, IsIn, IsOptional } from 'class-validator';
 
