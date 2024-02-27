@@ -30,7 +30,6 @@
     "@nestjs/platform-express": "^10.3.3",
     "@nestjs/platform-fastify": "^10.3.3",
     "@nestjs/swagger": "^7.3.0",
-    "@nodeteam/nestjs-prisma-pagination": "^1.0.6",
     "@prisma/client": "^5.10.2",
     "@tanstack/react-query": "^5.22.2",
     "axios": "^1.6.7",

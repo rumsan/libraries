@@ -17,10 +17,11 @@
     "baseUrl": ".",
     "paths": {
       "@rumsan/core": ["libs/core/src/index.ts"],
-      "@rumsan/core/*": ["libs/core/src/lib/*"],
+      "@rumsan/core/*": ["libs/core/src/lib/src/*"],
       "@rumsan/extensions": ["libs/extentions/src/index.ts"],
       "@rumsan/extensions/*": ["libs/extentions/src/*"],
       "@rumsan/prisma": ["libs/prisma/src/index.ts"],
+      "@rumsan/prisma/*": ["libs/prisma/src/*"],
       "@rumsan/react-query": ["libs/react-query/src/index.ts"],
       "@rumsan/sdk": ["libs/sdk/src/index.ts"],
       "@rumsan/sdk/*": ["libs/sdk/src/*"],

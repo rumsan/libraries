@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { PaginatorTypes, paginator } from '@nodeteam/nestjs-prisma-pagination';
 import { Permission, Prisma, PrismaClient, Role } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 import { StringUtils } from '@rumsan/core';
@@ -8,7 +7,7 @@ import {
   EditRoleDto,
   ListRoleDto,
 } from '@rumsan/extensions/dtos';
-import { PrismaService } from '@rumsan/prisma';
+import { PaginatorTypes, PrismaService, paginator } from '@rumsan/prisma';
 import { ERRORS } from '../constants';
 import { RSE } from '../constants/errors';
 import { PermissionSet } from '../interfaces';

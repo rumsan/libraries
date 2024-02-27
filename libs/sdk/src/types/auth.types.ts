@@ -26,3 +26,9 @@ export type AuthSession = {
   userAgent?: string;
   createdAt: Date;
 };
+
+export type AuthResponse = {
+  clientId: string;
+  ip: string;
+  challenge: string;
+};
