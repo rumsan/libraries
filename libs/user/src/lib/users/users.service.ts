@@ -9,10 +9,10 @@ import {
 } from '@rumsan/extensions/dtos';
 import { PaginatorTypes, PrismaService, paginator } from '@rumsan/prisma';
 import { Request } from '@rumsan/sdk/types';
-import { createChallenge, decryptChallenge } from '@rumsan/sdk/utils';
 import { UUID } from 'crypto';
 import { ERRORS } from '../constants';
-import { getSecret } from '../utils/configUtils';
+import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
+import { getSecret } from '../utils/config.utils';
 import {
   getServiceTypeByAddress,
   getVerificationEventName,

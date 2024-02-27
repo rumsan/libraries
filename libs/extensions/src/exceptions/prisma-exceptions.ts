@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { PrismaUtils } from '@rumsan/core';
+import { shortenPrismaMessage } from '../utilities/prisma.utils';
 
 export const PrimsaFriendlyErrorMessage = (
   exception: Prisma.PrismaClientKnownRequestError,
@@ -19,7 +19,7 @@ export const PrimsaFriendlyErrorMessage = (
   } else if (exception.code === 'P2025') {
     httpCode = 404;
   } else {
-    message = PrismaUtils.shortenPrismaMessage(exception.message);
+    message = shortenPrismaMessage(exception.message);
   }
   return { message, httpCode };
 };
