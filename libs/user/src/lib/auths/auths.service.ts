@@ -14,10 +14,10 @@ import { PrismaService } from '@rumsan/prisma';
 import { CONSTANTS } from '@rumsan/sdk/constants';
 import { Enums } from '@rumsan/sdk/enums';
 import { Request } from '@rumsan/sdk/types';
-import { createChallenge, decryptChallenge } from '@rumsan/sdk/utils';
 import { hashMessage, recoverAddress } from 'viem';
 import { EVENTS } from '../constants';
-import { getSecret } from '../utils/configUtils';
+import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
+import { getSecret } from '../utils/config.utils';
 import { getServiceTypeByAddress } from '../utils/service.utils';
 import { TokenDataInterface } from './interfaces/auth.interface';
 @Injectable()

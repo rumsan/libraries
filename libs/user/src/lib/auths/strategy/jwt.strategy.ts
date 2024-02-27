@@ -3,11 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { PrismaService } from '@rumsan/prisma';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { getSecret } from '../../utils/configUtils';
+import { getSecret } from '../../utils/config.utils';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(config: ConfigService, private prisma: PrismaService) {
+  constructor(
+    config: ConfigService,
+    private prisma: PrismaService,
+  ) {
     // Extrac Bearer Token from Authorization header request
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
