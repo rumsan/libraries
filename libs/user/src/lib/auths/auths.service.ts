@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
@@ -20,8 +20,10 @@ import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
 import { getSecret } from '../utils/config.utils';
 import { getServiceTypeByAddress } from '../utils/service.utils';
 import { TokenDataInterface } from './interfaces/auth.interface';
+
 @Injectable()
 export class AuthsService {
+  private readonly logger = new Logger(AuthsService.name);
   constructor(
     protected prisma: PrismaService,
     private jwt: JwtService,
@@ -66,7 +68,6 @@ export class AuthsService {
       clientId: dto.clientId,
       ip: requestInfo.ip,
     });
-    console.log({ otp });
     this.eventEmitter.emit(EVENTS.OTP_CREATED, {
       ...dto,
       requestInfo,
@@ -78,6 +79,7 @@ export class AuthsService {
       requestInfo,
       challenge,
     });
+    this.logger.log('OTP created: ' + otp);
 
     return challenge;
   }

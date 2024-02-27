@@ -1,4 +1,9 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import axios, {
+  AxiosHeaderValue,
+  AxiosInstance,
+  AxiosRequestConfig,
+  HeadersDefaults,
+} from 'axios';
 import { Apps, Auths, Settings, Users } from './services';
 
 class RumsanClientClass {
@@ -8,15 +13,23 @@ class RumsanClientClass {
     if (!this.axiosInstance) {
       this.axiosInstance = axios.create(config);
     }
+    return this;
   }
 
   public set accessToken(token: string | null) {
     if (this.axiosInstance) {
       if (token) {
-        this.axiosInstance.defaults.headers[
-          'Authorization'
-        ] = `Bearer ${token}`;
+        this.axiosInstance.defaults.headers['Authorization'] =
+          `Bearer ${token}`;
       }
+    }
+  }
+
+  public set headers(
+    headers: HeadersDefaults & { [key: string]: AxiosHeaderValue },
+  ) {
+    if (this.axiosInstance) {
+      this.axiosInstance.defaults.headers = headers;
     }
   }
 
