@@ -30,7 +30,7 @@ export class SignupsService {
     @Inject('SIGNUP_CONFIG') private config: SignupConfig,
     protected prisma: PrismaService,
     private userService: UsersService,
-  ) {}
+  ) { }
 
   async signup(dto: SignupEmailDto | SignupPhoneDto | SignupWalletDto) {
     let authIdentifier: { service: Service; serviceId: string };

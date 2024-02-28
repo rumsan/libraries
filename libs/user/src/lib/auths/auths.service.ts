@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
@@ -22,12 +22,14 @@ import { getServiceTypeByAddress } from '../utils/service.utils';
 import { TokenDataInterface } from './interfaces/auth.interface';
 @Injectable()
 export class AuthsService {
+  _logger = new Logger(AuthsService?.name)
   constructor(
     protected prisma: PrismaService,
     private jwt: JwtService,
     private config: ConfigService,
     private eventEmitter: EventEmitter2,
-  ) {}
+  ) { }
+
 
   getUserById(userId: number) {
     return this.prisma.user.findUnique({
@@ -66,7 +68,8 @@ export class AuthsService {
       clientId: dto.clientId,
       ip: requestInfo.ip,
     });
-    console.log({ otp });
+
+    this._logger.log(`OTP: ${otp}`)
     this.eventEmitter.emit(EVENTS.OTP_CREATED, {
       ...dto,
       requestInfo,
