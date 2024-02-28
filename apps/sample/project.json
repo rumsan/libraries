@@ -15,16 +15,7 @@
         "main": "apps/sample/src/main.ts",
         "tsConfig": "apps/sample/tsconfig.app.json",
         "assets": ["apps/sample/src/assets"],
-        "webpackConfig": "apps/sample/webpack.config.js",
-        "updateBuildableProjectDepsInPackageJson": true,
-        "buildableProjectDepsInPackageJsonType": "dependencies",
-        "optimization": true,
-        "outputHashing": "all",
-        "sourceMap": false,
-        "namedChunks": false,
-        "extractLicenses": true,
-        "vendorChunk": false,
-        "buildOptimizer": true
+        "webpackConfig": "apps/sample/webpack.config.js"
       },
       "configurations": {
         "development": {},
