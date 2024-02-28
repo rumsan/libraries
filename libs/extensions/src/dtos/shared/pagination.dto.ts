@@ -8,7 +8,7 @@ export class PaginationDto {
     required: false,
   })
   @IsInt()
-  page: number = 1;
+  page = 1;
 
   @ApiProperty({
     example: 10,
@@ -16,7 +16,7 @@ export class PaginationDto {
     required: false,
   })
   @IsInt()
-  perPage: number = 20;
+  perPage = 20;
 
   @ApiProperty({
     example: 'createdAt',
