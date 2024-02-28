@@ -1,2 +1,2 @@
-export * from './auth.hooks';
+export * from './auth.query';
 export * from './auth.store';

@@ -1,6 +1,6 @@
 {
   "name": "@rumsan/sdk",
-  "version": "0.0.30",
+  "version": "0.0.33",
   "description": "Rumsan sdk types, dtos and services for rumsan libraries",
   "author": "rumsan.com",
   "license": "AGPL-3.0",

@@ -4,10 +4,37 @@ import axios, {
   AxiosRequestConfig,
   HeadersDefaults,
 } from 'axios';
-import { Apps, Auth, Settings, Users } from './services';
+import {
+  getAppClient,
+  getAuthClient,
+  getRoleClient,
+  getSettingClient,
+  getUserClient,
+} from './clients';
+import {
+  AppClient,
+  AuthClient,
+  RoleClient,
+  SettingClient,
+  UserClient,
+} from './types/client.types';
 
-class RumsanServiceClass {
-  private _client: AxiosInstance | null = null;
+export class RumsanService {
+  private _client: AxiosInstance;
+  public auth: AuthClient;
+  public app: AppClient;
+  public setting: SettingClient;
+  public role: RoleClient;
+  public user: UserClient;
+
+  constructor(config?: AxiosRequestConfig) {
+    this.setClient(config);
+    this.auth = getAuthClient(this._client);
+    this.app = getAppClient(this._client);
+    this.setting = getSettingClient(this._client);
+    this.role = getRoleClient(this._client);
+    this.user = getUserClient(this._client);
+  }
 
   public set accessToken(token: string | null) {
     if (this._client) {
@@ -44,11 +71,4 @@ class RumsanServiceClass {
     }
     return this._client;
   }
-
-  public User = Users;
-  public Auth = Auth;
-  public Setting = Settings;
-  public App = Apps;
 }
-
-export const RumsanService = new RumsanServiceClass();
