@@ -20,9 +20,10 @@ import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
 import { getSecret } from '../utils/config.utils';
 import { getServiceTypeByAddress } from '../utils/service.utils';
 import { TokenDataInterface } from './interfaces/auth.interface';
+
 @Injectable()
 export class AuthsService {
-  _logger = new Logger(AuthsService?.name)
+  private readonly logger = new Logger(AuthsService.name);
   constructor(
     protected prisma: PrismaService,
     private jwt: JwtService,
@@ -68,8 +69,6 @@ export class AuthsService {
       clientId: dto.clientId,
       ip: requestInfo.ip,
     });
-
-    this._logger.log(`OTP: ${otp}`)
     this.eventEmitter.emit(EVENTS.OTP_CREATED, {
       ...dto,
       requestInfo,
@@ -81,6 +80,7 @@ export class AuthsService {
       requestInfo,
       challenge,
     });
+    this.logger.log('OTP created: ' + otp);
 
     return challenge;
   }

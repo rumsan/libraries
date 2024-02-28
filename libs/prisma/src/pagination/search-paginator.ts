@@ -14,11 +14,15 @@ export const searchPaginator = (
         SELECT *,
         (SELECT COUNT(*) FROM "${modelName}"
           WHERE to_tsvector('english',
-          ${options.searchColumns.map((c: string) => `coalesce("${c}", '')`).join(" || ' ' || \n")}
+          ${options.searchColumns
+            .map((c: string) => `coalesce("${c}", '')`)
+            .join(" || ' ' || \n")}
           ) @@ to_tsquery('english', '${options.searchValue}')) AS row_count
         FROM "${modelName}"
         WHERE to_tsvector('english',
-          ${options.searchColumns.map((c: string) => `coalesce("${c}", '')`).join(" || ' ' || \n")}
+          ${options.searchColumns
+            .map((c: string) => `coalesce("${c}", '')`)
+            .join(" || ' ' || \n")}
           ) @@ to_tsquery('english', '${options.searchValue}')
           limit ${options.perPage}
           offset ${options.skip};

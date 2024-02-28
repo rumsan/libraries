@@ -52,7 +52,7 @@ type PrismaClientType = Omit<
 @Injectable()
 export class SettingsService {
   private static data: any = {};
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   public static get(path: string) {
     const keys = path.split('.');
