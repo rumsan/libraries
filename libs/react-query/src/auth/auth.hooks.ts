@@ -1,4 +1,4 @@
-import { RumsanClient } from '@rumsan/sdk';
+import { RumsanService } from '@rumsan/sdk';
 import { useMutation } from '@tanstack/react-query';
 import { RumsanReactQueryClient } from '../client';
 import { useErrorStore } from '../utils';
@@ -10,7 +10,7 @@ export const useLogin = () => {
 
   return useMutation(
     {
-      mutationFn: RumsanClient.Auth.login,
+      mutationFn: RumsanService.Auth.login,
       onSuccess: (data) => {
         setToken(data?.data.accessToken);
         return data.data;
@@ -29,10 +29,10 @@ export const useSendOtp = () => {
 
   return useMutation(
     {
-      mutationFn: RumsanClient.Auth.getOtp,
-      onSuccess: (data) => {
-        setChallenge(data?.data?.challenge);
-        return data.data;
+      mutationFn: RumsanService.Auth.getOtp,
+      onSuccess: ({ data }) => {
+        setChallenge(data?.challenge);
+        return data;
       },
       onError: (err) => {
         setError(err as any);

@@ -1,28 +1,21 @@
 import { AxiosRequestConfig } from 'axios';
 import { UUID } from 'crypto';
-import { RumsanClient } from '../rumsan.client';
+import { RumsanService } from '../rumsan.service';
 import { Pagination, User } from '../types';
 import { formatResponse } from '../utils';
 export const Users = {
   create: async (data: User, config?: AxiosRequestConfig) => {
-    const response = await RumsanClient.getAxiosInstance.post(
-      '/users',
-      data,
-      config,
-    );
+    const response = await RumsanService.client.post('/users', data, config);
     return formatResponse<User>(response);
   },
 
   get: async (uuid: UUID, config?: AxiosRequestConfig) => {
-    const response = await RumsanClient.getAxiosInstance.get(
-      `/users/${uuid}`,
-      config,
-    );
+    const response = await RumsanService.client.get(`/users/${uuid}`, config);
     return formatResponse<User>(response);
   },
 
   update: async (uuid: UUID, data: User, config?: AxiosRequestConfig) => {
-    const response = await RumsanClient.getAxiosInstance.patch(
+    const response = await RumsanService.client.patch(
       `/users/${uuid}`,
       data,
       config,
@@ -31,7 +24,7 @@ export const Users = {
   },
 
   delete: async (uuid: UUID, config?: AxiosRequestConfig) => {
-    const response = await RumsanClient.getAxiosInstance.delete(
+    const response = await RumsanService.client.delete(
       `/users/${uuid}`,
       config,
     );
@@ -39,7 +32,7 @@ export const Users = {
   },
 
   list: async (data?: Pagination, config?: AxiosRequestConfig) => {
-    const response = await RumsanClient.getAxiosInstance.get('/users', {
+    const response = await RumsanService.client.get('/users', {
       params: data,
       headers: config?.headers,
       ...config,
@@ -48,15 +41,12 @@ export const Users = {
   },
 
   getMe: async (config?: AxiosRequestConfig) => {
-    const response = await RumsanClient.getAxiosInstance.get(
-      '/users/me',
-      config,
-    );
+    const response = await RumsanService.client.get('/users/me', config);
     return formatResponse<User>(response);
   },
 
   updateMe: async (data: User, config?: AxiosRequestConfig) => {
-    const response = await RumsanClient.getAxiosInstance.patch(
+    const response = await RumsanService.client.patch(
       '/users/me',
       data,
       config,
@@ -65,7 +55,7 @@ export const Users = {
   },
 
   // getRoles: async (uuid: UUID, config?: AxiosRequestConfig) => {
-  //   const response = await RumsanClient.getAxiosInstance.post(
+  //   const response = await RumsanService.client.post(
   //     `/users/${uuid}/roles`,
   //     config,
   //   );
@@ -73,7 +63,7 @@ export const Users = {
   // },
 
   addRoles: async (uuid: UUID, data: User, config?: AxiosRequestConfig) => {
-    const response = await RumsanClient.getAxiosInstance.post(
+    const response = await RumsanService.client.post(
       `/users/${uuid}/roles`,
       data,
       config,
@@ -86,7 +76,7 @@ export const Users = {
   //   data: UpdateUserDto,
   //   config?: AxiosRequestConfig,
   // ) => {
-  //   const response = await RumsanClient.getAxiosInstance.delete(
+  //   const response = await RumsanService.client.delete(
   //     `/users/${uuid}/roles`,
   //     data,
   //     config,

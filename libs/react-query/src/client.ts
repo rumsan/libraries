@@ -1,3 +1,4 @@
+import { RumsanService } from '@rumsan/sdk';
 import { QueryClient } from '@tanstack/react-query';
 
 class _RumsanQuery {
@@ -22,6 +23,9 @@ class _RumsanQuery {
   }
 
   public get client(): QueryClient {
+    RumsanService.setClient({
+      baseURL: 'http://localhost:5200/v1',
+    });
     if (!this._queryClient)
       throw new Error(
         'QueryClient not setup. Please call RumsanReactQuery.setup() before using it.',
@@ -32,3 +36,4 @@ class _RumsanQuery {
 
 export const RumsanReactQuery = new _RumsanQuery();
 export const RumsanReactQueryClient = RumsanReactQuery.client;
+export const RumsanClient = RumsanService.getClient();

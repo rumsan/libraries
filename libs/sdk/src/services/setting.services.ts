@@ -1,28 +1,21 @@
 import { AxiosRequestConfig } from 'axios';
-import { RumsanClient } from '../rumsan.client';
+import { RumsanService } from '../rumsan.service';
 import { Setting, UpdateSetting } from '../types';
 import { formatResponse } from '../utils';
 
 export const Settings = {
   listPublic: async (config?: AxiosRequestConfig) => {
-    const response = await RumsanClient.getAxiosInstance.get(
-      '/settings/public',
-      config,
-    );
+    const response = await RumsanService.client.get('/settings/public', config);
     return formatResponse<unknown>(response);
   },
 
   create: async (data: Setting, config?: AxiosRequestConfig) => {
-    const response = await RumsanClient.getAxiosInstance.post(
-      '/settings',
-      data,
-      config,
-    );
+    const response = await RumsanService.client.post('/settings', data, config);
     return formatResponse<Setting>(response);
   },
 
   getPublic: async (name: string, config?: AxiosRequestConfig) => {
-    const response = await RumsanClient.getAxiosInstance.get(
+    const response = await RumsanService.client.get(
       `/settings/public/${name}`,
       config,
     );
@@ -30,7 +23,7 @@ export const Settings = {
   },
 
   update: async (name: string, data: Setting, config?: AxiosRequestConfig) => {
-    const response = await RumsanClient.getAxiosInstance.patch(
+    const response = await RumsanService.client.patch(
       `/settings/${name}`,
       data,
       config,

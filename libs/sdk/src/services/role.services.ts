@@ -1,6 +1,6 @@
 import { AxiosRequestConfig } from 'axios';
 import { UUID } from 'crypto';
-import { RumsanClient } from '../rumsan.client';
+import { RumsanService } from '../rumsan.service';
 import {
   CreateRole,
   EditRole,
@@ -14,12 +14,12 @@ import { formatResponse } from '../utils';
 
 export const Roles = {
   createRole: async (role: CreateRole) => {
-    const response = await RumsanClient.getAxiosInstance.post('/roles', role);
+    const response = await RumsanService.client.post('/roles', role);
     return formatResponse<Role>(response);
   },
 
   listRole: async (data?: ListRole, config?: AxiosRequestConfig) => {
-    const response = await RumsanClient.getAxiosInstance.get('/roles', {
+    const response = await RumsanService.client.get('/roles', {
       params: data,
       ...config,
     });
@@ -30,7 +30,7 @@ export const Roles = {
     data: SearchPermission,
     config?: AxiosRequestConfig,
   ) => {
-    const response = await RumsanClient.getAxiosInstance.post(
+    const response = await RumsanService.client.post(
       '/roles/search-by-permission',
       data,
       config,
@@ -43,7 +43,7 @@ export const Roles = {
     data: EditRole,
     config?: AxiosRequestConfig,
   ) => {
-    const response = await RumsanClient.getAxiosInstance.patch(
+    const response = await RumsanService.client.patch(
       '/roles/${uuid}',
       data,
       config,
@@ -52,7 +52,7 @@ export const Roles = {
   },
 
   deleteRole: async (uuid: UUID, config?: AxiosRequestConfig) => {
-    const response = await RumsanClient.getAxiosInstance.delete(
+    const response = await RumsanService.client.delete(
       '/roles/${uuid}',
       config,
     );
@@ -60,15 +60,12 @@ export const Roles = {
   },
 
   getRole: async (uuid: UUID, config?: AxiosRequestConfig) => {
-    const response = await RumsanClient.getAxiosInstance.get(
-      '/roles/${uuid}',
-      config,
-    );
+    const response = await RumsanService.client.get('/roles/${uuid}', config);
     return formatResponse<RoleWithPermission>(response);
   },
 
   listPermissionsByRole: async (uuid: UUID, config?: AxiosRequestConfig) => {
-    const response = await RumsanClient.getAxiosInstance.get(
+    const response = await RumsanService.client.get(
       '/roles/${uuid}/permissions',
       config,
     );

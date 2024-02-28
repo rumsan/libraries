@@ -1,5 +1,5 @@
 import { AxiosRequestConfig } from 'axios';
-import { RumsanClient } from '../rumsan.client';
+import { RumsanService } from '../rumsan.service';
 import {
   AuthResponse,
   CreateChallenge,
@@ -9,9 +9,9 @@ import {
 } from '../types';
 import { formatResponse } from '../utils';
 
-export const Auths = {
+export const Auth = {
   login: async (data: OTP, config?: AxiosRequestConfig) => {
-    const response = await RumsanClient.getAxiosInstance.post(
+    const response = await RumsanService.client.post(
       '/auth/login',
       data,
       config,
@@ -20,16 +20,12 @@ export const Auths = {
   },
 
   getOtp: async (data: OTP, config?: AxiosRequestConfig) => {
-    const response = await RumsanClient.getAxiosInstance.post(
-      '/auth/otp',
-      data,
-      config,
-    );
+    const response = await RumsanService.client.post('/auth/otp', data, config);
     return formatResponse<AuthResponse>(response);
   },
 
   walletLogin: async (data: WalletLogin, config?: AxiosRequestConfig) => {
-    const response = await RumsanClient.getAxiosInstance.post(
+    const response = await RumsanService.client.post(
       '/auth/wallet',
       data,
       config,
@@ -38,7 +34,7 @@ export const Auths = {
   },
 
   getChallenge: async (data: CreateChallenge, config?: AxiosRequestConfig) => {
-    const response = await RumsanClient.getAxiosInstance.post(
+    const response = await RumsanService.client.post(
       '/auth/challenge',
       data,
       config,
