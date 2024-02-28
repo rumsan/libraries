@@ -4,9 +4,9 @@ import axios, {
   AxiosRequestConfig,
   HeadersDefaults,
 } from 'axios';
-import { Apps, Auths, Settings, Users } from './services';
+import { Apps, Auth, Settings, Users } from './services';
 
-class RumsanClientClass {
+export class RumsanClientClass {
   private axiosInstance: AxiosInstance | null = null;
 
   public setup(config?: AxiosRequestConfig) {
@@ -19,9 +19,8 @@ class RumsanClientClass {
   public set accessToken(token: string | null) {
     if (this.axiosInstance) {
       if (token) {
-        this.axiosInstance.defaults.headers[
-          'Authorization'
-        ] = `Bearer ${token}`;
+        this.axiosInstance.defaults.headers['Authorization'] =
+          `Bearer ${token}`;
       }
     }
   }
@@ -44,7 +43,7 @@ class RumsanClientClass {
   }
 
   public User = Users;
-  public Auth = Auths;
+  public Auth = Auth;
   public Setting = Settings;
   public App = Apps;
 }
