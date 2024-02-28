@@ -1,10 +1,12 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { CreateSettingDto, UpdateSettingDto } from '../dtos';
 import { SettingsService } from './settings.service';
 
 @Controller('settings')
+@ApiTags('Settings')
 export class SettingsController {
-  constructor(private readonly settingsService: SettingsService) {}
+  constructor(private readonly settingsService: SettingsService) { }
 
   @Get('')
   listPublic() {

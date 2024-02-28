@@ -8,6 +8,5 @@ export {
   getPaginatedResult,
   getPagination,
   paginator,
-  searchPaginator
+  searchPaginator,
 };
-

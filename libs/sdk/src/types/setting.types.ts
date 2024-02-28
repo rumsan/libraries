@@ -7,7 +7,7 @@ interface Config {
 }
 
 export type UpdateSetting = {
-  [key: string]: Config;
+  [key: string]: Config | null;
 };
 
 export type Setting = {
