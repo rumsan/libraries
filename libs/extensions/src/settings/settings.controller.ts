@@ -6,7 +6,7 @@ import { SettingsService } from './settings.service';
 @Controller('settings')
 @ApiTags('Settings')
 export class SettingsController {
-  constructor(private readonly settingsService: SettingsService) { }
+  constructor(private readonly settingsService: SettingsService) {}
 
   @Get('')
   listPublic() {

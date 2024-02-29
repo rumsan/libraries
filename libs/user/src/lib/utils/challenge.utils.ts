@@ -1,4 +1,5 @@
 import { DateUtils } from '@rumsan/core';
+import { ChallengeDto } from '@rumsan/extensions/dtos';
 import { Challenge } from '@rumsan/sdk/types';
 import { v4 as uuidv4 } from 'uuid';
 import { decrypt, encrypt } from './crypto.utils';

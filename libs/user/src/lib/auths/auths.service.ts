@@ -29,8 +29,7 @@ export class AuthsService {
     private jwt: JwtService,
     private config: ConfigService,
     private eventEmitter: EventEmitter2,
-  ) { }
-
+  ) {}
 
   getUserById(userId: number) {
     return this.prisma.user.findUnique({

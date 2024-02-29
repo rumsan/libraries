@@ -19,9 +19,8 @@ class RumsanClientClass {
   public set accessToken(token: string | null) {
     if (this.axiosInstance) {
       if (token) {
-        this.axiosInstance.defaults.headers[
-          'Authorization'
-        ] = `Bearer ${token}`;
+        this.axiosInstance.defaults.headers['Authorization'] =
+          `Bearer ${token}`;
       }
     }
   }

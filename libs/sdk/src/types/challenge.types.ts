@@ -1,3 +1,4 @@
+
 export type Challenge = {
   clientId: string;
   timestamp: number;
