@@ -5,6 +5,7 @@ type AuthState = {
   token: string;
   isAuthenticated: boolean;
   isInitialized: boolean;
+  error: any;
   challenge: string;
   service: string;
   address: string;
@@ -12,11 +13,13 @@ type AuthState = {
 
 type AuthStateAction = {
   setAuth: (creds: any) => void;
+  setError: (error: any) => void;
   setChallenge: (challenge: string) => void;
   setService: (service: string) => void;
   setAddress: (address: string) => void;
   setToken: (token: string) => void;
   setInitialization: (d: any) => void;
+  clearAuth: () => void;
 };
 
 type AuthStore = AuthState & AuthStateAction;
@@ -25,6 +28,7 @@ const initialStore = {
   token: '',
   isAuthenticated: false,
   isInitialized: false,
+  error: null,
   challenge: '',
   service: 'EMAIL',
   address: '',
@@ -36,6 +40,10 @@ export const useAuthStore = zustandStore<AuthStore>(
     setAuth: (creds) =>
       set({
         token: creds.token, // Fix: Use 'token' instead of 'creds'
+      }),
+    setError: (error) =>
+      set({
+        error,
       }),
     setChallenge: (challenge) =>
       set({
@@ -57,6 +65,9 @@ export const useAuthStore = zustandStore<AuthStore>(
       set({
         ...d,
       });
+    },
+    clearAuth: () => {
+      set(initialStore);
     },
   }),
   {
