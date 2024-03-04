@@ -7,6 +7,7 @@ import axios, {
 import {
   getAppClient,
   getAuthClient,
+  getCommunicationClient,
   getRoleClient,
   getSettingClient,
   getUserClient,
@@ -14,6 +15,7 @@ import {
 import {
   AppClient,
   AuthClient,
+  CommunicationClient,
   RoleClient,
   SettingClient,
   UserClient,
@@ -26,6 +28,7 @@ export class RumsanService {
   public setting: SettingClient;
   public role: RoleClient;
   public user: UserClient;
+  public communication: CommunicationClient;
 
   constructor(config?: AxiosRequestConfig) {
     this.setClient(config);
@@ -34,6 +37,7 @@ export class RumsanService {
     this.setting = getSettingClient(this._client);
     this.role = getRoleClient(this._client);
     this.user = getUserClient(this._client);
+    this.communication = getCommunicationClient(this._client);
   }
 
   public set accessToken(token: string | null) {

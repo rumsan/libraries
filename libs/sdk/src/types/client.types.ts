@@ -3,6 +3,15 @@ import { UUID } from 'crypto';
 import { FormattedResponse } from '../utils';
 import { AuthResponse } from './auth.types';
 import { CreateChallenge } from './challenge.types';
+import {
+  Audience,
+  Audio,
+  CreateCampaign,
+  EditCampaign,
+  ICampaignItemApiResponse,
+  ListCampaign,
+  Transport,
+} from './communication.types';
 import { LoginResponse } from './loginResponse.types';
 import { OTP } from './otp.types';
 import { Pagination } from './pagination.types';
@@ -125,4 +134,41 @@ export type UserClient = {
     data: User,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<User>>;
+};
+
+//client type for communication
+export type CommunicationClient = {
+  createCampaign: (
+    campaign: CreateCampaign,
+  ) => Promise<FormattedResponse<ICampaignItemApiResponse>>;
+  listCampaign: (
+    data?: ListCampaign,
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<ICampaignItemApiResponse[]>>;
+  updateCampaign: (
+    data: EditCampaign,
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<ICampaignItemApiResponse>>;
+  deleteCampaign: (
+    id: string,
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<ICampaignItemApiResponse>>;
+  getCampaign: (
+    id: number,
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<ICampaignItemApiResponse>>;
+  listTransport: (
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<Transport[]>>;
+  listAudience: (
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<Audience[]>>;
+  // triggerCampaign;
+  triggerCampaign: (
+    id: number,
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<ICampaignItemApiResponse[]>>;
+  getAudio: (
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<Audio[]>>;
 };

@@ -1,0 +1,94 @@
+import { RumsanService } from '@rumsan/sdk';
+import { Pagination } from '@rumsan/sdk/types';
+import {
+  CreateCampaign,
+  EditCampaign,
+} from '@rumsan/sdk/types/communication.types';
+import {
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  UseQueryResult,
+} from '@tanstack/react-query';
+import { TAGS } from '../utils/tags';
+
+export class CommunicationQuery {
+  private reactQueryClient: QueryClient;
+  private client: RumsanService;
+
+  constructor(client: RumsanService, reactQueryClient: QueryClient) {
+    this.reactQueryClient = reactQueryClient;
+    this.client = client;
+  }
+  useCreateCampaign() {
+    const qc = useQueryClient();
+
+    return useMutation({
+      mutationFn: (payload: CreateCampaign) =>
+        this.client.communication.createCampaign(payload),
+      onSuccess: () => {
+        qc.invalidateQueries({ queryKey: [TAGS.GET_ALL_CAMPAIGNS] });
+      },
+    });
+  }
+
+  useListCampaign(data: Pagination): UseQueryResult<any, Error> {
+    return useQuery({
+      queryKey: [TAGS.GET_ALL_CAMPAIGNS],
+      queryFn: () => this.client.communication.listCampaign(data),
+    });
+  }
+  useUpdateCampaign() {
+    const qc = useQueryClient();
+
+    return useMutation({
+      mutationFn: (payload: EditCampaign) =>
+        this.client.communication.updateCampaign(payload),
+      onSuccess: () => {
+        qc.invalidateQueries({ queryKey: [TAGS.GET_ALL_CAMPAIGNS] });
+      },
+    });
+  }
+
+  useDeleteCampaign() {
+    const qc = useQueryClient();
+
+    return useMutation({
+      mutationFn: (id: string) => this.client.communication.deleteCampaign(id),
+      onSuccess: () => {
+        qc.invalidateQueries({ queryKey: [TAGS.GET_ALL_CAMPAIGNS] });
+      },
+    });
+  }
+
+  useGetCampaign(payload: { id: number }): UseQueryResult<any, Error> {
+    return useQuery({
+      queryKey: [TAGS.GET_CAMPAIGNS],
+      queryFn: () => this.client.communication.getCampaign(payload.id),
+    });
+  }
+  useGetAudio(): UseQueryResult<any, Error> {
+    return useQuery({
+      queryKey: [TAGS.GET_CAMPAIGNS_AUDIO],
+      queryFn: () => this.client.communication.getAudio(),
+    });
+  }
+  useTriggerCampaign() {
+    return useMutation({
+      mutationFn: (id: number) => this.client.communication.triggerCampaign(id),
+    });
+  }
+  useListAudience(): UseQueryResult<any, Error> {
+    return useQuery({
+      queryKey: [TAGS.GET_ALL_AUDIENCE],
+      queryFn: () => this.client.communication.listAudience(),
+    });
+  }
+  useListTransport(): UseQueryResult<any, Error> {
+    return useQuery({
+      queryKey: [TAGS.GET_ALL_TRANSPORT],
+      queryFn: () => this.client.communication.listTransport(),
+    });
+  }
+}

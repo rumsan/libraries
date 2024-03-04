@@ -1,10 +1,11 @@
 import { RumsanService } from '@rumsan/sdk';
+import { Pagination, User } from '@rumsan/sdk/types';
 import {
   QueryClient,
-  UseQueryResult,
   useMutation,
   useQuery,
   useQueryClient,
+  UseQueryResult,
 } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { TAGS } from '../utils/tags';
@@ -23,17 +24,17 @@ export class UserQuery {
     const qc = useQueryClient();
 
     return useMutation({
-      mutationFn: this.client.user.createUser,
+      mutationFn: (payload: User) => this.client.user.createUser(payload),
       onSuccess: () => {
         qc.invalidateQueries({ queryKey: [TAGS.GET_ALL_USER] });
       },
     });
   }
 
-  useUserList(): UseQueryResult<any, Error> {
+  useUserList(payload: Pagination): UseQueryResult<any, Error> {
     const userListQueryResult: any = useQuery({
       queryKey: [TAGS.GET_ALL_USER],
-      queryFn: () => this.client.user.listUsers,
+      queryFn: () => this.client.user.listUsers(payload),
     });
     const userStore = useUserStore();
 
@@ -51,7 +52,7 @@ export class UserQuery {
 
     const userQuery = useQuery({
       queryKey: [TAGS.GET_ME],
-      queryFn: this.client.user.getMe,
+      queryFn: () => this.client.user.getMe(),
       enabled,
       initialData: userStore.user,
     });
