@@ -1,7 +1,7 @@
 import { Gender, Service } from '../enums';
 import { toProperCase } from './string.utils';
 
-export function enumToArray(
+export function enumToObjectArray(
   enumObject: any,
 ): { label: string; value: string }[] {
   const array = [];
@@ -11,6 +11,16 @@ export function enumToArray(
     }
   }
   return array.sort((a, b) => a.label.localeCompare(b.label));
+}
+
+export function enumToArray(enumObject: any): string[] {
+  const array = [];
+  for (const key in enumObject) {
+    if (enumObject.hasOwnProperty(key)) {
+      array.push(enumObject[key]);
+    }
+  }
+  return array.sort();
 }
 
 export const listGenders = () => enumToArray(Gender);
