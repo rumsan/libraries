@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Gender } from '@rumsan/sdk/enums';
 import { User } from '@rumsan/sdk/types';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { listGenders } from '@rumsan/sdk/utils';
+import { IsIn, IsOptional, IsString } from 'class-validator';
 
 export class CreateUserDto implements User {
   @ApiProperty({
@@ -18,8 +19,7 @@ export class CreateUserDto implements User {
     description: 'Gender of the User',
   })
   @IsOptional()
-  @IsString()
-  @IsEnum(Gender)
+  @IsIn(listGenders())
   gender: Gender;
 
   @ApiProperty({
