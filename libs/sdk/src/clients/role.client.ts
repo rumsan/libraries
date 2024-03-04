@@ -10,7 +10,7 @@ import {
   SearchPermission,
 } from '../types';
 import { RoleClient } from '../types/client.types';
-import { formatResponse } from '../utils';
+import { formatResponse } from '../utils/formatResponse.utils';
 
 export const getRoleClient = (client: AxiosInstance): RoleClient => {
   return {

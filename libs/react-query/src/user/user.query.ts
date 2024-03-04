@@ -1,12 +1,13 @@
 import { RumsanService } from '@rumsan/sdk';
+import { User } from '@rumsan/sdk/types';
 import {
   QueryClient,
   UseQueryResult,
   useMutation,
   useQuery,
-  useQueryClient,
 } from '@tanstack/react-query';
 import { useEffect } from 'react';
+import { useErrorStore } from '../utils';
 import { TAGS } from '../utils/tags';
 import { useUserStore } from './user.store';
 
@@ -20,13 +21,17 @@ export class UserQuery {
   }
 
   useUserCreate() {
-    const qc = useQueryClient();
-
+    const setError = useErrorStore((state) => state.setError);
     return useMutation(
       {
-        mutationFn: this.client.user.createUser,
+        mutationFn: (data: User) => this.client.user.createUser(data),
         onSuccess: () => {
-          qc.invalidateQueries({ queryKey: [TAGS.GET_ALL_USER] });
+          this.reactQueryClient.invalidateQueries({
+            queryKey: [TAGS.GET_ALL_USER],
+          });
+        },
+        onError: (err) => {
+          setError(err as any);
         },
       },
       this.reactQueryClient,
@@ -85,14 +90,14 @@ export class UserQuery {
   }
 
   useUserEdit() {
-    const qc = useQueryClient();
-
     return useMutation(
       {
         mutationFn: (payload: any) =>
           this.client.user.updateUser(payload.uuid, payload.data),
         onSuccess: () => {
-          qc.invalidateQueries({ queryKey: [TAGS.GET_ALL_USER] });
+          this.reactQueryClient.invalidateQueries({
+            queryKey: [TAGS.GET_ALL_USER],
+          });
         },
       },
       this.reactQueryClient,
@@ -100,13 +105,13 @@ export class UserQuery {
   }
 
   useUserRemove(payload: { uuid: string }) {
-    const qc = useQueryClient();
-
     return useMutation(
       {
         mutationFn: () => this.client.user.removeUser(payload.uuid),
         onSuccess: () => {
-          qc.invalidateQueries({ queryKey: [TAGS.GET_ALL_USER] });
+          this.reactQueryClient.invalidateQueries({
+            queryKey: [TAGS.GET_ALL_USER],
+          });
         },
       },
       this.reactQueryClient,

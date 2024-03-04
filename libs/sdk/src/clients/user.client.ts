@@ -1,7 +1,7 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { Pagination, User } from '../types';
 import { UserClient } from '../types/client.types';
-import { formatResponse } from '../utils';
+import { formatResponse } from '../utils/formatResponse.utils';
 
 export const getUserClient = (client: AxiosInstance): UserClient => {
   return {

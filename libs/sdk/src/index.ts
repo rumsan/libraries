@@ -1,1 +1,1 @@
-export { RumsanService } from './rumsan.service';
+export * from './rumsan.service';

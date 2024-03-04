@@ -1,7 +1,7 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { Setting, UpdateSetting } from '../types';
 import { SettingClient } from '../types/client.types';
-import { formatResponse } from '../utils';
+import { formatResponse } from '../utils/formatResponse.utils';
 
 export const getSettingClient = (client: AxiosInstance): SettingClient => {
   return {

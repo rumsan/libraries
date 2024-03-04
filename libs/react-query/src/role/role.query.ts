@@ -7,6 +7,8 @@ import {
 } from '@tanstack/react-query';
 
 import { RumsanService } from '@rumsan/sdk';
+import { Role } from '@rumsan/sdk/types';
+import { FormattedResponse } from '@rumsan/sdk/utils/formatResponse.utils';
 import { UUID } from 'crypto';
 import { TAGS } from '../utils/tags';
 
@@ -33,11 +35,12 @@ export class RoleQuery {
     );
   }
 
-  userRoleList(payload: any): UseQueryResult<any, Error> {
+  userRoleList(payload: any): UseQueryResult<FormattedResponse<Role[]>, Error> {
     return useQuery(
       {
         queryKey: [TAGS.GET_ALL_ROLES],
-        queryFn: () => this.client.role.listRole,
+        queryFn: () =>
+          this.client.role.listRole(payload).then(({ response }) => response),
       },
       this.reactQueryClient,
     );

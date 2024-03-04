@@ -1,6 +1,6 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { AppClient } from '../types/client.types';
-import { formatResponse } from '../utils';
+import { formatResponse } from '../utils/formatResponse.utils';
 
 export const getAppClient = (client: AxiosInstance): AppClient => {
   return {

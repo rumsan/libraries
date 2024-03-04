@@ -7,7 +7,7 @@ import {
   WalletLogin,
 } from '../types';
 import { AuthClient } from '../types/client.types';
-import { formatResponse } from '../utils';
+import { formatResponse } from '../utils/formatResponse.utils';
 
 export const getAuthClient = (client: AxiosInstance): AuthClient => {
   return {
