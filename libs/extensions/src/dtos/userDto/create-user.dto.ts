@@ -45,4 +45,10 @@ export class CreateUserDto implements User {
   @IsString()
   @IsOptional()
   wallet?: string;
+
+  @ApiProperty({
+    example: ['admin', 'user'],
+    description: 'Roles of the User',
+  })
+  roles: string[];
 }
