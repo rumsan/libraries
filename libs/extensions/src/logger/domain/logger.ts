@@ -1,8 +1,8 @@
 import { LogData, LogLevel } from '.';
 
-export const LoggerBaseKey = Symbol();
-export const LoggerKey = Symbol();
-export const WinstonLoggerTransportsKey = Symbol();
+export const LoggerBaseKey = 'LOGGER_BASE_KEY';
+export const LoggerKey = 'LOGGER_KEY';
+export const WinstonLoggerTransportsKey = 'WINSTON_LOGGER_TRANSPORTS_KEY';
 
 export interface Logger {
   log(
