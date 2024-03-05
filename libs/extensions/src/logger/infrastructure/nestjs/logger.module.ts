@@ -46,13 +46,9 @@ import morgan = require('morgan');
 
         transports.push(ConsoleTransport.createColorize());
         transports.push(FileTransport.create());
-        console.log(`here is the config service`)
-        console.log(configService?.isProduction)
         if (configService.isProduction) {
-          console.log({ configService })
           if (configService.slackWebhookUrl) {
 
-            console.log(configService?.slackWebhookUrl)
             transports.push(
               SlackTransport.create(configService.slackWebhookUrl),
             );
