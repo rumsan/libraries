@@ -12,9 +12,7 @@
         "main": "libs/react-query/index.ts",
         "rootDir": "libs/react-query/src",
         "tsConfig": "libs/react-query/tsconfig.lib.json",
-        "assets": ["libs/react-query/*.md"],
-        "updateBuildableProjectDepsInPackageJson": true,
-        "buildableProjectDepsInPackageJsonType": "dependencies"
+        "assets": ["libs/react-query/*.md"]
       }
     },
     "publish": {

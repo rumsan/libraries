@@ -8,12 +8,19 @@ import { AppService } from './app.service';
 @ApiTags('App')
 @ApiBearerAuth(APP.JWT_BEARER)
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+  ) { }
 
   // @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
   // @UseGuards(JwtGuard, AbilitiesGuard)
   @Get()
   getData() {
     return this.appService.getData();
+  }
+
+  @Get('log')
+  log() {
+    return this.appService.log();
   }
 }

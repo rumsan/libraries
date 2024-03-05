@@ -5,6 +5,7 @@ import { PrismaModule } from '@rumsan/prisma';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RSExceptionModule } from '@rumsan/extensions/exceptions';
+import { LoggerModule } from '@rumsan/extensions/logger';
 import { SettingsModule } from '@rumsan/extensions/settings';
 import {
   AbilityModule,
@@ -20,7 +21,6 @@ import { ListenerModule } from '../listener/listener.module';
 import { AppUsersModule } from '../user/user.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -40,8 +40,9 @@ import { AppService } from './app.service';
     RSExceptionModule.forRoot({ errorSet: ERRORS }),
     AbilityModule.forRoot({ subjects: APP_SUBJECTS }),
     SettingsModule,
+    LoggerModule
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

@@ -7,7 +7,10 @@ import { getSecret } from '../../utils/config.utils';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(config: ConfigService, private prisma: PrismaService) {
+  constructor(
+    config: ConfigService,
+    private prisma: PrismaService,
+  ) {
     // Extrac Bearer Token from Authorization header request
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),

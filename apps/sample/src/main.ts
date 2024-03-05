@@ -10,17 +10,17 @@ import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { RsExceptionFilter } from '@rumsan/extensions/exceptions';
 import { ResponseTransformInterceptor } from '@rumsan/extensions/interceptors';
-import { WinstonModule } from 'nest-winston';
+import NestjsLoggerServiceAdapter from '@rumsan/extensions/logger/infrastructure/nestjs/nestjsLoggerServiceAdapter';
 import { AppModule } from './app/app.module';
 import { APP } from './constants';
-import { loggerInstance } from './logger/winston.logger';
+
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, {
-    logger: WinstonModule.createLogger({
-      instance: loggerInstance,
-    }),
+    bufferLogs: true
   });
+
+  app.useLogger(app.get(NestjsLoggerServiceAdapter))
   const globalPrefix = 'v1';
   app.enableCors();
 

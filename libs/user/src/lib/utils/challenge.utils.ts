@@ -1,5 +1,6 @@
 import { DateUtils } from '@rumsan/core';
-import { Challenge, CreateChallenge } from '@rumsan/sdk/types';
+import { ChallengeDto } from '@rumsan/extensions/dtos';
+import { Challenge } from '@rumsan/sdk/types';
 import { v4 as uuidv4 } from 'uuid';
 import { decrypt, encrypt } from './crypto.utils';
 const ERRORS = {
@@ -7,10 +8,7 @@ const ERRORS = {
   EXPIRED: 'WalletUtils: Challenge has expired.',
 };
 
-export function createChallenge(
-  secret: string,
-  challengeData: CreateChallenge,
-) {
+export function createChallenge(secret: string, challengeData: ChallengeDto) {
   if (!secret) throw new Error(ERRORS.NO_SECRET);
 
   const payload: Challenge = {
