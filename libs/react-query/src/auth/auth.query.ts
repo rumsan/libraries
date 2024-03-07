@@ -12,8 +12,25 @@ export class AuthQuery {
     this.client = client;
   }
 
-  useLogin() {
-    const setError = useErrorStore((state) => state.setError);
+  useRequestOtp() {
+    const onError = useErrorStore((state) => state.setError);
+    const setChallenge = useAuthStore((state) => state.setChallenge);
+
+    return useMutation(
+      {
+        mutationFn: this.client.auth.getOtp,
+        onSuccess: (data) => {
+          setChallenge(data?.data.challenge);
+          return data.data;
+        },
+        onError,
+      },
+      this.reactQueryClient,
+    );
+  }
+
+  useVerifyOtp() {
+    const onError = useErrorStore((state) => state.setError);
     const setToken = useAuthStore((state) => state.setToken);
 
     return useMutation(
@@ -23,28 +40,7 @@ export class AuthQuery {
           setToken(data?.data.accessToken);
           return data.data;
         },
-        onError: (err) => {
-          setError(err as any);
-        },
-      },
-      this.reactQueryClient,
-    );
-  }
-
-  useSendOtp() {
-    const setError = useErrorStore((state) => state.setError);
-    const setChallenge = useAuthStore((state) => state.setChallenge);
-
-    return useMutation(
-      {
-        mutationFn: this.client.auth.getOtp,
-        onSuccess: ({ data }) => {
-          setChallenge(data?.challenge);
-          return data;
-        },
-        onError: (err) => {
-          setError(err as any);
-        },
+        onError,
       },
       this.reactQueryClient,
     );

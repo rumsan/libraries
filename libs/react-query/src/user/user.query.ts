@@ -1,13 +1,13 @@
 import { RumsanService } from '@rumsan/sdk';
-import { Pagination, User } from '@rumsan/sdk/types';
+import { User } from '@rumsan/sdk/types';
 import {
   QueryClient,
   useMutation,
   useQuery,
-  useQueryClient,
   UseQueryResult,
 } from '@tanstack/react-query';
 import { useEffect } from 'react';
+import { useErrorStore } from '../utils';
 import { TAGS } from '../utils/tags';
 import { useUserStore } from './user.store';
 
@@ -21,26 +21,35 @@ export class UserQuery {
   }
 
   useUserCreate() {
-    const qc = useQueryClient();
-
-    return useMutation({
-      mutationFn: (payload: User) => this.client.user.createUser(payload),
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: [TAGS.GET_ALL_USER] });
+    const setError = useErrorStore((state) => state.setError);
+    return useMutation(
+      {
+        mutationFn: (data: User) => this.client.user.createUser(data),
+        onSuccess: () => {
+          this.reactQueryClient.invalidateQueries({
+            queryKey: [TAGS.GET_ALL_USER],
+          });
+        },
+        onError: (err) => {
+          setError(err as any);
+        },
       },
-    });
+      this.reactQueryClient,
+    );
   }
 
-  useUserList(payload: Pagination): UseQueryResult<any, Error> {
-    const userListQueryResult: any = useQuery({
-      queryKey: [TAGS.GET_ALL_USER],
-      queryFn: () => this.client.user.listUsers(payload),
-    });
+  useUserList(): UseQueryResult<any, Error> {
+    const userListQueryResult: any = useQuery(
+      {
+        queryKey: [TAGS.GET_ALL_USER],
+        queryFn: () => this.client.user.listUsers(),
+      },
+      this.reactQueryClient,
+    );
     const userStore = useUserStore();
 
     useEffect(() => {
       if (userListQueryResult.data) {
-        userStore.setTotalUser(userListQueryResult.data?.data?.length);
       }
     }, [userListQueryResult.data]);
 
@@ -50,12 +59,15 @@ export class UserQuery {
   useUserCurrentUser(enabled: boolean): UseQueryResult<any, Error> {
     const userStore = useUserStore();
 
-    const userQuery = useQuery({
-      queryKey: [TAGS.GET_ME],
-      queryFn: () => this.client.user.getMe(),
-      enabled,
-      initialData: userStore.user,
-    });
+    const userQuery = useQuery(
+      {
+        queryKey: [TAGS.GET_ME],
+        queryFn: this.client.user.getMe,
+        enabled,
+        initialData: userStore.user,
+      },
+      this.reactQueryClient,
+    );
 
     useEffect(() => {
       if (userQuery.data) {
@@ -67,32 +79,41 @@ export class UserQuery {
   }
 
   useUserGet(payload: { uuid: string }): UseQueryResult<any, Error> {
-    return useQuery({
-      queryKey: [TAGS.GET_USER],
-      queryFn: () => this.client.user.getUser(payload.uuid),
-    });
+    return useQuery(
+      {
+        queryKey: [TAGS.GET_USER],
+        queryFn: () => this.client.user.getUser(payload.uuid),
+      },
+      this.reactQueryClient,
+    );
   }
 
   useUserEdit() {
-    const qc = useQueryClient();
-
-    return useMutation({
-      mutationFn: (payload: any) =>
-        this.client.user.updateUser(payload.uuid, payload.data),
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: [TAGS.GET_ALL_USER] });
+    return useMutation(
+      {
+        mutationFn: (payload: any) =>
+          this.client.user.updateUser(payload.uuid, payload.data),
+        onSuccess: () => {
+          this.reactQueryClient.invalidateQueries({
+            queryKey: [TAGS.GET_ALL_USER],
+          });
+        },
       },
-    });
+      this.reactQueryClient,
+    );
   }
 
   useUserRemove(payload: { uuid: string }) {
-    const qc = useQueryClient();
-
-    return useMutation({
-      mutationFn: () => this.client.user.removeUser(payload.uuid),
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: [TAGS.GET_ALL_USER] });
+    return useMutation(
+      {
+        mutationFn: () => this.client.user.removeUser(payload.uuid),
+        onSuccess: () => {
+          this.reactQueryClient.invalidateQueries({
+            queryKey: [TAGS.GET_ALL_USER],
+          });
+        },
       },
-    });
+      this.reactQueryClient,
+    );
   }
 }

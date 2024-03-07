@@ -1,9 +1,12 @@
-import { RumsanService } from '@rumsan/sdk';
-import { Pagination } from '@rumsan/sdk/types';
 import {
+  Audio,
+  CommunicationService,
   CreateCampaign,
   EditCampaign,
-} from '@rumsan/sdk/types/communication.types';
+  ICampaignItemApiResponse,
+  Transport,
+} from '@rumsan/communication';
+import { Pagination } from '@rumsan/sdk/types';
 import {
   QueryClient,
   useMutation,
@@ -15,9 +18,9 @@ import { TAGS } from '../utils/tags';
 
 export class CommunicationQuery {
   private reactQueryClient: QueryClient;
-  private client: RumsanService;
+  private client: CommunicationService;
 
-  constructor(client: RumsanService, reactQueryClient: QueryClient) {
+  constructor(client: CommunicationService, reactQueryClient: QueryClient) {
     this.reactQueryClient = reactQueryClient;
     this.client = client;
   }
@@ -33,7 +36,9 @@ export class CommunicationQuery {
     });
   }
 
-  useListCampaign(data: Pagination): UseQueryResult<any, Error> {
+  useListCampaign(
+    data: Pagination,
+  ): UseQueryResult<{ data: { rows: ICampaignItemApiResponse[] } }, Error> {
     return useQuery({
       queryKey: [TAGS.GET_ALL_CAMPAIGNS],
       queryFn: () => this.client.communication.listCampaign(data),
@@ -43,8 +48,8 @@ export class CommunicationQuery {
     const qc = useQueryClient();
 
     return useMutation({
-      mutationFn: (payload: EditCampaign) =>
-        this.client.communication.updateCampaign(payload),
+      mutationFn: (payload: EditCampaign & { id: string }) =>
+        this.client.communication.updateCampaign(payload.id, payload),
       onSuccess: () => {
         qc.invalidateQueries({ queryKey: [TAGS.GET_ALL_CAMPAIGNS] });
       },
@@ -62,13 +67,15 @@ export class CommunicationQuery {
     });
   }
 
-  useGetCampaign(payload: { id: number }): UseQueryResult<any, Error> {
+  useGetCampaign(payload: {
+    id: number;
+  }): UseQueryResult<{ data: ICampaignItemApiResponse }, Error> {
     return useQuery({
       queryKey: [TAGS.GET_CAMPAIGNS],
       queryFn: () => this.client.communication.getCampaign(payload.id),
     });
   }
-  useGetAudio(): UseQueryResult<any, Error> {
+  useGetAudio(): UseQueryResult<{ data: Audio[] }, Error> {
     return useQuery({
       queryKey: [TAGS.GET_CAMPAIGNS_AUDIO],
       queryFn: () => this.client.communication.getAudio(),
@@ -85,7 +92,7 @@ export class CommunicationQuery {
       queryFn: () => this.client.communication.listAudience(),
     });
   }
-  useListTransport(): UseQueryResult<any, Error> {
+  useListTransport(): UseQueryResult<{ data: Transport[] }, Error> {
     return useQuery({
       queryKey: [TAGS.GET_ALL_TRANSPORT],
       queryFn: () => this.client.communication.listTransport(),

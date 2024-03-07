@@ -112,8 +112,8 @@ export class UsersController {
 
   @Post(':uuid/roles')
   @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.USER })
-  addRoles(@Param('uuid') uuid: UUID, @Body() dto: UpdateUserDto) {
-    return this.userService.update(uuid, dto);
+  addRoles(@Param('uuid') uuid: UUID, @Body() roles: string[]) {
+    return this.userService.addRoles(uuid, roles);
   }
 
   @Delete(':uuid/roles')

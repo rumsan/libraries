@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Enums } from '@rumsan/sdk/enums';
+import { Gender } from '@rumsan/sdk/enums';
 import { User } from '@rumsan/sdk/types';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { listGenders } from '@rumsan/sdk/utils';
+import { IsIn, IsOptional, IsString } from 'class-validator';
 
 export class UpdateUserDto implements User {
   @ApiProperty({
@@ -19,8 +20,8 @@ export class UpdateUserDto implements User {
   })
   @IsOptional()
   @IsString()
-  @IsEnum(Enums.Gender)
-  gender: Enums.Gender;
+  @IsIn(listGenders())
+  gender: Gender;
 
   @ApiProperty({
     example: 'jane@rumsan.com',

@@ -45,7 +45,6 @@ export type SearchPaginateFunction = <T>(
 export interface Pagination {
   page: number;
   perPage: number;
-  skip: number;
   sort?: string;
   order?: 'asc' | 'desc';
 }

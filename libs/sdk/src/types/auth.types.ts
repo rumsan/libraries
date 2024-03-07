@@ -1,9 +1,9 @@
-import { Enums } from '../enums';
+import { Service } from '../enums';
 
 export type Auth = {
   id?: number;
   userId: number;
-  service: Enums.Service;
+  service: Service;
   serviceId: string;
   details?: Record<string, any>;
   challenge?: string;
