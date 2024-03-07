@@ -2,9 +2,9 @@ import { RumsanService } from '@rumsan/sdk';
 import { User } from '@rumsan/sdk/types';
 import {
   QueryClient,
-  UseQueryResult,
   useMutation,
   useQuery,
+  UseQueryResult,
 } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useErrorStore } from '../utils';
@@ -50,7 +50,6 @@ export class UserQuery {
 
     useEffect(() => {
       if (userListQueryResult.data) {
-        userStore.setTotalUser(userListQueryResult.data?.data?.length);
       }
     }, [userListQueryResult.data]);
 
