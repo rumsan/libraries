@@ -6,6 +6,7 @@ import {
   useQuery,
   UseQueryResult,
 } from '@tanstack/react-query';
+import { UUID } from 'crypto';
 import { useEffect } from 'react';
 import { useErrorStore } from '../utils';
 import { TAGS } from '../utils/tags';
@@ -78,7 +79,7 @@ export class UserQuery {
     return userQuery?.data?.data;
   }
 
-  useUserGet(payload: { uuid: string }): UseQueryResult<any, Error> {
+  useUserGet(payload: { uuid: UUID }): UseQueryResult<any, Error> {
     return useQuery(
       {
         queryKey: [TAGS.GET_USER],
@@ -103,7 +104,7 @@ export class UserQuery {
     );
   }
 
-  useUserRemove(payload: { uuid: string }) {
+  useUserRemove(payload: { uuid: UUID }) {
     return useMutation(
       {
         mutationFn: () => this.client.user.removeUser(payload.uuid),
@@ -111,6 +112,19 @@ export class UserQuery {
           this.reactQueryClient.invalidateQueries({
             queryKey: [TAGS.GET_ALL_USER],
           });
+        },
+      },
+      this.reactQueryClient,
+    );
+  }
+
+  useUserRoleList(uuid: UUID): UseQueryResult<any, Error> {
+    return useQuery(
+      {
+        queryKey: [TAGS.GET_USER_ROLES, uuid],
+        queryFn: async () => {
+          const { response } = await this.client.user.listRoles(uuid);
+          return response;
         },
       },
       this.reactQueryClient,

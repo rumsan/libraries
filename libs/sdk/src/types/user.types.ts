@@ -19,3 +19,13 @@ export type User = {
   permissions?: string[];
   roles?: string[];
 };
+
+export type UserRole = {
+  id: number;
+  userId: number;
+  roleId: number;
+  expiry: Date | null;
+  createdAt: Date;
+  createdBy: number | null;
+  name: string;
+};

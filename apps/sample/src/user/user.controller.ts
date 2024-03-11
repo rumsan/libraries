@@ -17,7 +17,7 @@ import { AppUsersService } from './user.service';
 export class AppUsersController {
   constructor(private service: AppUsersService) {}
 
-  @Get('')
+  @Get('sample')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
   list() {
     return this.service.Test({});

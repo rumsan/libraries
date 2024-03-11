@@ -8,7 +8,7 @@ import {
   UpdateUserDto,
 } from '@rumsan/extensions/dtos';
 import { PaginatorTypes, PrismaService, paginator } from '@rumsan/prisma';
-import { Request } from '@rumsan/sdk/types';
+import { Request, UserRole } from '@rumsan/sdk/types';
 import { UUID } from 'crypto';
 import { ERRORS } from '../constants';
 import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
@@ -32,26 +32,6 @@ export class UsersService {
     private eventEmitter: EventEmitter2,
   ) {
     this.rsprisma = this.prisma.rsclient;
-  }
-
-  async addRoles(uuid: UUID, roles: string[], prisma?: PrismaClientType) {
-    if (!prisma) prisma = this.prisma;
-    const getValidRoles = await prisma.role.findMany({
-      where: { name: { in: roles, mode: 'insensitive' } },
-    });
-    if (getValidRoles.length > 0) return [];
-    const user = await prisma.user.findUnique({
-      where: { uuid },
-    });
-    if (!user) throw ERRORS.USER_NOT_FOUND;
-
-    await prisma.userRole.createMany({
-      data: getValidRoles.map((role) => ({
-        userId: user.id,
-        roleId: role.id,
-      })),
-    });
-    return getValidRoles;
   }
 
   async create(
@@ -127,7 +107,7 @@ export class UsersService {
     });
   }
 
-  async get(uuid: string, throwIfNotFound = false) {
+  async get(uuid: UUID, throwIfNotFound = false) {
     const user = await this.prisma.user.findUnique({
       where: { uuid, deletedAt: null },
     });
@@ -135,7 +115,7 @@ export class UsersService {
     return user;
   }
 
-  async update(uuid: string, dto: UpdateUserDto) {
+  async update(uuid: UUID, dto: UpdateUserDto) {
     return this.prisma.$transaction(async (tx) => {
       const user = await this.prisma.user.findUnique({
         where: { uuid, deletedAt: null },
@@ -270,7 +250,7 @@ export class UsersService {
     });
   }
 
-  async delete(uuid: string) {
+  async delete(uuid: UUID) {
     try {
       const user = await this.rsprisma.user.softDelete({ uuid });
       return user;
@@ -279,10 +259,62 @@ export class UsersService {
     }
   }
 
-  async listRoles(uuid: UUID) {
+  async listRoles(uuid: UUID): Promise<UserRole[]> {
     const user = await this.get(uuid, true);
-    return this.prisma.userRole.findMany({
+    const roles = await this.prisma.userRole.findMany({
       where: { userId: user?.id },
+      include: { Role: true },
     });
+
+    return roles.map((role) => ({
+      id: role.id,
+      userId: role.userId,
+      roleId: role.roleId,
+      expiry: role.expiry,
+      name: role.Role.name,
+      createdAt: role.createdAt,
+      createdBy: role.createdBy,
+    }));
+  }
+
+  async addRoles(uuid: UUID, roles: string[], prisma?: PrismaClientType) {
+    if (!prisma) prisma = this.prisma;
+    const getValidRoles = await prisma.role.findMany({
+      where: { name: { in: roles, mode: 'insensitive' } },
+    });
+    if (getValidRoles.length < 1) return [];
+    const user = await prisma.user.findUnique({
+      where: { uuid },
+    });
+    if (!user) throw ERRORS.USER_NOT_FOUND;
+
+    await prisma.userRole.createMany({
+      data: getValidRoles.map((role) => ({
+        userId: user.id,
+        roleId: role.id,
+      })),
+      skipDuplicates: true,
+    });
+    return this.listRoles(uuid);
+  }
+
+  async removeRoles(uuid: UUID, roles: string[], prisma?: PrismaClientType) {
+    if (!prisma) prisma = this.prisma;
+    const getValidRoles = await prisma.role.findMany({
+      where: { name: { in: roles, mode: 'insensitive' } },
+    });
+    if (getValidRoles.length < 1) this.listRoles(uuid);
+    const user = await prisma.user.findUnique({
+      where: { uuid },
+    });
+    if (!user) throw ERRORS.USER_NOT_FOUND;
+
+    await prisma.userRole.deleteMany({
+      where: {
+        userId: user.id,
+        roleId: { in: getValidRoles.map((role) => role.id) },
+      },
+    });
+    return this.listRoles(uuid);
   }
 }

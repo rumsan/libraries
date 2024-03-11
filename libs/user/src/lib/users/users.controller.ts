@@ -10,8 +10,8 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
-import { RequestDetails } from '@rumsan/extensions/decorators';
+import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiUuidParam, RequestDetails } from '@rumsan/extensions/decorators';
 import {
   CreateUserDto,
   ListUserDto,
@@ -79,46 +79,65 @@ export class UsersController {
     // );
   }
 
+  @ApiUuidParam()
   @Get(':uuid')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
   get(@Param('uuid') uuid: UUID) {
     return this.userService.get(uuid);
   }
 
+  @ApiUuidParam()
   @Patch(':uuid')
   @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.USER })
   update(@Param('uuid') uuid: UUID, @Body() dto: UpdateUserDto) {
     return this.userService.update(uuid, dto);
   }
 
+  @ApiUuidParam()
   @Delete(':uuid')
   @CheckAbilities({ actions: ACTIONS.DELETE, subject: SUBJECTS.USER })
   delete(@Param('uuid') uuid: UUID) {
     return this.userService.delete(uuid);
   }
 
-  @ApiParam({
-    name: 'identifier',
-    required: true,
-    description:
-      'either an integer for the project id or a string for the project name',
-    schema: { oneOf: [{ type: 'string' }, { type: 'integer' }] },
-  })
+  @ApiUuidParam()
   @Get(':uuid/roles')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
-  getRoles(@Param() uuid: UUID) {
+  getRoles(@Param('uuid') uuid: UUID) {
     return this.userService.listRoles(uuid);
   }
 
+  @ApiUuidParam()
+  @ApiBody({
+    schema: {
+      type: 'array',
+      example: ['admin', 'user'],
+      items: {
+        type: 'string',
+      },
+    },
+  })
   @Post(':uuid/roles')
   @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.USER })
   addRoles(@Param('uuid') uuid: UUID, @Body() roles: string[]) {
     return this.userService.addRoles(uuid, roles);
   }
 
+  @ApiUuidParam()
+  @ApiBody({
+    schema: {
+      type: 'array',
+      example: ['admin', 'user'],
+      items: {
+        type: 'string',
+      },
+    },
+  })
   @Delete(':uuid/roles')
   @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.USER })
-  removeRoles(@Param('uuid') uuid: UUID, @Body() dto: UpdateUserDto) {
-    return this.userService.update(uuid, dto);
+  removeRoles(@Param('uuid') uuid: UUID, @Body() roles: string[]) {
+    return this.userService.removeRoles(uuid, roles);
   }
 }
+
+//cff095ac-3927-4dd6-91a0-72a62aaa05e6

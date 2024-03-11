@@ -16,7 +16,7 @@ import {
   SearchPermission,
 } from './role.types';
 import { Setting, UpdateSetting } from './setting.types';
-import { User } from './user.types';
+import { User, UserRole } from './user.types';
 import { WalletLogin } from './walletLogin.types';
 
 export type AppClient = {
@@ -99,16 +99,16 @@ export type UserClient = {
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<User>>;
   getUser: (
-    uuid: string,
+    uuid: UUID,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<User>>;
   updateUser: (
-    uuid: string,
+    uuid: UUID,
     data: User,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<User>>;
   removeUser: (
-    uuid: string,
+    uuid: UUID,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<User>>;
   listUsers: (
@@ -120,9 +120,18 @@ export type UserClient = {
     data: User,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<User>>;
-  addRolesToUser: (
-    uuid: string,
-    data: User,
+  listRoles: (
+    uuid: UUID,
     config?: AxiosRequestConfig,
-  ) => Promise<FormattedResponse<User>>;
+  ) => Promise<FormattedResponse<UserRole[]>>;
+  addRoles: (
+    uuid: UUID,
+    roles: string[],
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<UserRole[]>>;
+  removeRoles: (
+    uuid: UUID,
+    roles: string[],
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<UserRole[]>>;
 };
