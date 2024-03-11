@@ -1,7 +1,7 @@
-import { Enums } from '../enums';
+import { Service } from '../enums';
 
 export type OTP = {
   address: string;
-  service?: Enums.Service | null;
+  service?: Service | null;
   clientId?: string;
 };

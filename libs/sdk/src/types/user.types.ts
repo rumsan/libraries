@@ -1,10 +1,11 @@
-import { Enums } from '../enums';
+import { UUID } from 'crypto';
+import { Gender } from '../enums';
 
 export type User = {
   id?: number;
-  uuid?: string;
+  uuid?: UUID;
   name: string;
-  gender?: Enums.Gender;
+  gender?: Gender;
   email?: string;
   phone?: string;
   wallet?: string;

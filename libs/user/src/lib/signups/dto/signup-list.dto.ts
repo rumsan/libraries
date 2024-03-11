@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { SignupStatus } from '@prisma/client';
 import { PaginationDto } from '@rumsan/extensions/dtos';
+import { enumToArray } from '@rumsan/sdk/utils';
 import { Transform } from 'class-transformer';
-import { IsEnum, IsIn, IsOptional } from 'class-validator';
+import { IsIn, IsOptional } from 'class-validator';
 
 export class SignupListDto extends PaginationDto {
   @ApiProperty({
@@ -12,7 +13,7 @@ export class SignupListDto extends PaginationDto {
   })
   @IsOptional()
   @Transform(({ value }) => value.toUpperCase())
-  @IsEnum(SignupStatus)
+  @IsIn(enumToArray(SignupStatus))
   status: SignupStatus;
 
   @IsIn(['status', 'createdAt'])

@@ -72,3 +72,5 @@ export class RumsanService {
     return this._client;
   }
 }
+
+export const RumsanClient = new RumsanService();

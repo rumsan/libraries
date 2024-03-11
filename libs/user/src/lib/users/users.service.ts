@@ -34,6 +34,26 @@ export class UsersService {
     this.rsprisma = this.prisma.rsclient;
   }
 
+  async addRoles(uuid: UUID, roles: string[], prisma?: PrismaClientType) {
+    if (!prisma) prisma = this.prisma;
+    const getValidRoles = await prisma.role.findMany({
+      where: { name: { in: roles, mode: 'insensitive' } },
+    });
+    if (getValidRoles.length > 0) return [];
+    const user = await prisma.user.findUnique({
+      where: { uuid },
+    });
+    if (!user) throw ERRORS.USER_NOT_FOUND;
+
+    await prisma.userRole.createMany({
+      data: getValidRoles.map((role) => ({
+        userId: user.id,
+        roleId: role.id,
+      })),
+    });
+    return getValidRoles;
+  }
+
   async create(
     dto: CreateUserDto,
     callback?: (
@@ -47,6 +67,8 @@ export class UsersService {
         const user = await tx.user.create({
           data: { ...dto },
         });
+
+        await this.addRoles(user.uuid as UUID, dto.roles, tx);
 
         await Promise.all([
           this._createAuth(tx, user.id, Service.EMAIL, user.email),

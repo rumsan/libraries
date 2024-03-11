@@ -12,12 +12,11 @@ export const getPagination = (
 ): Pagination => {
   const page = Number(rawPage || 1);
   const perPage = Number(rawPerPage || 10);
-  const skip: number = page > 0 ? perPage * (page - 1) : 0;
+  // const skip: number = page > 0 ? perPage * (page - 1) : 0;
 
   return {
     perPage,
     page,
-    skip,
   };
 };
 

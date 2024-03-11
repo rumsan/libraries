@@ -1,6 +1,6 @@
 import { AxiosRequestConfig } from 'axios';
 import { UUID } from 'crypto';
-import { FormattedResponse } from '../utils';
+import { FormattedResponse } from '../utils/formatResponse.utils';
 import { AuthResponse } from './auth.types';
 import { CreateChallenge } from './challenge.types';
 import { LoginResponse } from './loginResponse.types';
