@@ -1,5 +1,6 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
-import { Pagination, User } from '../types';
+import { UUID } from 'crypto';
+import { Pagination, User, UserRole } from '../types';
 import { UserClient } from '../types/client.types';
 import { formatResponse } from '../utils/formatResponse.utils';
 
@@ -40,24 +41,32 @@ export const getUserClient = (client: AxiosInstance): UserClient => {
       const response = await client.patch('/users/me', data, config);
       return formatResponse<User>(response);
     },
-    addRolesToUser: async (
-      uuid: string,
-      data: User,
+
+    listRoles: async (uuid: UUID, config?: AxiosRequestConfig) => {
+      const response = await client.get(`/users/${uuid}/roles`, config);
+      return formatResponse<UserRole[]>(response);
+    },
+    addRoles: async (
+      uuid: UUID,
+      roles: string[],
       config?: AxiosRequestConfig,
     ) => {
-      const response = await client.post(`/users/${uuid}/roles`, data, config);
-      return formatResponse<User>(response);
+      const response = await client.post(`/users/${uuid}/roles`, roles, config);
+      return formatResponse<UserRole[]>(response);
+    },
+    removeRoles: async (
+      uuid: UUID,
+      roles: string[],
+      config?: AxiosRequestConfig,
+    ) => {
+      const response = await client.delete(`/users/${uuid}/roles`, {
+        ...config,
+        data: roles,
+      });
+      return formatResponse<UserRole[]>(response);
     },
   };
 };
-
-// getRoles: async (uuid: UUID, config?: AxiosRequestConfig) => {
-//   const response = await RumsanService.client.post(
-//     `/users/${uuid}/roles`,
-//     config,
-//   );
-//   return formatResponse<>(response);
-// },
 
 // removeRoles: async (
 //   uuid: UUID,
