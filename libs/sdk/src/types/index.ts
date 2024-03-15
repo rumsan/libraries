@@ -3,6 +3,7 @@ export * from './challenge.types';
 export * from './controllerFunction.types';
 export * from './error.types';
 export * from './loginResponse.types';
+export * from './mailer.types';
 export * from './otp.types';
 export * from './pagination.types';
 export * from './permission.types';
