@@ -17,7 +17,6 @@ import {
 import { APP_SUBJECTS } from '../constants';
 import { ERRORS } from '../constants/errors';
 import { ListenerModule } from '../listener/listener.module';
-import { MailerModule } from '../mailer/mailer.module';
 import { AppUsersModule } from '../user/user.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -41,9 +40,8 @@ import { AppService } from './app.service';
     RSExceptionModule.forRoot({ errorSet: ERRORS }),
     AbilityModule.forRoot({ subjects: APP_SUBJECTS }),
     SettingsModule,
-    MailerModule
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

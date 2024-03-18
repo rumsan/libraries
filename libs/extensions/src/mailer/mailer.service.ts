@@ -2,7 +2,6 @@ import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { defaultsDeep, get } from 'lodash';
 import { SentMessageInfo, Transporter } from 'nodemailer';
 import * as smtpTransport from 'nodemailer/lib/smtp-transport';
-import * as previewEmail from 'preview-email';
 import {
   MAILER_OPTIONS,
   MAILER_TRANSPORT_FACTORY,
@@ -14,6 +13,7 @@ import {
   TemplateAdapter,
 } from '../../../sdk/src/interfaces';
 import { MailerTransportFactory } from './mailer-transport.factory';
+import previewEmail = require('preview-email');
 
 @Injectable()
 export class MailerService {
