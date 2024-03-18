@@ -9,3 +9,5 @@ export * from './communication';
 export * from './role';
 export * from './user';
 export * from './utils';
+
+export * from './providers/rs-query-provider';
