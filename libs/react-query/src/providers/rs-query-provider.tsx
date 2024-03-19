@@ -7,8 +7,9 @@ import React, { FC, createContext, useState } from 'react';
 export type RSQueryContextType = {
   queryClient: QueryClient;
   rumsanService: RumsanService;
+
   setQueryClient: (queryClient: QueryClient) => void;
-  setRumsanService: (rumsanService:any) => void;
+  setRumsanService: (rumsanService: any) => void;
 };
 
 const RSQueryContext = createContext<RSQueryContextType>(
@@ -19,14 +20,11 @@ type RSQueryProviderProps = {
   children: React.ReactNode;
 };
 
-export const RSQueryProvider:FC<RSQueryProviderProps> = ({ children }) => {
+export const RSQueryProvider: FC<RSQueryProviderProps> = ({ children }) => {
   const [queryClient, setQueryClient] =
     useState<RSQueryContextType['queryClient']>();
   const [rumsanService, setRumsanService] =
     useState<RSQueryContextType['rumsanService']>();
-
-  console.log('queryClient', queryClient);
-  console.log('rumsanService', rumsanService);
 
   return (
     <RSQueryContext.Provider
