@@ -12,7 +12,7 @@ export const useUserRoleCreate = () => {
     {
       mutationFn: rumsanService.role.createRole,
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [TAGS.GET_ALzL_ROLES] });
+        queryClient.invalidateQueries({ queryKey: [TAGS.GET_ALL_ROLES] });
       },
       onError,
     },
