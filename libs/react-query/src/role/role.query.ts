@@ -1,77 +1,71 @@
-import {
-  QueryClient,
-  UseQueryResult,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
-
-import { RumsanService } from '@rumsan/sdk';
-import { Role } from '@rumsan/sdk/types';
-import { FormattedResponse } from '@rumsan/sdk/utils/formatResponse.utils';
+import { useMutation } from '@tanstack/react-query';
 import { UUID } from 'crypto';
+import { useRSQuery } from '../providers/rs-query-provider';
+import { useErrorStore } from '../utils';
 import { TAGS } from '../utils/tags';
 
-export class RoleQuery {
-  private reactQueryClient: QueryClient;
-  private client: RumsanService;
+export const useUserRoleCreate = () => {
+  const onError = useErrorStore((state) => state.setError);
+  const { queryClient, rumsanService } = useRSQuery();
 
-  constructor(client: RumsanService, reactQueryClient: QueryClient) {
-    this.reactQueryClient = reactQueryClient;
-    this.client = client;
-  }
-
-  userRoleCreate() {
-    const qc = useQueryClient();
-
-    return useMutation(
-      {
-        mutationFn: this.client.role.createRole,
-        onSuccess: () => {
-          qc.invalidateQueries({ queryKey: [TAGS.GET_ALL_ROLES] });
-        },
+  return useMutation(
+    {
+      mutationFn: rumsanService.role.createRole,
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [TAGS.GET_ALzL_ROLES] });
       },
-      this.reactQueryClient,
-    );
-  }
+      onError,
+    },
+    queryClient,
+  );
+};
 
-  userRoleList(payload: any): UseQueryResult<FormattedResponse<Role[]>, Error> {
-    return useQuery(
-      {
-        queryKey: [TAGS.GET_ALL_ROLES],
-        queryFn: () =>
-          this.client.role.listRole(payload).then(({ response }) => response),
+export const useUserRoleList = (payload: any) => {
+  const onError = useErrorStore((state) => state.setError);
+  const { queryClient, rumsanService } = useRSQuery();
+
+  return useMutation(
+    {
+      mutationFn: () =>
+        rumsanService.role.listRole(payload).then(({ response }) => response),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [TAGS.GET_ALL_ROLES] });
       },
-      this.reactQueryClient,
-    );
-  }
+      onError,
+    },
+    queryClient,
+  );
+};
 
-  userRoleEdit() {
-    const qc = useQueryClient();
+export const useUserRoleEdit = () => {
+  const onError = useErrorStore((state) => state.setError);
+  const { queryClient, rumsanService } = useRSQuery();
 
-    return useMutation(
-      {
-        mutationFn: (payload: { uuid: UUID; data: any }) =>
-          this.client.role.updateRole(payload.uuid, payload.data),
-        onSuccess: () => {
-          qc.invalidateQueries({ queryKey: [TAGS.GET_ALL_ROLES] });
-        },
+  return useMutation(
+    {
+      mutationFn: (payload: { uuid: UUID; data: any }) =>
+        rumsanService.role.updateRole(payload.uuid, payload.data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [TAGS.GET_ALL_ROLES] });
       },
-      this.reactQueryClient,
-    );
-  }
+      onError,
+    },
+    queryClient,
+  );
+};
 
-  userRoleDelete() {
-    const qc = useQueryClient();
+export const useUserRoleDelete = () => {
+  const onError = useErrorStore((state) => state.setError);
+  const { queryClient, rumsanService } = useRSQuery();
 
-    return useMutation(
-      {
-        mutationFn: (uuid: UUID) => this.client.role.deleteRole(uuid),
-        onSuccess: () => {
-          qc.invalidateQueries({ queryKey: [TAGS.GET_ALL_ROLES] });
-        },
+  return useMutation(
+    {
+      mutationFn: (uuid: UUID) => rumsanService.role.deleteRole(uuid),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [TAGS.GET_ALL_ROLES] });
       },
-      this.reactQueryClient,
-    );
-  }
-}
+      onError,
+    },
+    queryClient,
+  );
+};
