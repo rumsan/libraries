@@ -51,9 +51,9 @@ export class UsersService {
         await this.addRoles(user.uuid as UUID, dto.roles, tx);
 
         await Promise.all([
-          this._createAuth(tx, user.id, Service.EMAIL, user.email),
-          this._createAuth(tx, user.id, Service.PHONE, user.phone),
-          this._createAuth(tx, user.id, Service.WALLET, user.wallet),
+          this._createAuth(user.id, Service.EMAIL, user.email, tx),
+          this._createAuth(user.id, Service.PHONE, user.phone, tx),
+          this._createAuth(user.id, Service.WALLET, user.wallet, tx),
         ]);
 
         if (callback) {
@@ -71,13 +71,14 @@ export class UsersService {
   }
 
   private async _createAuth(
-    tx: PrismaClientType,
     userId: number,
     service: Service,
     serviceId: string | null,
+    prisma: PrismaClientType,
   ): Promise<void> {
+    if (!prisma) prisma = this.prisma;
     if (serviceId) {
-      await tx.auth.create({
+      await prisma.auth.create({
         data: { userId, service, serviceId },
       });
     }
@@ -107,11 +108,11 @@ export class UsersService {
     });
   }
 
-  async get(uuid: UUID, throwIfNotFound = false) {
-    const user = await this.prisma.user.findUnique({
+  async get(uuid: UUID, prisma?: PrismaClientType) {
+    if (!prisma) prisma = this.prisma;
+    const user = await prisma.user.findUnique({
       where: { uuid, deletedAt: null },
     });
-    if (!user && throwIfNotFound) throw new Error('User not found.');
     return user;
   }
 
@@ -259,9 +260,11 @@ export class UsersService {
     }
   }
 
-  async listRoles(uuid: UUID): Promise<UserRole[]> {
-    const user = await this.get(uuid, true);
-    const roles = await this.prisma.userRole.findMany({
+  async listRoles(uuid: UUID, prisma?: PrismaClientType): Promise<UserRole[]> {
+    if (!prisma) prisma = this.prisma;
+    const user = await this.get(uuid, prisma);
+    if (!user) throw ERRORS.USER_NOT_FOUND;
+    const roles = await prisma.userRole.findMany({
       where: { userId: user?.id },
       include: { Role: true },
     });
@@ -279,6 +282,7 @@ export class UsersService {
 
   async addRoles(uuid: UUID, roles: string[], prisma?: PrismaClientType) {
     if (!prisma) prisma = this.prisma;
+
     const getValidRoles = await prisma.role.findMany({
       where: { name: { in: roles, mode: 'insensitive' } },
     });
@@ -295,7 +299,7 @@ export class UsersService {
       })),
       skipDuplicates: true,
     });
-    return this.listRoles(uuid);
+    return this.listRoles(uuid, prisma);
   }
 
   async removeRoles(uuid: UUID, roles: string[], prisma?: PrismaClientType) {
