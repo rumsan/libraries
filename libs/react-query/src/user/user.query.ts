@@ -130,4 +130,19 @@ export class UserQuery {
       this.reactQueryClient,
     );
   }
+
+  useUserRolesRemove(payload: { uuid: UUID; roles: string[] }) {
+    return useMutation(
+      {
+        mutationFn: () =>
+          this.client.user.removeRoles(payload.uuid, payload.roles),
+        onSuccess: () => {
+          this.reactQueryClient.invalidateQueries({
+            queryKey: [TAGS.GET_USER_ROLES, payload.uuid],
+          });
+        },
+      },
+      this.reactQueryClient,
+    );
+  }
 }

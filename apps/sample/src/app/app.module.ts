@@ -35,7 +35,7 @@ import { AppService } from './app.service';
       UsersModule,
       AuthsModule,
       RolesModule,
-      SignupModule.forRoot({ autoApprove: false }),
+      SignupModule.forRoot({ autoApprove: true }),
     ]),
     RSExceptionModule.forRoot({ errorSet: ERRORS }),
     AbilityModule.forRoot({ subjects: APP_SUBJECTS }),
