@@ -1,148 +1,136 @@
-import { RumsanService } from '@rumsan/sdk';
-import { User } from '@rumsan/sdk/types';
-import {
-  QueryClient,
-  useMutation,
-  useQuery,
-  UseQueryResult,
-} from '@tanstack/react-query';
+import { Pagination, User } from '@rumsan/sdk/types';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { UUID } from 'crypto';
 import { useEffect } from 'react';
+import { useRSQuery } from '../providers/rs-query-provider';
 import { useErrorStore } from '../utils';
 import { TAGS } from '../utils/tags';
 import { useUserStore } from './user.store';
 
-export class UserQuery {
-  private reactQueryClient: QueryClient;
-  private client: RumsanService;
+export const useUserCreate = () => {
+  const onError = useErrorStore((state) => state.setError);
+  const { queryClient, rumsanService } = useRSQuery();
 
-  constructor(client: RumsanService, reactQueryClient: QueryClient) {
-    this.reactQueryClient = reactQueryClient;
-    this.client = client;
-  }
-
-  useUserCreate() {
-    const setError = useErrorStore((state) => state.setError);
-    return useMutation(
-      {
-        mutationFn: (data: User) => this.client.user.createUser(data),
-        onSuccess: () => {
-          this.reactQueryClient.invalidateQueries({
-            queryKey: [TAGS.GET_ALL_USER],
-          });
-        },
-        onError: (err) => {
-          setError(err as any);
-        },
+  return useMutation(
+    {
+      mutationFn: rumsanService.user.createUser,
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [TAGS.GET_ALL_USER] });
       },
-      this.reactQueryClient,
-    );
-  }
+      onError,
+    },
+    queryClient,
+  );
+};
 
-  useUserList(): UseQueryResult<any, Error> {
-    const userListQueryResult: any = useQuery(
-      {
-        queryKey: [TAGS.GET_ALL_USER],
-        queryFn: () => this.client.user.listUsers(),
+export const useUserList = (payload: Pagination) => {
+  const { queryClient, rumsanService } = useRSQuery();
+  const setUsers = useUserStore((state) => state.setUsers);
+
+  const query = useQuery(
+    {
+      queryKey: [TAGS.GET_ALL_USER],
+      queryFn: () => rumsanService.user.listUsers(payload),
+    },
+    queryClient,
+  );
+
+  useEffect(() => {
+    if (query.data) {
+      setUsers(query.data);
+    }
+  }, [query.data]);
+
+  return query;
+};
+
+export const useUserCurrentUser = (enabled = true) => {
+  const userStore = useUserStore();
+  const { queryClient, rumsanService } = useRSQuery();
+
+  return useQuery(
+    {
+      queryKey: [TAGS.GET_ME],
+      queryFn: rumsanService.user.getMe,
+      enabled,
+      initialData: userStore.user,
+    },
+    queryClient,
+  );
+};
+
+export const useUserGet = (uuid: UUID) => {
+  const { queryClient, rumsanService } = useRSQuery();
+
+  return useQuery(
+    {
+      queryKey: [TAGS.GET_USER],
+      queryFn: () => rumsanService.user.getUser(uuid),
+    },
+    queryClient,
+  );
+};
+
+export const useUserEdit = () => {
+  const onError = useErrorStore((state) => state.setError);
+  const { queryClient, rumsanService } = useRSQuery();
+
+  return useMutation(
+    {
+      mutationFn: ({ uuid, data }: { uuid: UUID; data: User }) =>
+        rumsanService.user.updateUser(uuid, data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [TAGS.GET_ALL_USER] });
       },
-      this.reactQueryClient,
-    );
-    const userStore = useUserStore();
+      onError,
+    },
+    queryClient,
+  );
+};
 
-    useEffect(() => {
-      if (userListQueryResult.data) {
-      }
-    }, [userListQueryResult.data]);
+export const useUserRemove = () => {
+  const onError = useErrorStore((state) => state.setError);
+  const { queryClient, rumsanService } = useRSQuery();
 
-    return userListQueryResult;
-  }
-
-  useUserCurrentUser(enabled: boolean): UseQueryResult<any, Error> {
-    const userStore = useUserStore();
-
-    const userQuery = useQuery(
-      {
-        queryKey: [TAGS.GET_ME],
-        queryFn: this.client.user.getMe,
-        enabled,
-        initialData: userStore.user,
+  return useMutation(
+    {
+      mutationFn: rumsanService.user.removeUser,
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [TAGS.GET_ALL_USER] });
       },
-      this.reactQueryClient,
-    );
+      onError,
+    },
+    queryClient,
+  );
+};
 
-    useEffect(() => {
-      if (userQuery.data) {
-        userStore.setUser(userQuery.data.data);
-      }
-    }, [userQuery.data]);
+export const useUserRoleList = (uuid: UUID) => {
+  const { queryClient, rumsanService } = useRSQuery();
 
-    return userQuery?.data?.data;
-  }
+  return useQuery(
+    {
+      queryKey: [TAGS.GET_USER_ROLES],
+      queryFn: () => rumsanService.user.listRoles(uuid),
+    },
+    queryClient,
+  );
+};
 
-  useUserGet(payload: { uuid: UUID }): UseQueryResult<any, Error> {
-    return useQuery(
-      {
-        queryKey: [TAGS.GET_USER],
-        queryFn: () => this.client.user.getUser(payload.uuid),
+export const useUserRolesRemove = () => {
+  const onError = useErrorStore((state) => state.setError);
+  const { queryClient, rumsanService } = useRSQuery();
+
+  return useMutation(
+    {
+      mutationFn: ({ roles, uuid }: { uuid: UUID; roles: string[] }) =>
+        rumsanService.user.removeRoles(uuid, roles),
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: [TAGS.GET_USER_ROLES],
+        });
       },
-      this.reactQueryClient,
-    );
-  }
-
-  useUserEdit() {
-    return useMutation(
-      {
-        mutationFn: (payload: any) =>
-          this.client.user.updateUser(payload.uuid, payload.data),
-        onSuccess: () => {
-          this.reactQueryClient.invalidateQueries({
-            queryKey: [TAGS.GET_ALL_USER],
-          });
-        },
-      },
-      this.reactQueryClient,
-    );
-  }
-
-  useUserRemove(payload: { uuid: UUID }) {
-    return useMutation(
-      {
-        mutationFn: () => this.client.user.removeUser(payload.uuid),
-        onSuccess: () => {
-          this.reactQueryClient.invalidateQueries({
-            queryKey: [TAGS.GET_ALL_USER],
-          });
-        },
-      },
-      this.reactQueryClient,
-    );
-  }
-
-  useUserRoleList(uuid: UUID): UseQueryResult<any, Error> {
-    return useQuery(
-      {
-        queryKey: [TAGS.GET_USER_ROLES, uuid],
-        queryFn: async () => {
-          const { response } = await this.client.user.listRoles(uuid);
-          return response;
-        },
-      },
-      this.reactQueryClient,
-    );
-  }
-
-  useUserRolesRemove(payload: { uuid: UUID; roles: string[] }) {
-    return useMutation(
-      {
-        mutationFn: () =>
-          this.client.user.removeRoles(payload.uuid, payload.roles),
-        onSuccess: () => {
-          this.reactQueryClient.invalidateQueries({
-            queryKey: [TAGS.GET_USER_ROLES, payload.uuid],
-          });
-        },
-      },
-      this.reactQueryClient,
-    );
-  }
-}
+      onError,
+    },
+    queryClient,
+  );
+};

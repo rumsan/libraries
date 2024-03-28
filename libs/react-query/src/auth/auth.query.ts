@@ -1,48 +1,41 @@
-import { RumsanService } from '@rumsan/sdk';
-import { QueryClient, useMutation } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import { useRSQuery } from '../providers/rs-query-provider';
 import { useErrorStore } from '../utils';
 import { useAuthStore } from './auth.store';
 
-export class AuthQuery {
-  private reactQueryClient: QueryClient;
-  private client: RumsanService;
 
-  constructor(client: RumsanService, reactQueryClient: QueryClient) {
-    this.reactQueryClient = reactQueryClient;
-    this.client = client;
-  }
+export const useRequestOtp = () => {
+  const onError = useErrorStore((state) => state.setError);
+  const setChallenge = useAuthStore((state) => state.setChallenge);
+  const { queryClient, rumsanService } = useRSQuery();
 
-  useRequestOtp() {
-    const onError = useErrorStore((state) => state.setError);
-    const setChallenge = useAuthStore((state) => state.setChallenge);
-
-    return useMutation(
-      {
-        mutationFn: this.client.auth.getOtp,
-        onSuccess: (data) => {
-          setChallenge(data?.data.challenge);
-          return data.data;
-        },
-        onError,
+  return useMutation(
+    {
+      mutationFn: rumsanService.auth.getOtp,
+      onSuccess: (data) => {
+        setChallenge(data?.data.challenge);
+        return data.data;
       },
-      this.reactQueryClient,
-    );
-  }
+      onError,
+    },
+    queryClient
+  );
+};
 
-  useVerifyOtp() {
-    const onError = useErrorStore((state) => state.setError);
-    const setToken = useAuthStore((state) => state.setToken);
+export const useVerifyOtp = () => {
+  const onError = useErrorStore((state) => state.setError);
+  const setToken = useAuthStore((state) => state.setToken);
+  const { queryClient, rumsanService } = useRSQuery()
 
-    return useMutation(
-      {
-        mutationFn: this.client.auth.login,
-        onSuccess: (data) => {
-          setToken(data?.data.accessToken);
-          return data.data;
-        },
-        onError,
+  return useMutation(
+    {
+      mutationFn: rumsanService.auth.login,
+      onSuccess: (data) => {
+        setToken(data?.data.accessToken);
+        return data.data;
       },
-      this.reactQueryClient,
-    );
-  }
+      onError,
+    },
+    queryClient
+  );
 }
