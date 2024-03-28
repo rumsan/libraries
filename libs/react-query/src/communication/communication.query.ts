@@ -1,7 +1,7 @@
 import {
   Audio,
   CommunicationService,
-  //CreateAudience,
+  CreateAudience,
   CreateCampaign,
   EditCampaign,
   ICampaignItemApiResponse,
@@ -128,18 +128,18 @@ export class CommunicationQuery {
     );
   }
 
-  // useCreateAudience() {
-  //   return useMutation(
-  //     {
-  //       mutationFn: (payload: CreateAudience) =>
-  //         this.client.communication.createAudience(payload),
-  //       onSuccess: () => {
-  //         this.reactQueryClient.invalidateQueries({
-  //           queryKey: [TAGS.GET_ALL_AUDIENCE],
-  //         });
-  //       },
-  //     },
-  //     this.reactQueryClient,
-  //   );
-  // }
+  useCreateAudience() {
+    return useMutation(
+      {
+        mutationFn: (payload: CreateAudience) =>
+          this.client.communication.createAudience(payload),
+        onSuccess: () => {
+          this.reactQueryClient.invalidateQueries({
+            queryKey: [TAGS.GET_ALL_AUDIENCE],
+          });
+        },
+      },
+      this.reactQueryClient,
+    );
+  }
 }
