@@ -20,23 +20,6 @@ export const useUserRoleCreate = () => {
   );
 };
 
-export const useUserRoleList = (payload: any) => {
-  const onError = useErrorStore((state) => state.setError);
-  const { queryClient, rumsanService } = useRSQuery();
-
-  return useMutation(
-    {
-      mutationFn: () =>
-        rumsanService.role.listRole(payload).then(({ response }) => response),
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [TAGS.GET_ALL_ROLES] });
-      },
-      onError,
-    },
-    queryClient,
-  );
-};
-
 export const useUserRoleEdit = () => {
   const onError = useErrorStore((state) => state.setError);
   const { queryClient, rumsanService } = useRSQuery();
