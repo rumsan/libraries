@@ -42,8 +42,8 @@ dependencies:
     specifier: ^5.10.2
     version: 5.11.0(prisma@5.11.0)
   '@rumsan/communication':
-    specifier: ^0.0.7
-    version: 0.0.7
+    specifier: ^0.0.8
+    version: 0.0.8
   '@tanstack/react-query':
     specifier: ^5.22.2
     version: 5.28.8(react@18.2.0)
@@ -3348,8 +3348,8 @@ packages:
     dependencies:
       '@prisma/debug': 5.11.0
 
-  /@rumsan/communication@0.0.7:
-    resolution: {integrity: sha512-QS62ou8/nPaoWXb++qMPp6mLdqgiJSlo8/RAkV/FdaKX89e3YWIHdPdoebtTaUYPFPbiA0x35K92nd7C6+V9Ww==, tarball: https://npm.pkg.github.com/download/@rumsan/communication/0.0.7/de8921789c08cc72ef6c106fc96057370ad218aa}
+  /@rumsan/communication@0.0.8:
+    resolution: {integrity: sha512-Ht+vIdZVabacljbIO54QDm2FXYSH5CAKyDQ68/NcvQdqQz39x3wZLt4DWuliTGY6ZpaniddVyql57NTdcmae6Q==, tarball: https://npm.pkg.github.com/download/@rumsan/communication/0.0.8/b11e20c168799814e0d5058533ec77ed35f2d505}
     dependencies:
       axios: 1.6.8
     transitivePeerDependencies:

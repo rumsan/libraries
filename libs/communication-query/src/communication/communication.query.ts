@@ -1,4 +1,4 @@
-import { CreateAudience, CreateCampaign } from '@rumsan/communication';
+import { CreateAudience, CreateCampaign } from '@rumsan/communication/types';
 import { TAGS } from '@rumsan/react-query/utils/tags';
 import { Pagination } from '@rumsan/sdk/types';
 import { useMutation, useQuery } from '@tanstack/react-query';
