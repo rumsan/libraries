@@ -1,12 +1,11 @@
+import { CommunicationService } from '@rumsan/communication';
 import {
   Audio,
-  CommunicationService,
   CreateAudience,
   CreateCampaign,
   EditCampaign,
   ICampaignItemApiResponse,
-  Transport,
-} from '@rumsan/communication';
+} from '@rumsan/communication/types';
 import { Pagination } from '@rumsan/sdk/types';
 import {
   QueryClient,
@@ -14,6 +13,7 @@ import {
   useMutation,
   useQuery,
 } from '@tanstack/react-query';
+import { Transport } from 'viem';
 import { TAGS } from '../utils/tags';
 
 export class CommunicationQuery {
