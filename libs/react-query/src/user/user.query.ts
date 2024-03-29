@@ -29,7 +29,7 @@ export const useUserList = (payload: Pagination) => {
 
   const query = useQuery(
     {
-      queryKey: [TAGS.GET_ALL_USER],
+      queryKey: [TAGS.GET_ALL_USER, payload],
       queryFn: () => rumsanService.user.listUsers(payload),
     },
     queryClient,
