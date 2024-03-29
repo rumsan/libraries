@@ -65,7 +65,10 @@
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.11",
     "@svgr/webpack": "^8.1.0",
     "@swc-node/register": "~1.8.0",
+    "@swc/cli": "~0.1.62",
     "@swc/core": "~1.4.2",
+    "@swc/helpers": "~0.5.2",
+    "@swc/jest": "0.2.20",
     "@types/jest": "^29.5.12",
     "@types/node": "20.11.19",
     "@types/passport-jwt": "^4.0.1",
@@ -91,5 +94,6 @@
   },
   "nx": {
     "includedScripts": []
-  }
+  },
+  "packageManager": "pnpm@8.15.5+sha1.a58c038faac410c947dbdb93eb30994037d0fce2"
 }
