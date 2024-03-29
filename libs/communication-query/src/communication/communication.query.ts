@@ -32,7 +32,7 @@ export const useListCampaign = (data: Pagination) => {
 
   const query = useQuery(
     {
-      queryKey: [TAGS.GET_ALL_CAMPAIGNS],
+      queryKey: [TAGS.GET_ALL_CAMPAIGNS, data],
       queryFn: () => communicationService.communication.listCampaign(data),
     },
     queryClient,
