@@ -1,3 +1,4 @@
+export * from './rpcException.filter';
 export * from './rs-errors';
 export * from './rs-exception.filter';
 export * from './rs-exception.module';

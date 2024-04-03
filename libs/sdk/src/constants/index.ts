@@ -1,5 +1,5 @@
-import { PrismaErrorToHttpCodeMap } from '@rumsan/sdk/types';
 import { StatusCodes } from 'http-status-codes';
+import { PrismaErrorToHttpCodeMap } from '../types';
 export const CONSTANTS = {
   CLIENT_TOKEN_LIFETIME: 600,
 };
