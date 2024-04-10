@@ -1,16 +1,16 @@
 import {
-    Catch,
-    RpcExceptionFilter as RPCExceptionFilter,
+  Catch,
+  RpcExceptionFilter as RPCExceptionFilter,
 } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import {
-    PrismaClientKnownRequestError,
-    PrismaClientUnknownRequestError,
+  PrismaClientKnownRequestError,
+  PrismaClientUnknownRequestError,
 } from '@prisma/client/runtime/library';
 import { Observable, throwError } from 'rxjs';
 import {
-    handleClientKnownRequestError,
-    handleClientUnknownRequestError,
+  handleClientKnownRequestError,
+  handleClientUnknownRequestError,
 } from './prisma.handler';
 
 @Catch(Error)
@@ -30,6 +30,6 @@ export class RpcExceptionFilter implements RPCExceptionFilter<RpcException> {
       return throwError(() => new RpcException(error));
     }
 
-    return throwError(() => new RpcException('Internal Server Error'));
+    return throwError(() => new RpcException(exception.message));
   }
 }
