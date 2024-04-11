@@ -46,9 +46,10 @@ export const useUserList = (payload: Pagination) => {
 
 export const useUserCurrentUser = (enabled = true) => {
   const userStore = useUserStore();
+
   const { queryClient, rumsanService } = useRSQuery();
 
-  return useQuery(
+  const query = useQuery(
     {
       queryKey: [TAGS.GET_ME],
       queryFn: rumsanService.user.getMe,
@@ -57,6 +58,13 @@ export const useUserCurrentUser = (enabled = true) => {
     },
     queryClient,
   );
+  useEffect(() => {
+    if (query.data) {
+      userStore.setCurrentUser(query.data);
+    }
+  }, [query.data]);
+
+  return query;
 };
 
 export const useUserGet = (uuid: UUID) => {
@@ -94,9 +102,11 @@ export const useUserRemove = () => {
 
   return useMutation(
     {
-      mutationFn: rumsanService.user.removeUser,
+      mutationFn: (uuid: UUID) => rumsanService.user.removeUser(uuid),
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [TAGS.GET_ALL_USER] });
+        queryClient.invalidateQueries({
+          queryKey: [TAGS.GET_ALL_USER, TAGS.GET_USER],
+        });
       },
       onError,
     },
