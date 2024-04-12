@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { PaginatorTypes, paginator } from '@nodeteam/nestjs-prisma-pagination';
 import {
   Prisma,
   PrismaClient,
@@ -11,8 +10,8 @@ import {
   DefaultArgs,
   PrismaClientKnownRequestError,
 } from '@prisma/client/runtime/library';
-import { PrismaService } from '@rumsan/prisma';
-import { CreateUserDto } from '../users/dto';
+import { CreateUserDto } from '@rumsan/extensions/dtos';
+import { PaginatorTypes, PrismaService, paginator } from '@rumsan/prisma';
 import { UsersService } from '../users/users.service';
 import { SignupEmailDto, SignupListDto } from './dto';
 import { SignupApproveDto } from './dto/signup-approve.dto';

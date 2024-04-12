@@ -8,12 +8,9 @@ export * from './lib/auths/guard';
 export { ACTIONS, ERRORS, EVENTS, SUBJECTS } from './lib/constants';
 export * from './lib/roles/roles.module';
 export * from './lib/roles/roles.service';
-export * from './lib/rumsan-user.module';
+export * from './lib/rsuser-module';
 export * from './lib/signups/signups.module';
 export * from './lib/signups/signups.service';
 export * from './lib/users/users.module';
 export * from './lib/users/users.service';
 export * from './types';
-
-//TODO add to peer dependencies
-//passport-jwt @nestjs/config @nodeteam/nestjs-prisma-pagination @nestjs/jwt ethers @prisma/client @nestjs/event-emitter

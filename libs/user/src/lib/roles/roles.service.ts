@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { PaginatorTypes, paginator } from '@nodeteam/nestjs-prisma-pagination';
 import { Permission, Prisma, PrismaClient, Role } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 import { StringUtils } from '@rumsan/core';
-import { PrismaService } from '@rumsan/prisma';
+import {
+  CreateRoleDto,
+  EditRoleDto,
+  ListRoleDto,
+} from '@rumsan/extensions/dtos';
+import { PaginatorTypes, PrismaService, paginator } from '@rumsan/prisma';
 import { ERRORS } from '../constants';
 import { RSE } from '../constants/errors';
 import { PermissionSet } from '../interfaces';
@@ -11,7 +15,6 @@ import {
   checkPermissionSet,
   convertToPermissionSet,
 } from '../utils/permission.utils';
-import { CreateRoleDto, EditRoleDto, RoleListDto } from './dto';
 
 const paginate: PaginatorTypes.PaginateFunction = paginator({ perPage: 20 });
 type PrismaClientType = Omit<
@@ -37,6 +40,7 @@ export class RolesService {
 
     return this.prisma.$transaction(async (prisma) => {
       const role = await prisma.role.create({ data });
+      console.log(role);
       await this._addPermissionsToRole(role.id, permissions, prisma);
 
       return role;
@@ -86,7 +90,7 @@ export class RolesService {
     });
   }
 
-  async list(dto: RoleListDto): Promise<PaginatorTypes.PaginatedResult<Role>> {
+  async list(dto: ListRoleDto): Promise<PaginatorTypes.PaginatedResult<Role>> {
     const orderBy: Record<string, 'asc' | 'desc'> = {};
     orderBy[dto.sort] = dto.order;
 
