@@ -144,3 +144,22 @@ export const useUserRolesRemove = () => {
     queryClient,
   );
 };
+
+export const useUserAddRoles = () => {
+  const onError = useErrorStore((state) => state.setError);
+  const { queryClient, rumsanService } = useRSQuery();
+
+  return useMutation(
+    {
+      mutationFn: ({ roles, uuid }: { uuid: UUID; roles: string[] }) =>
+        rumsanService.user.addRoles(uuid, roles),
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: [TAGS.GET_USER_ROLES],
+        });
+      },
+      onError,
+    },
+    queryClient,
+  );
+};
