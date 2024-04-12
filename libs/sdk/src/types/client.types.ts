@@ -56,20 +56,20 @@ export type RoleClient = {
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<Role[]>>;
   updateRole: (
-    uuid: UUID,
+    name: string,
     data: EditRole,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<RoleWithPermission>>;
   deleteRole: (
-    uuid: UUID,
+    name: string,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<Role>>;
   getRole: (
-    uuid: UUID,
+    name: string,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<RoleWithPermission>>;
   listPermissionsByRole: (
-    uuid: UUID,
+    name: string,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<Permission[]>>;
 };

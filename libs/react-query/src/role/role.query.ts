@@ -1,5 +1,5 @@
+import { CreateRole, EditRole } from '@rumsan/sdk/types';
 import { useMutation } from '@tanstack/react-query';
-import { UUID } from 'crypto';
 import { useRSQuery } from '../providers/rs-query-provider';
 import { useErrorStore } from '../utils';
 import { TAGS } from '../utils/tags';
@@ -10,7 +10,7 @@ export const useUserRoleCreate = () => {
 
   return useMutation(
     {
-      mutationFn: rumsanService.role.createRole,
+      mutationFn: (role: CreateRole) => rumsanService.role.createRole(role),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: [TAGS.GET_ALL_ROLES] });
       },
@@ -26,8 +26,8 @@ export const useUserRoleEdit = () => {
 
   return useMutation(
     {
-      mutationFn: (payload: { uuid: UUID; data: any }) =>
-        rumsanService.role.updateRole(payload.uuid, payload.data),
+      mutationFn: (payload: { name: string; data: EditRole }) =>
+        rumsanService.role.updateRole(payload.name, payload.data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: [TAGS.GET_ALL_ROLES] });
       },
@@ -43,7 +43,7 @@ export const useUserRoleDelete = () => {
 
   return useMutation(
     {
-      mutationFn: (uuid: UUID) => rumsanService.role.deleteRole(uuid),
+      mutationFn: (name: string) => rumsanService.role.deleteRole(name),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: [TAGS.GET_ALL_ROLES] });
       },
