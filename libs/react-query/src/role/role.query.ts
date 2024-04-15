@@ -1,5 +1,7 @@
-import { CreateRole, EditRole } from '@rumsan/sdk/types';
-import { useMutation } from '@tanstack/react-query';
+import { CreateRole, EditRole, Pagination } from '@rumsan/sdk/types';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useRoleStore } from '.';
 import { useRSQuery } from '../providers/rs-query-provider';
 import { useErrorStore } from '../utils';
 import { TAGS } from '../utils/tags';
@@ -51,4 +53,25 @@ export const useUserRoleDelete = () => {
     },
     queryClient,
   );
+};
+
+export const useRoleList = (payload: Pagination) => {
+  const { queryClient, rumsanService } = useRSQuery();
+  const setRoles = useRoleStore((state) => state.setRoleList);
+
+  const query = useQuery(
+    {
+      queryKey: [TAGS.GET_ALL_ROLES, payload],
+      queryFn: () => rumsanService.role.listRole(payload),
+    },
+    queryClient,
+  );
+
+  useEffect(() => {
+    if (query.data) {
+      setRoles(query.data);
+    }
+  }, [query.data]);
+
+  return query;
 };
