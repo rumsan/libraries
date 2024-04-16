@@ -7,7 +7,7 @@ import {
   ListUserDto,
   UpdateUserDto,
 } from '@rumsan/extensions/dtos';
-import { PaginatorTypes, PrismaService, paginator } from '@rumsan/prisma';
+import { paginator, PaginatorTypes, PrismaService } from '@rumsan/prisma';
 import { Request, UserRole } from '@rumsan/sdk/types';
 import { UUID } from 'crypto';
 import { ERRORS } from '../constants';
@@ -112,6 +112,13 @@ export class UsersService {
     if (!prisma) prisma = this.prisma;
     const user = await prisma.user.findUnique({
       where: { uuid, deletedAt: null },
+      include: {
+        UserRole: {
+          include: {
+            Role: true,
+          },
+        },
+      },
     });
     return user;
   }
