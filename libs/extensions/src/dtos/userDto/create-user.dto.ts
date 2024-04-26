@@ -50,5 +50,6 @@ export class CreateUserDto implements User {
     example: ['admin', 'user'],
     description: 'Roles of the User',
   })
+  @IsString({ each: true })
   roles: string[];
 }
