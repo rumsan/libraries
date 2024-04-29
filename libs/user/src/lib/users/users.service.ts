@@ -49,7 +49,7 @@ export class UsersService {
           data,
         });
 
-        if (roles.length) {
+        if (roles?.length) {
           await this.addRoles(user.uuid as UUID, roles, tx);
         }
         // await this.addRoles(user.uuid as UUID, dto.roles, tx);

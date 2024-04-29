@@ -51,5 +51,6 @@ export class CreateUserDto implements User {
     description: 'Roles of the User',
   })
   @IsString({ each: true })
+  @IsOptional()
   roles: string[];
 }
