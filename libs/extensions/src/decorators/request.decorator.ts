@@ -12,6 +12,7 @@ export const RequestDetails = createParamDecorator(
       userAgent,
       origin,
     };
+    console.log('details', details);
     return details;
   },
 );

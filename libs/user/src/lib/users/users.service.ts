@@ -7,7 +7,12 @@ import {
   ListUserDto,
   UpdateUserDto,
 } from '@rumsan/extensions/dtos';
-import { PaginatorTypes, PrismaService, paginator } from '@rumsan/prisma';
+import {
+  PaginatorTypes,
+  PrismaAuditUser,
+  PrismaService,
+  paginator,
+} from '@rumsan/prisma';
 import { Request, UserRole } from '@rumsan/sdk/types';
 import { UUID } from 'crypto';
 import { ERRORS, EVENTS } from '../constants';
@@ -31,7 +36,7 @@ export class UsersService {
     protected prisma: PrismaService,
     private eventEmitter: EventEmitter2,
   ) {
-    this.rsprisma = this.prisma.rsclient;
+    this.rsprisma = this.prisma.rsclient.$extends(PrismaAuditUser);
   }
 
   async create(
@@ -94,7 +99,7 @@ export class UsersService {
     const orderBy: Record<string, 'asc' | 'desc'> = {};
     orderBy[dto.sort] = dto.order;
     return paginate(
-      this.prisma.user,
+      this.rsprisma.user,
       {
         where: {
           deletedAt: null,
@@ -277,7 +282,7 @@ export class UsersService {
     if (!prisma) prisma = this.prisma;
     const user = await this.get(uuid, prisma);
     if (!user) throw ERRORS.USER_NOT_FOUND;
-    const roles = await prisma.userRole.findMany({
+    const roles = await this.rsprisma.userRole.findMany({
       where: { userId: user?.id },
       include: { Role: true },
     });

@@ -4,6 +4,9 @@
   "description": "Rumsan libraries and common utilities",
   "author": "rumsan.com",
   "license": "AGPL-3.0",
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "licenses": [
     {
       "type": "AGPL-3.0",
