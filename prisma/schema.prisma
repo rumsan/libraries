@@ -201,3 +201,26 @@ enum SettingDataType {
 }
 
 // ++++++++++++++++++ END: @rumsan/extensions/settings +++++++++++++++++++++++++++
+
+enum AuditOperation {
+  CREATE
+  CREATE_MANY
+  UPDATE
+  UPDATE_MANY
+  DELETE
+  DELETE_MANY
+  UPSERT
+}
+
+model Audit {
+  id        Int            @id @default(autoincrement())
+  tableName String
+  operation AuditOperation
+  fieldName String
+  timestamp DateTime       @default(now())
+  updatedBy String
+  value     String
+  version   Int
+
+  @@map("tbl_audits")
+}

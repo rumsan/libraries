@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Prisma, PrismaClient, Service, User } from '@prisma/client';
+import {
+  AuditOperation,
+  Prisma,
+  PrismaClient,
+  Service,
+  User,
+} from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 import {
   CreateUserDto,
@@ -9,8 +15,8 @@ import {
 } from '@rumsan/extensions/dtos';
 import {
   PaginatorTypes,
-  PrismaAuditUser,
   PrismaService,
+  auditTransact,
   paginator,
 } from '@rumsan/prisma';
 import { Request, UserRole } from '@rumsan/sdk/types';
@@ -36,7 +42,7 @@ export class UsersService {
     protected prisma: PrismaService,
     private eventEmitter: EventEmitter2,
   ) {
-    this.rsprisma = this.prisma.rsclient.$extends(PrismaAuditUser);
+    this.rsprisma = this.prisma.rsclient;
   }
 
   async create(
@@ -47,7 +53,12 @@ export class UsersService {
       user: User | null,
     ) => void,
   ): Promise<User> {
-    return this.prisma.$transaction(async (tx) => {
+    const userAudit = auditTransact(this.prisma as PrismaClient, {
+      operation: AuditOperation.CREATE,
+      tableName: 'User',
+      userId: '1',
+    });
+    return userAudit(this.prisma.$transaction, async (tx) => {
       try {
         const { roles, ...data } = dto;
         const user = await tx.user.create({
@@ -79,6 +90,38 @@ export class UsersService {
         throw error;
       }
     });
+    // return this.prisma.$transaction(async (tx) => {
+    //   try {
+    //     const { roles, ...data } = dto;
+    //     const user = await tx.user.create({
+    //       data,
+    //     });
+
+    //     if (roles?.length) {
+    //       await this.addRoles(user.uuid as UUID, roles, tx);
+    //     }
+    //     // await this.addRoles(user.uuid as UUID, dto.roles, tx);
+
+    //     await Promise.all([
+    //       this._createAuth(user.id, Service.EMAIL, user.email, tx),
+    //       this._createAuth(user.id, Service.PHONE, user.phone, tx),
+    //       this._createAuth(user.id, Service.WALLET, user.wallet, tx),
+    //     ]);
+
+    //     if (callback) {
+    //       await callback(null, tx, user);
+    //     }
+    //     this.eventEmitter.emit(EVENTS.USER_CREATED, {
+    //       address: user.email,
+    //     });
+    //     return user;
+    //   } catch (error: any) {
+    //     if (callback) {
+    //       await callback(error, tx, null);
+    //     }
+    //     throw error;
+    //   }
+    // });
   }
 
   private async _createAuth(
@@ -114,13 +157,20 @@ export class UsersService {
   }
 
   getById(userId: number) {
-    return this.prisma.user.findUnique({
+    const userAudit = auditTransact(this.prisma as PrismaClient, {
+      operation: AuditOperation.CREATE,
+      tableName: 'User',
+      userId: '1',
+    });
+
+    return userAudit(this.prisma.user.findUnique, {
       where: { id: userId, deletedAt: null },
     });
   }
 
   async get(uuid: UUID, prisma?: PrismaClientType) {
     if (!prisma) prisma = this.prisma;
+
     const user = await prisma.user.findUnique({
       where: { uuid, deletedAt: null },
       include: {
