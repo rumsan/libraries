@@ -13,12 +13,7 @@ import {
   ListUserDto,
   UpdateUserDto,
 } from '@rumsan/extensions/dtos';
-import {
-  PaginatorTypes,
-  PrismaService,
-  auditTransact,
-  paginator,
-} from '@rumsan/prisma';
+import { PaginatorTypes, PrismaService, paginator } from '@rumsan/prisma';
 import { Request, UserRole } from '@rumsan/sdk/types';
 import { UUID } from 'crypto';
 import { ERRORS, EVENTS } from '../constants';
@@ -52,13 +47,9 @@ export class UsersService {
       tx: PrismaClientType,
       user: User | null,
     ) => void,
+    userId?: number,
   ): Promise<User> {
-    const userAudit = auditTransact(this.prisma as PrismaClient, {
-      operation: AuditOperation.CREATE,
-      tableName: 'User',
-      userId: '1',
-    });
-    return userAudit(this.prisma.$transaction, async (tx) => {
+    return this.prisma.$transaction(async (tx) => {
       try {
         const { roles, ...data } = dto;
         const user = await tx.user.create({
@@ -82,6 +73,33 @@ export class UsersService {
         this.eventEmitter.emit(EVENTS.USER_CREATED, {
           address: user.email,
         });
+
+        if (userId) {
+          await tx.audit.createMany({
+            data: [
+              {
+                operation: AuditOperation.CREATE,
+                tableName: 'tbl_users',
+                updatedBy: userId,
+                fieldName: Object.keys(data).join(', '),
+                value: JSON.stringify(data),
+                version: 1,
+              },
+              {
+                operation: AuditOperation.CREATE,
+                tableName: 'tbl_auth',
+                updatedBy: userId,
+                version: 1,
+                fieldName: 'service, serviceId',
+                value: JSON.stringify({
+                  service: Service.EMAIL,
+                  serviceId: user.email,
+                }),
+              },
+            ],
+          });
+        }
+
         return user;
       } catch (error: any) {
         if (callback) {
@@ -90,38 +108,6 @@ export class UsersService {
         throw error;
       }
     });
-    // return this.prisma.$transaction(async (tx) => {
-    //   try {
-    //     const { roles, ...data } = dto;
-    //     const user = await tx.user.create({
-    //       data,
-    //     });
-
-    //     if (roles?.length) {
-    //       await this.addRoles(user.uuid as UUID, roles, tx);
-    //     }
-    //     // await this.addRoles(user.uuid as UUID, dto.roles, tx);
-
-    //     await Promise.all([
-    //       this._createAuth(user.id, Service.EMAIL, user.email, tx),
-    //       this._createAuth(user.id, Service.PHONE, user.phone, tx),
-    //       this._createAuth(user.id, Service.WALLET, user.wallet, tx),
-    //     ]);
-
-    //     if (callback) {
-    //       await callback(null, tx, user);
-    //     }
-    //     this.eventEmitter.emit(EVENTS.USER_CREATED, {
-    //       address: user.email,
-    //     });
-    //     return user;
-    //   } catch (error: any) {
-    //     if (callback) {
-    //       await callback(error, tx, null);
-    //     }
-    //     throw error;
-    //   }
-    // });
   }
 
   private async _createAuth(
@@ -157,13 +143,7 @@ export class UsersService {
   }
 
   getById(userId: number) {
-    const userAudit = auditTransact(this.prisma as PrismaClient, {
-      operation: AuditOperation.CREATE,
-      tableName: 'User',
-      userId: '1',
-    });
-
-    return userAudit(this.prisma.user.findUnique, {
+    return this.prisma.user.findUnique({
       where: { id: userId, deletedAt: null },
     });
   }
@@ -202,6 +182,30 @@ export class UsersService {
       await this._updateAuth(tx, user, Service.EMAIL, dto.email);
       await this._updateAuth(tx, user, Service.PHONE, dto.phone);
       await this._updateAuth(tx, user, Service.WALLET, dto.wallet);
+
+      // await tx.audit.createMany({
+      //   data: [
+      //     {
+      //       operation: AuditOperation.UPDATE,
+      //       tableName: 'tbl_users',
+      //       updatedBy: '1',
+      //       fieldName: 'email, phone, wallet',
+      //       value: JSON.stringify(dto),
+      //       version: 2,
+      //     },
+      //     {
+      //       operation: AuditOperation.UPDATE,
+      //       tableName: 'tbl_auth',
+      //       updatedBy: '1',
+      //       version: 2,
+      //       fieldName: 'service, serviceId',
+      //       value: JSON.stringify({
+      //         service: Service.EMAIL,
+      //         serviceId: dto.email,
+      //       }),
+      //     },
+      //   ],
+      // });
 
       return updatedUser;
     });

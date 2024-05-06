@@ -8,6 +8,7 @@ import { RSExceptionModule } from '@rumsan/extensions/exceptions';
 import { SettingsModule } from '@rumsan/extensions/settings';
 import {
   AbilityModule,
+  AuditModule,
   AuthsModule,
   RSUserModule,
   RolesModule,
@@ -40,6 +41,7 @@ import { AppService } from './app.service';
     RSExceptionModule.forRoot({ errorSet: ERRORS }),
     AbilityModule.forRoot({ subjects: APP_SUBJECTS }),
     SettingsModule,
+    AuditModule,
   ],
   controllers: [AppController],
   providers: [AppService],
