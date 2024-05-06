@@ -119,7 +119,7 @@ export const useUserRoleList = (uuid: UUID) => {
 
   return useQuery(
     {
-      queryKey: [TAGS.GET_USER_ROLES],
+      queryKey: [TAGS.GET_USER_ROLES, uuid],
       queryFn: () => rumsanService.user.listRoles(uuid),
     },
     queryClient,
