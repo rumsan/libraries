@@ -9,6 +9,7 @@ type AuthState = {
   challenge: string;
   service: string;
   address: string;
+  roles: Record<string, any> | null;
 };
 
 type AuthStateAction = {
@@ -32,6 +33,7 @@ const initialStore = {
   challenge: '',
   service: 'EMAIL',
   address: '',
+  roles: null,
 };
 
 export const useAuthStore = zustandStore<AuthStore>(
