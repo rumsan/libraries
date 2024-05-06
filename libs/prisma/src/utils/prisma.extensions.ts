@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 
-const _defineExtension = (params) => {
+const _defineExtension = (params: any) => {
   return Prisma.defineExtension((prisma) =>
     prisma.$extends(PrismaLog()).$extends(params),
   );

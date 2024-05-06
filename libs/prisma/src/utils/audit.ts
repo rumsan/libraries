@@ -16,6 +16,7 @@ export function auditTransact(
       const operationResult = await operation(args);
 
       // Save audit information
+      // @ts-ignore
       const audit: Audit = {
         tableName: options.tableName,
         operation: options.operation,
@@ -24,7 +25,6 @@ export function auditTransact(
         updatedBy: options.userId,
         value: JSON.stringify(operationResult),
         version: 1,
-        id: 0,
       };
 
       await prisma.audit.create({ data: audit });
@@ -36,7 +36,7 @@ export function auditTransact(
   };
 }
 
-export type AuditTransactFunction<T> = (
+export type AuditTransactFunctionType<T> = (
   prisma: PrismaClient,
   userId: number,
   data: T,
