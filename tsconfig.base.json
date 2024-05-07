@@ -16,6 +16,7 @@
     "strictPropertyInitialization": false,
     "baseUrl": ".",
     "paths": {
+      "@rumsan/audits": ["libs/audits/src/index.ts"],
       "@rumsan/communication-query": ["libs/communication-query/src/index.ts"],
       "@rumsan/core": ["libs/core/src/index.ts"],
       "@rumsan/core/*": ["libs/core/src/lib/*"],

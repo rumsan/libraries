@@ -1,0 +1,31 @@
+{
+  "name": "audits",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/audits/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/audits",
+        "tsConfig": "libs/audits/tsconfig.lib.json",
+        "packageJson": "libs/audits/package.json",
+        "main": "libs/audits/src/index.ts",
+        "assets": ["libs/audits/*.md"]
+      }
+    },
+    "publish": {
+      "command": "node tools/scripts/publish.mjs audits {args.ver} {args.tag}",
+      "dependsOn": ["build"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/audits/jest.config.ts"
+      }
+    }
+  },
+  "tags": []
+}
