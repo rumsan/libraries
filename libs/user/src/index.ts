@@ -14,7 +14,3 @@ export * from './lib/signups/signups.service';
 export * from './lib/users/users.module';
 export * from './lib/users/users.service';
 export * from './types';
-
-export * from './lib/audit/audit.controller';
-export * from './lib/audit/audit.module';
-export * from './lib/audit/audit.service';
