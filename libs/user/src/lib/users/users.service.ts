@@ -84,6 +84,7 @@ export class UsersService {
                 fieldName: Object.keys(data).join(', '),
                 value: JSON.stringify(data),
                 version: 1,
+                rowId: user.id,
               },
               {
                 operation: AuditOperation.CREATE,
@@ -91,6 +92,8 @@ export class UsersService {
                 updatedBy: userId,
                 version: 1,
                 fieldName: 'service, serviceId',
+                // TODO: check it
+                rowId: user.id,
                 value: JSON.stringify({
                   service: Service.EMAIL,
                   serviceId: user.email,

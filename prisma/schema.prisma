@@ -222,6 +222,7 @@ model Audit {
   updatedBy Int
   value     String
   version   Int
+  rowId     Int
 
   user User @relation(fields: [updatedBy], references: [id])
 
