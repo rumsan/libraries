@@ -3,3 +3,4 @@ export * from './audits.module';
 export * from './audits.service';
 
 export * from './utils/audit-transaction';
+export * from './utils/audit.user';
