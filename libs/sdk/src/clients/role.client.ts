@@ -1,5 +1,4 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
-import { UUID } from 'crypto';
 import {
   CreateRole,
   EditRole,
@@ -37,23 +36,26 @@ export const getRoleClient = (client: AxiosInstance): RoleClient => {
       return formatResponse<Role[]>(response);
     },
     updateRole: async (
-      uuid: UUID,
+      name: string,
       data: EditRole,
       config?: AxiosRequestConfig,
     ) => {
-      const response = await client.patch(`/roles/${uuid}`, data, config);
+      const response = await client.patch(`/roles/${name}`, data, config);
       return formatResponse<RoleWithPermission>(response);
     },
-    deleteRole: async (uuid: UUID, config?: AxiosRequestConfig) => {
-      const response = await client.delete(`/roles/${uuid}`, config);
+    deleteRole: async (name: string, config?: AxiosRequestConfig) => {
+      const response = await client.delete(`/roles/${name}`, config);
       return formatResponse<Role>(response);
     },
-    getRole: async (uuid: UUID, config?: AxiosRequestConfig) => {
-      const response = await client.get(`/roles/${uuid}`, config);
+    getRole: async (name: string, config?: AxiosRequestConfig) => {
+      const response = await client.get(`/roles/${name}`, config);
       return formatResponse<RoleWithPermission>(response);
     },
-    listPermissionsByRole: async (uuid: UUID, config?: AxiosRequestConfig) => {
-      const response = await client.get(`/roles/${uuid}/permissions`, config);
+    listPermissionsByRole: async (
+      name: string,
+      config?: AxiosRequestConfig,
+    ) => {
+      const response = await client.get(`/roles/${name}/permissions`, config);
       return formatResponse<Permission[]>(response);
     },
   };

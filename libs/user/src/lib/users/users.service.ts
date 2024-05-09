@@ -7,10 +7,10 @@ import {
   ListUserDto,
   UpdateUserDto,
 } from '@rumsan/extensions/dtos';
-import { PaginatorTypes, PrismaService, paginator } from '@rumsan/prisma';
+import { paginator, PaginatorTypes, PrismaService } from '@rumsan/prisma';
 import { Request, UserRole } from '@rumsan/sdk/types';
 import { UUID } from 'crypto';
-import { ERRORS } from '../constants';
+import { ERRORS, EVENTS } from '../constants';
 import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
 import { getSecret } from '../utils/config.utils';
 import {
@@ -59,7 +59,9 @@ export class UsersService {
         if (callback) {
           await callback(null, tx, user);
         }
-
+        this.eventEmitter.emit(EVENTS.USER_CREATED, {
+          address: user.email,
+        });
         return user;
       } catch (error: any) {
         if (callback) {
@@ -112,6 +114,13 @@ export class UsersService {
     if (!prisma) prisma = this.prisma;
     const user = await prisma.user.findUnique({
       where: { uuid, deletedAt: null },
+      include: {
+        UserRole: {
+          include: {
+            Role: true,
+          },
+        },
+      },
     });
     return user;
   }
