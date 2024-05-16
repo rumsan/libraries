@@ -4,6 +4,7 @@ export {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+export * from './audit';
 export * from './auth';
 export * from './communication';
 export * from './role';

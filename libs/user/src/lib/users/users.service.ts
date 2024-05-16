@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Prisma, PrismaClient, Service, User } from '@prisma/client';
+import {
+  AuditOperation,
+  Prisma,
+  PrismaClient,
+  Service,
+  User,
+} from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 import {
   CreateUserDto,
@@ -41,6 +47,7 @@ export class UsersService {
       tx: PrismaClientType,
       user: User | null,
     ) => void,
+    userId?: number,
   ): Promise<User> {
     return this.prisma.$transaction(async (tx) => {
       try {
@@ -66,6 +73,36 @@ export class UsersService {
         this.eventEmitter.emit(EVENTS.USER_CREATED, {
           address: user.email,
         });
+
+        if (userId) {
+          await tx.audit.createMany({
+            data: [
+              {
+                operation: AuditOperation.CREATE,
+                tableName: 'tbl_users',
+                updatedBy: userId,
+                fieldName: Object.keys(data).join(', '),
+                value: JSON.stringify(data),
+                version: 1,
+                rowId: user.id,
+              },
+              {
+                operation: AuditOperation.CREATE,
+                tableName: 'tbl_auth',
+                updatedBy: userId,
+                version: 1,
+                fieldName: 'service, serviceId',
+                // TODO: check it
+                rowId: user.id,
+                value: JSON.stringify({
+                  service: Service.EMAIL,
+                  serviceId: user.email,
+                }),
+              },
+            ],
+          });
+        }
+
         return user;
       } catch (error: any) {
         if (callback) {
@@ -94,7 +131,7 @@ export class UsersService {
     const orderBy: Record<string, 'asc' | 'desc'> = {};
     orderBy[dto.sort] = dto.order;
     return paginate(
-      this.prisma.user,
+      this.rsprisma.user,
       {
         where: {
           deletedAt: null,
@@ -116,6 +153,7 @@ export class UsersService {
 
   async get(uuid: UUID, prisma?: PrismaClientType) {
     if (!prisma) prisma = this.prisma;
+
     const user = await prisma.user.findUnique({
       where: { uuid, deletedAt: null },
       include: {
@@ -147,6 +185,30 @@ export class UsersService {
       await this._updateAuth(tx, user, Service.EMAIL, dto.email);
       await this._updateAuth(tx, user, Service.PHONE, dto.phone);
       await this._updateAuth(tx, user, Service.WALLET, dto.wallet);
+
+      // await tx.audit.createMany({
+      //   data: [
+      //     {
+      //       operation: AuditOperation.UPDATE,
+      //       tableName: 'tbl_users',
+      //       updatedBy: '1',
+      //       fieldName: 'email, phone, wallet',
+      //       value: JSON.stringify(dto),
+      //       version: 2,
+      //     },
+      //     {
+      //       operation: AuditOperation.UPDATE,
+      //       tableName: 'tbl_auth',
+      //       updatedBy: '1',
+      //       version: 2,
+      //       fieldName: 'service, serviceId',
+      //       value: JSON.stringify({
+      //         service: Service.EMAIL,
+      //         serviceId: dto.email,
+      //       }),
+      //     },
+      //   ],
+      // });
 
       return updatedUser;
     });
@@ -277,7 +339,7 @@ export class UsersService {
     if (!prisma) prisma = this.prisma;
     const user = await this.get(uuid, prisma);
     if (!user) throw ERRORS.USER_NOT_FOUND;
-    const roles = await prisma.userRole.findMany({
+    const roles = await this.rsprisma.userRole.findMany({
       where: { userId: user?.id },
       include: { Role: true },
     });

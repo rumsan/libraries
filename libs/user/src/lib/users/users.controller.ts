@@ -43,8 +43,8 @@ export class UsersController {
 
   @Post('')
   @CheckAbilities({ actions: ACTIONS.CREATE, subject: SUBJECTS.USER })
-  create(@Body() dto: CreateUserDto) {
-    return this.userService.create(dto);
+  create(@Body() dto: CreateUserDto, @Req() request: any) {
+    return this.userService.create(dto, undefined, request.user.id);
   }
 
   @Get('me')

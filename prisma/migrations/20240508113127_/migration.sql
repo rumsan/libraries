@@ -10,6 +10,9 @@ CREATE TYPE "SignupStatus" AS ENUM ('PENDING', 'APPROVED', 'FAILED', 'REJECTED')
 -- CreateEnum
 CREATE TYPE "SettingDataType" AS ENUM ('STRING', 'NUMBER', 'BOOLEAN', 'OBJECT');
 
+-- CreateEnum
+CREATE TYPE "AuditOperation" AS ENUM ('CREATE', 'CREATE_MANY', 'UPDATE', 'UPDATE_MANY', 'DELETE', 'DELETE_MANY', 'UPSERT');
+
 -- CreateTable
 CREATE TABLE "tbl_users" (
     "id" SERIAL NOT NULL,
@@ -127,6 +130,19 @@ CREATE TABLE "tbl_settings" (
     CONSTRAINT "tbl_settings_pkey" PRIMARY KEY ("name")
 );
 
+-- CreateTable
+CREATE TABLE "tbl_audits" (
+    "id" SERIAL NOT NULL,
+    "tableName" TEXT NOT NULL,
+    "operation" "AuditOperation" NOT NULL,
+    "fieldName" TEXT NOT NULL,
+    "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedBy" INTEGER NOT NULL,
+    "value" TEXT NOT NULL,
+    "version" INTEGER NOT NULL,
+    "rowId" INTEGER NOT NULL
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "tbl_users_uuid_key" ON "tbl_users"("uuid");
 
@@ -154,6 +170,9 @@ CREATE UNIQUE INDEX "tbl_users_signups_uuid_key" ON "tbl_users_signups"("uuid");
 -- CreateIndex
 CREATE UNIQUE INDEX "tbl_settings_name_key" ON "tbl_settings"("name");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "tbl_audits_id_key" ON "tbl_audits"("id");
+
 -- AddForeignKey
 ALTER TABLE "tbl_auth_permissions" ADD CONSTRAINT "tbl_auth_permissions_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "tbl_auth_roles"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -171,3 +190,6 @@ ALTER TABLE "tbl_auth_sessions" ADD CONSTRAINT "tbl_auth_sessions_authId_fkey" F
 
 -- AddForeignKey
 ALTER TABLE "tbl_users_signups" ADD CONSTRAINT "tbl_users_signups_approvedBy_fkey" FOREIGN KEY ("approvedBy") REFERENCES "tbl_users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "tbl_audits" ADD CONSTRAINT "tbl_audits_updatedBy_fkey" FOREIGN KEY ("updatedBy") REFERENCES "tbl_users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

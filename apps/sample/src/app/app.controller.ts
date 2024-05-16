@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Patch, Post } from '@nestjs/common';
 
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { APP } from '../constants';
@@ -15,5 +15,20 @@ export class AppController {
   @Get()
   getData() {
     return this.appService.getData();
+  }
+
+  // This is just a sample
+  @Post('audit')
+  postAuditSample() // @Request() req: Request
+  {
+    return this.appService.postAuditSample(
+      1,
+      //  req.user.id
+    );
+  }
+
+  @Patch('audit')
+  patchAuditSample() {
+    return this.appService.patchAuditSample();
   }
 }
