@@ -70,6 +70,7 @@ export const useAuthStore = zustandStore<AuthStore>(
     },
     clearAuth: () => {
       set(initialStore);
+      if (window && window.localStorage) window.localStorage.clear();
     },
   }),
   {
