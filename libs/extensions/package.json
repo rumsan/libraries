@@ -1,6 +1,6 @@
 {
   "name": "@rumsan/extensions",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "type": "commonjs",
   "typings": "./index.d.ts"
 }
