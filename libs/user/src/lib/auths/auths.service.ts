@@ -52,7 +52,7 @@ export class AuthsService {
         },
       },
     });
-    if (!auth) throw new ForbiddenException('Invalid credentials!');
+    if (!auth) throw new ForbiddenException(`Invalid ${dto.service}!`);
     const otp = Math.floor(100000 + Math.random() * 900000);
     await this.prisma.auth.update({
       where: {
