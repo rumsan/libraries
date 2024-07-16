@@ -1,13 +1,16 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
-import { Setting, UpdateSetting } from '../types';
+import { Pagination, Setting, SettingList } from '../types';
 import { SettingClient } from '../types/client.types';
 import { formatResponse } from '../utils/formatResponse.utils';
 
 export const getSettingClient = (client: AxiosInstance): SettingClient => {
   return {
-    listPublic: async (config?: AxiosRequestConfig) => {
-      const response = await client.get('/settings/public', config);
-      return formatResponse<unknown>(response);
+    listPublic: async (data?: Pagination, config?: AxiosRequestConfig) => {
+      const response = await client.get('/settings/public', {
+        params: data,
+        ...config,
+      });
+      return formatResponse<SettingList>(response);
     },
     create: async (data: Setting, config?: AxiosRequestConfig) => {
       const response = await client.post('/settings', data, config);
@@ -17,13 +20,14 @@ export const getSettingClient = (client: AxiosInstance): SettingClient => {
       const response = await client.get(`/settings/public/${name}`, config);
       return formatResponse<Setting>(response);
     },
-    update: async (
-      name: string,
-      data: Setting,
-      config?: AxiosRequestConfig,
-    ) => {
-      const response = await client.patch(`/settings/${name}`, data, config);
-      return formatResponse<UpdateSetting>(response);
+
+    update: async (data: Setting, config?: AxiosRequestConfig) => {
+      const response = await client.patch(
+        `/settings/${data?.name}`,
+        data,
+        config,
+      );
+      return formatResponse<Setting>(response);
     },
   };
 };
