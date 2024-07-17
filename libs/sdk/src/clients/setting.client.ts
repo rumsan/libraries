@@ -5,8 +5,8 @@ import { formatResponse } from '../utils/formatResponse.utils';
 
 export const getSettingClient = (client: AxiosInstance): SettingClient => {
   return {
-    listPublic: async (data?: Pagination, config?: AxiosRequestConfig) => {
-      const response = await client.get('/settings/public', {
+    listSettings: async (data?: Pagination, config?: AxiosRequestConfig) => {
+      const response = await client.get('/settings', {
         params: data,
         ...config,
       });
@@ -16,8 +16,8 @@ export const getSettingClient = (client: AxiosInstance): SettingClient => {
       const response = await client.post('/settings', data, config);
       return formatResponse<Setting>(response);
     },
-    getPublic: async (name: string, config?: AxiosRequestConfig) => {
-      const response = await client.get(`/settings/public/${name}`, config);
+    getByName: async (name: string, config?: AxiosRequestConfig) => {
+      const response = await client.get(`/settings/${name}`, config);
       return formatResponse<Setting>(response);
     },
 

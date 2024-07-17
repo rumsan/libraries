@@ -16,9 +16,10 @@ import { SettingsService } from './settings.service';
 export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}
 
-  @Get('public')
-  listPublic(@Query() query: ListSettingDto) {
-    return this.settingsService.listPublic(query);
+  @Get('')
+  list(@Query() query: ListSettingDto) {
+    console.log(query);
+    return this.settingsService.list(query);
   }
 
   @Post('')
@@ -27,8 +28,8 @@ export class SettingsController {
   }
 
   @Get(':name')
-  getPublic(@Param('name') name: string) {
-    return this.settingsService.getPublic(name);
+  get(@Param('name') name: string) {
+    return this.settingsService.getByName(name);
   }
 
   @Patch(':name')

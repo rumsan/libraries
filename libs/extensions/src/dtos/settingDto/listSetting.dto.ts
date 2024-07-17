@@ -24,4 +24,14 @@ export class ListSettingDto {
   @IsString()
   @IsOptional()
   name?: string;
+
+  @ApiPropertyOptional({ example: 'false' })
+  @IsString()
+  @IsOptional()
+  privateFlag?: string;
+
+  @ApiPropertyOptional({ example: 'false' })
+  @IsString()
+  @IsOptional()
+  readOnlyFlag?: string;
 }

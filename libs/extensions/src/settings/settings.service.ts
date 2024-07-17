@@ -1,9 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Prisma, PrismaClient, Setting, SettingDataType } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
-import { PrismaService } from '@rumsan/prisma';
+import { PaginatorTypes, PrismaService } from '@rumsan/prisma';
+import { paginator } from '@rumsan/prisma/pagination/paginator';
 import { CreateSettingDto, ListSettingDto, UpdateSettngsDto } from '../dtos';
-import { paginate } from '../utilities';
+
+const paginate: PaginatorTypes.PaginateFunction = paginator({ perPage: 20 });
 
 function capitalizeObjectKeys(obj: any): any {
   if (typeof obj !== 'object' || obj === null) {
@@ -82,14 +84,28 @@ export class SettingsService {
     return publicSetting;
   }
 
-  async listPublic(query: ListSettingDto) {
-    const baseCondition = { isPrivate: false };
+  async list(query: ListSettingDto) {
+    console.log(query);
     const AND_CONDITIONS = [];
     let conditions = {};
 
     if (query.name) {
       AND_CONDITIONS.push({
         name: { contains: query.name, mode: 'insensitive' },
+      });
+      conditions = { AND: AND_CONDITIONS };
+    }
+
+    if (query.privateFlag) {
+      AND_CONDITIONS.push({
+        isPrivate: query.privateFlag === 'true' ? true : false,
+      });
+      conditions = { AND: AND_CONDITIONS };
+    }
+
+    if (query?.readOnlyFlag) {
+      AND_CONDITIONS.push({
+        isReadOnly: query?.readOnlyFlag === 'true' ? true : false,
       });
       conditions = { AND: AND_CONDITIONS };
     }
@@ -103,10 +119,10 @@ export class SettingsService {
       value: true,
     };
 
-    return paginate(
+    const rData = await paginate(
       this.prisma.setting,
       {
-        where: { ...baseCondition, ...conditions },
+        where: { ...conditions },
         select,
       },
       {
@@ -114,6 +130,15 @@ export class SettingsService {
         perPage: query.perPage,
       },
     );
+
+    rData.data = rData.data?.map((item: any) => ({
+      ...item,
+      value: item.isPrivate ? 'PROTECTED' : item.value,
+      requiredFields: item.isPrivate ? ['PROTECTED'] : item.requiredFields,
+    }));
+
+    // console.log(rData);
+    return rData;
   }
 
   async load() {
@@ -151,7 +176,6 @@ export class SettingsService {
     const matchRequiredFieldsWithKey = requiredFields.every((field) =>
       Object.keys(value).includes(field),
     );
-    console.log(matchRequiredFieldsWithKey);
     if (!matchKeysWithRequiredFields || !matchRequiredFieldsWithKey)
       throw new Error('Key did not match with the Required Fields');
 
@@ -177,7 +201,7 @@ export class SettingsService {
   //   Checks if value is an object and not an array or null.
   //   Validates that the value object has all the properties specified in requiredFields in a case-insensitive manner.
   //   Capitalizes keys of the value object without changing the values.
-  //   If value is not an object, it sets requiredFields to an empty array [].
+  //   If value is not an o,bject, it sets requiredFields to an empty array [].
 
   //DO NOT EXPOSE THIS USING CONTROLLER
   async create(
@@ -296,5 +320,28 @@ export class SettingsService {
   //DO NOT EXPOSE THIS USING CONTROLLER
   async listAll() {
     return this.prisma.setting.findMany();
+  }
+
+  async getByName(name: string) {
+    const uppercaseName = name.toUpperCase();
+
+    const rData = await this.prisma.setting.findUnique({
+      where: { name: uppercaseName },
+      select: {
+        name: true,
+        dataType: true,
+        isPrivate: true,
+        isReadOnly: true,
+        requiredFields: true,
+        value: true,
+      },
+    });
+
+    if (rData?.isPrivate) {
+      rData.value = 'PROTECTED';
+      rData.requiredFields = ['PROTECTED'];
+    }
+
+    return rData;
   }
 }

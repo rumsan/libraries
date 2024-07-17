@@ -75,7 +75,7 @@ export type RoleClient = {
 };
 
 export type SettingClient = {
-  listPublic: (
+  listSettings: (
     data?: Pagination,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<SettingList>>;
@@ -83,7 +83,7 @@ export type SettingClient = {
     data: Setting,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<Setting>>;
-  getPublic: (
+  getByName: (
     name: string,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<Setting>>;
