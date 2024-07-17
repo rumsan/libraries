@@ -83,16 +83,6 @@ export class SettingsService {
   }
 
   async listPublic(query: ListSettingDto) {
-    // const publicSettings = await this.prisma.setting.findMany({
-    //   where: { isPrivate: false },
-    // });
-    // const result: any = {};
-    // for (const setting of publicSettings) {
-    //   result[setting.name] = setting.value;
-    // }
-    // console.log({ result });
-    // return result;
-
     const baseCondition = { isPrivate: false };
     const AND_CONDITIONS = [];
     let conditions = {};
@@ -137,79 +127,6 @@ export class SettingsService {
   }
 
   async update(name: string, dto: UpdateSettngsDto) {
-    // // Ensure that the name is stored in uppercase
-    // const uppercaseName = name.toUpperCase();
-
-    // // Check if the setting exists in the database
-    // const existingSetting = await this.prisma.setting.findUnique({
-    //   where: { name: uppercaseName },
-    // });
-
-    // console.log({ existingSetting });
-
-    // if (!existingSetting) {
-    //   throw new Error(
-    //     `Setting '${uppercaseName}' not found. Valid settings: ${this.listValidSettingsName()}`,
-    //   );
-    // }
-
-    // // Check if the setting is read-only
-    // if (existingSetting.isReadOnly) {
-    //   throw new Error(
-    //     `Setting '${uppercaseName}' is read-only and cannot be updated`,
-    //   );
-    // }
-
-    // const dataType = getDataType(value);
-    // if (dataType !== existingSetting.dataType)
-    //   throw new Error(
-    //     `Invalid data type for 'value'. Valid data type is: ${existingSetting.dataType}`,
-    //   );
-
-    // // Check if 'value' is an object and not an array or null
-    // if (existingSetting.dataType === SettingDataType.OBJECT) {
-    //   // Use type assertion here to tell TypeScript that value is an object
-    //   const rawValueObject = value as Record<string, any>;
-    //   const requiredFields = existingSetting.requiredFields.map((field) =>
-    //     field.toUpperCase(),
-    //   );
-    //   // Capitalize keys of the 'value' object without changing the values
-    //   value = capitalizeObjectKeys(rawValueObject);
-    //   value = Object.keys(value)
-    //     .filter((key) => requiredFields.includes(key))
-    //     .reduce((obj: any, key) => {
-    //       obj[key] = value[key];
-    //       return obj;
-    //     }, {});
-
-    //   // Check if 'value' object has all the properties specified in 'requiredFields' (case-insensitive)
-    //   if (requiredFields && requiredFields.length > 0) {
-    //     const missingFields = requiredFields.filter((field) => {
-    //       const matchingKey = Object.keys(value).find(
-    //         (key) => key.toUpperCase() === field,
-    //       );
-    //       return !matchingKey;
-    //     });
-
-    //     if (missingFields.length > 0) {
-    //       throw new Error(
-    //         `Required fields missing in 'value' object: ${missingFields.join(
-    //           ', ',
-    //         )}`,
-    //       ); // 400 Bad Request
-    //     }
-    //   }
-    // }
-
-    // // Update the value of the existing setting
-    // await this.prisma.setting.update({
-    //   where: { name: uppercaseName },
-    //   data: { value },
-    // });
-
-    // this.load();
-    // return this.listPublic();
-
     const { value, requiredFields } = dto;
     const settingsName = await this.prisma.setting.findUnique({
       where: {
