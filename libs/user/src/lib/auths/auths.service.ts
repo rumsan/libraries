@@ -109,6 +109,7 @@ export class AuthsService {
     const user = await this.getUserById(auth.userId);
     if (!user) throw new ForbiddenException('User does not exist!');
     const authority = await this.getPermissionsByUserId(auth.userId);
+    await this.updateLastLogin(auth.id);
 
     // Add authLog
     this.prisma.authSession
@@ -150,6 +151,7 @@ export class AuthsService {
     const user = await this.getUserById(auth.userId);
     if (!user) throw new ForbiddenException('User does not exist!');
     const authority = await this.getPermissionsByUserId(auth.userId);
+    await this.updateLastLogin(auth.id);
 
     // Add authLog
     this.prisma.authSession.create({
@@ -213,6 +215,17 @@ export class AuthsService {
           serviceId,
           service,
         },
+      },
+    });
+  }
+
+  updateLastLogin(id: number) {
+    return this.prisma.auth.update({
+      where: {
+        id,
+      },
+      data: {
+        lastLoginAt: new Date(),
       },
     });
   }
