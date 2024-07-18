@@ -1,16 +1,24 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { CreateSettingDto, UpdateSettingDto } from '../dtos';
+import { CreateSettingDto, ListSettingDto, UpdateSettngsDto } from '../dtos';
 import { SettingsService } from './settings.service';
 
 @Controller('settings')
 @ApiTags('Settings')
 export class SettingsController {
-  constructor(private readonly settingsService: SettingsService) { }
+  constructor(private readonly settingsService: SettingsService) {}
 
   @Get('')
-  listPublic() {
-    return this.settingsService.listPublic();
+  list(@Query() query: ListSettingDto) {
+    return this.settingsService.list(query);
   }
 
   @Post('')
@@ -19,12 +27,12 @@ export class SettingsController {
   }
 
   @Get(':name')
-  getPublic(@Param('name') name: string) {
-    return this.settingsService.getPublic(name);
+  get(@Param('name') name: string) {
+    return this.settingsService.getByName(name);
   }
 
   @Patch(':name')
-  udpdate(@Param('name') name: string, @Body() dto: UpdateSettingDto) {
-    return this.settingsService.update(name, dto.value);
+  udpdate(@Param('name') name: string, @Body() @Body() dto: UpdateSettngsDto) {
+    return this.settingsService.update(name, dto);
   }
 }

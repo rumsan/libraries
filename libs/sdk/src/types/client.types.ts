@@ -15,7 +15,7 @@ import {
   RoleWithPermission,
   SearchPermission,
 } from './role.types';
-import { Setting, UpdateSetting } from './setting.types';
+import { Setting, SettingList } from './setting.types';
 import { User, UserRole } from './user.types';
 import { WalletLogin } from './walletLogin.types';
 
@@ -75,22 +75,22 @@ export type RoleClient = {
 };
 
 export type SettingClient = {
-  listPublic: (
+  listSettings: (
+    data?: Pagination,
     config?: AxiosRequestConfig,
-  ) => Promise<FormattedResponse<unknown>>;
+  ) => Promise<FormattedResponse<SettingList>>;
   create: (
     data: Setting,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<Setting>>;
-  getPublic: (
+  getByName: (
     name: string,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<Setting>>;
   update: (
-    name: string,
     data: Setting,
     config?: AxiosRequestConfig,
-  ) => Promise<FormattedResponse<UpdateSetting>>;
+  ) => Promise<FormattedResponse<Setting>>;
 };
 
 export type UserClient = {
