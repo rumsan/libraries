@@ -18,7 +18,6 @@ export class SettingsController {
 
   @Get('')
   list(@Query() query: ListSettingDto) {
-    console.log(query);
     return this.settingsService.list(query);
   }
 

@@ -3,6 +3,7 @@ import { Prisma, PrismaClient, Setting, SettingDataType } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 import { PaginatorTypes, PrismaService } from '@rumsan/prisma';
 import { paginator } from '@rumsan/prisma/pagination/paginator';
+import { PROTECTED_SETTINGS } from '../constants';
 import { CreateSettingDto, ListSettingDto, UpdateSettngsDto } from '../dtos';
 
 const paginate: PaginatorTypes.PaginateFunction = paginator({ perPage: 20 });
@@ -133,8 +134,10 @@ export class SettingsService {
 
     rData.data = rData.data?.map((item: any) => ({
       ...item,
-      value: item.isPrivate ? 'PROTECTED' : item.value,
-      requiredFields: item.isPrivate ? ['PROTECTED'] : item.requiredFields,
+      value: item.isPrivate ? PROTECTED_SETTINGS : item.value,
+      requiredFields: item.isPrivate
+        ? [PROTECTED_SETTINGS]
+        : item.requiredFields,
     }));
 
     // console.log(rData);
@@ -178,8 +181,7 @@ export class SettingsService {
     );
     if (!matchKeysWithRequiredFields || !matchRequiredFieldsWithKey)
       throw new Error('Key did not match with the Required Fields');
-
-    return this.prisma.setting.update({
+    const updatedData = await this.prisma.setting.update({
       where: {
         name,
       },
@@ -190,6 +192,9 @@ export class SettingsService {
         isReadOnly: dto.isReadOnly,
       },
     });
+    this.load();
+
+    return updatedData;
   }
 
   private listValidSettingsName() {
@@ -338,8 +343,8 @@ export class SettingsService {
     });
 
     if (rData?.isPrivate) {
-      rData.value = 'PROTECTED';
-      rData.requiredFields = ['PROTECTED'];
+      rData.value = PROTECTED_SETTINGS;
+      rData.requiredFields = [PROTECTED_SETTINGS];
     }
 
     return rData;
