@@ -97,16 +97,9 @@ export class SettingsService {
       conditions = { AND: AND_CONDITIONS };
     }
 
-    if (query.private) {
+    if (query?.private) {
       AND_CONDITIONS.push({
-        isPrivate: query?.private,
-      });
-      conditions = { AND: AND_CONDITIONS };
-    }
-
-    if (query?.public) {
-      AND_CONDITIONS.push({
-        isPrivate: query?.public,
+        isPrivate: query?.private ? true : false,
       });
       conditions = { AND: AND_CONDITIONS };
     }

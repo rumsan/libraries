@@ -43,10 +43,4 @@ export class ListSettingDto {
   @IsOptional()
   @Transform(({ value }) => optionalBooleanMapper.get(value))
   readOnly?: string;
-
-  @ApiPropertyOptional({ example: false, type: 'boolean' })
-  @IsBoolean()
-  @IsOptional()
-  @Transform(({ value }) => optionalBooleanMapper.get(value))
-  public?: string;
 }
