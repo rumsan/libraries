@@ -63,6 +63,7 @@ export class AuthsService {
       },
     });
     const user = await this.getUserById(auth.userId);
+    if (!user) throw new ForbiddenException('User does not exist!');
     const challenge = createChallenge(getSecret(), {
       address: dto.address,
       clientId: dto.clientId,
