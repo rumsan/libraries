@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
+
+const optionalBooleanMapper = new Map([
+  ['undefined', undefined],
+  ['true', true],
+  ['false', false],
+]);
 
 export class ListSettingDto {
   @ApiProperty({ example: 1 })
@@ -25,13 +32,15 @@ export class ListSettingDto {
   @IsOptional()
   name?: string;
 
-  @ApiPropertyOptional({ example: 'false' })
-  @IsString()
+  @ApiPropertyOptional({ example: false, type: 'boolean' })
+  @IsBoolean()
   @IsOptional()
-  privateFlag?: string;
+  @Transform(({ value }) => optionalBooleanMapper.get(value))
+  private?: string;
 
-  @ApiPropertyOptional({ example: 'false' })
-  @IsString()
+  @ApiPropertyOptional({ example: false, type: 'boolean' })
+  @IsBoolean()
   @IsOptional()
-  readOnlyFlag?: string;
+  @Transform(({ value }) => optionalBooleanMapper.get(value))
+  readOnly?: string;
 }

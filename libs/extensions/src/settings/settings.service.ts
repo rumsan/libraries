@@ -97,16 +97,16 @@ export class SettingsService {
       conditions = { AND: AND_CONDITIONS };
     }
 
-    if (query.privateFlag) {
+    if (query?.private) {
       AND_CONDITIONS.push({
-        isPrivate: query.privateFlag === 'true' ? true : false,
+        isPrivate: query?.private ? true : false,
       });
       conditions = { AND: AND_CONDITIONS };
     }
 
-    if (query?.readOnlyFlag) {
+    if (query?.readOnly) {
       AND_CONDITIONS.push({
-        isReadOnly: query?.readOnlyFlag === 'true' ? true : false,
+        isReadOnly: query?.readOnly ? true : false,
       });
       conditions = { AND: AND_CONDITIONS };
     }
