@@ -86,7 +86,7 @@ export class SettingsService {
   }
 
   async list(query: ListSettingDto) {
-    console.log(query);
+    // console.log(query);
     const AND_CONDITIONS = [];
     let conditions = {};
 
@@ -97,16 +97,16 @@ export class SettingsService {
       conditions = { AND: AND_CONDITIONS };
     }
 
-    if (query?.private) {
+    if (query.private !== undefined) {
       AND_CONDITIONS.push({
-        isPrivate: query?.private ? true : false,
+        isPrivate: query.private,
       });
       conditions = { AND: AND_CONDITIONS };
     }
 
-    if (query?.readOnly) {
+    if (query.readOnly !== undefined) {
       AND_CONDITIONS.push({
-        isReadOnly: query?.readOnly ? true : false,
+        isReadOnly: query.readOnly,
       });
       conditions = { AND: AND_CONDITIONS };
     }
@@ -140,7 +140,6 @@ export class SettingsService {
         : item.requiredFields,
     }));
 
-    // console.log(rData);
     return rData;
   }
 
