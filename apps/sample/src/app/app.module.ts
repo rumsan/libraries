@@ -4,9 +4,16 @@ import { PrismaModule } from '@rumsan/prisma';
 
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { RSExceptionModule } from '@rumsan/core';
-import { SettingsModule } from '@rumsan/settings';
-import { AbilityModule, RumsanUsersModule } from '@rumsan/user';
+import { RSExceptionModule } from '@rumsan/extensions/exceptions';
+import { SettingsModule } from '@rumsan/extensions/settings';
+import {
+  AbilityModule,
+  AuthsModule,
+  RSUserModule,
+  RolesModule,
+  SignupModule,
+  UsersModule,
+} from '@rumsan/user';
 import { APP_SUBJECTS } from '../constants';
 import { ERRORS } from '../constants/errors';
 import { ListenerModule } from '../listener/listener.module';
@@ -24,11 +31,15 @@ import { AppService } from './app.service';
     ListenerModule,
     PrismaModule,
     AppUsersModule,
-    RumsanUsersModule,
+    RSUserModule.forRoot([
+      UsersModule,
+      AuthsModule,
+      RolesModule,
+      SignupModule.forRoot({ autoApprove: true }),
+    ]),
     RSExceptionModule.forRoot({ errorSet: ERRORS }),
     AbilityModule.forRoot({ subjects: APP_SUBJECTS }),
     SettingsModule,
-    //SignupModule.register({ autoApprove: false }),
   ],
   controllers: [AppController],
   providers: [AppService],

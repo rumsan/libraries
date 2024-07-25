@@ -1,19 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { PaginatorTypes, paginator } from '@nodeteam/nestjs-prisma-pagination';
 import { Prisma, PrismaClient, Service, User } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
-import { TRequestDetails, WalletUtils } from '@rumsan/core';
-import { PrismaService } from '@rumsan/prisma';
+import {
+  CreateUserDto,
+  ListUserDto,
+  UpdateUserDto,
+} from '@rumsan/extensions/dtos';
+import { PaginatorTypes, PrismaService, paginator } from '@rumsan/prisma';
+import { Request, UserRole } from '@rumsan/sdk/types';
 import { UUID } from 'crypto';
-import { ERRORS } from '../constants';
-import { getSecret } from '../utils/configUtils';
+import { ERRORS, EVENTS } from '../constants';
+import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
+import { getSecret } from '../utils/config.utils';
 import {
   getServiceTypeByAddress,
   getVerificationEventName,
 } from '../utils/service.utils';
-import { CreateUserDto, UpdateUserDto } from './dto';
-import { UserListDto } from './dto/users-list.dto';
 
 const paginate: PaginatorTypes.PaginateFunction = paginator({ perPage: 20 });
 type PrismaClientType = Omit<
@@ -41,20 +44,28 @@ export class UsersService {
   ): Promise<User> {
     return this.prisma.$transaction(async (tx) => {
       try {
+        const { roles, ...data } = dto;
         const user = await tx.user.create({
-          data: { ...dto },
+          data,
         });
 
+        if (roles?.length) {
+          await this.addRoles(user.uuid as UUID, roles, tx);
+        }
+        // await this.addRoles(user.uuid as UUID, dto.roles, tx);
+
         await Promise.all([
-          this._createAuth(tx, user.id, Service.EMAIL, user.email),
-          this._createAuth(tx, user.id, Service.PHONE, user.phone),
-          this._createAuth(tx, user.id, Service.WALLET, user.wallet),
+          this._createAuth(user.id, Service.EMAIL, user.email, tx),
+          this._createAuth(user.id, Service.PHONE, user.phone, tx),
+          this._createAuth(user.id, Service.WALLET, user.wallet, tx),
         ]);
 
         if (callback) {
           await callback(null, tx, user);
         }
-
+        this.eventEmitter.emit(EVENTS.USER_CREATED, {
+          address: user.email,
+        });
         return user;
       } catch (error: any) {
         if (callback) {
@@ -66,19 +77,20 @@ export class UsersService {
   }
 
   private async _createAuth(
-    tx: PrismaClientType,
     userId: number,
     service: Service,
     serviceId: string | null,
+    prisma: PrismaClientType,
   ): Promise<void> {
+    if (!prisma) prisma = this.prisma;
     if (serviceId) {
-      await tx.auth.create({
+      await prisma.auth.create({
         data: { userId, service, serviceId },
       });
     }
   }
 
-  async list(dto: UserListDto): Promise<PaginatorTypes.PaginatedResult<User>> {
+  async list(dto: ListUserDto): Promise<PaginatorTypes.PaginatedResult<User>> {
     const orderBy: Record<string, 'asc' | 'desc'> = {};
     orderBy[dto.sort] = dto.order;
     return paginate(
@@ -102,15 +114,22 @@ export class UsersService {
     });
   }
 
-  async get(uuid: string, throwIfNotFound = false) {
-    const user = await this.prisma.user.findUnique({
+  async get(uuid: UUID, prisma?: PrismaClientType) {
+    if (!prisma) prisma = this.prisma;
+    const user = await prisma.user.findUnique({
       where: { uuid, deletedAt: null },
+      include: {
+        UserRole: {
+          include: {
+            Role: true,
+          },
+        },
+      },
     });
-    if (!user && throwIfNotFound) throw new Error('User not found.');
     return user;
   }
 
-  async update(uuid: string, dto: UpdateUserDto) {
+  async update(uuid: UUID, dto: UpdateUserDto) {
     return this.prisma.$transaction(async (tx) => {
       const user = await this.prisma.user.findUnique({
         where: { uuid, deletedAt: null },
@@ -137,7 +156,7 @@ export class UsersService {
     tx: PrismaClientType,
     user: User,
     service: Service,
-    newServiceId?: string,
+    newServiceId?: string | null,
   ): Promise<void> {
     if (newServiceId) {
       const existingAuth = await tx.auth.findFirst({
@@ -162,11 +181,7 @@ export class UsersService {
     }
   }
 
-  async updateMe(
-    userId: number,
-    dto: UpdateUserDto,
-    rdetails: TRequestDetails,
-  ) {
+  async updateMe(userId: number, dto: UpdateUserDto, rdetails: Request) {
     return this.prisma.$transaction(async (tx) => {
       const user = await this.prisma.user.findUnique({
         where: { id: userId, deletedAt: null },
@@ -189,7 +204,7 @@ export class UsersService {
         address?: string,
       ) => {
         if (address) {
-          const { challenge } = WalletUtils.createChallenge(getSecret(), {
+          const { challenge } = createChallenge(getSecret(), {
             address,
             ip: rdetails.ip,
             data: { userId: user.id },
@@ -210,11 +225,8 @@ export class UsersService {
     });
   }
 
-  async processVerificationChallenge(
-    challenge: string,
-    rdetails: TRequestDetails,
-  ) {
-    const payload = WalletUtils.decryptChallenge(getSecret(), challenge, 1200);
+  async processVerificationChallenge(challenge: string, rdetails: Request) {
+    const payload = decryptChallenge(getSecret(), challenge, 1200);
 
     if (!payload.address) {
       throw new Error('Invalid challenge');
@@ -226,7 +238,7 @@ export class UsersService {
     }
 
     const user = await this.prisma.user.findUnique({
-      where: { id: payload.data.userId, deletedAt: null },
+      where: { id: payload.data['userId'], deletedAt: null },
     });
 
     if (!user) {
@@ -252,7 +264,7 @@ export class UsersService {
     });
   }
 
-  async delete(uuid: string) {
+  async delete(uuid: UUID) {
     try {
       const user = await this.rsprisma.user.softDelete({ uuid });
       return user;
@@ -261,10 +273,65 @@ export class UsersService {
     }
   }
 
-  async listRoles(uuid: UUID) {
-    const user = await this.get(uuid, true);
-    return this.prisma.userRole.findMany({
+  async listRoles(uuid: UUID, prisma?: PrismaClientType): Promise<UserRole[]> {
+    if (!prisma) prisma = this.prisma;
+    const user = await this.get(uuid, prisma);
+    if (!user) throw ERRORS.USER_NOT_FOUND;
+    const roles = await prisma.userRole.findMany({
       where: { userId: user?.id },
+      include: { Role: true },
     });
+
+    return roles.map((role) => ({
+      id: role.id,
+      userId: role.userId,
+      roleId: role.roleId,
+      expiry: role.expiry,
+      name: role.Role.name,
+      createdAt: role.createdAt,
+      createdBy: role.createdBy,
+    }));
+  }
+
+  async addRoles(uuid: UUID, roles: string[], prisma?: PrismaClientType) {
+    if (!prisma) prisma = this.prisma;
+
+    const getValidRoles = await prisma.role.findMany({
+      where: { name: { in: roles, mode: 'insensitive' } },
+    });
+    if (getValidRoles.length < 1) return [];
+    const user = await prisma.user.findUnique({
+      where: { uuid },
+    });
+    if (!user) throw ERRORS.USER_NOT_FOUND;
+
+    await prisma.userRole.createMany({
+      data: getValidRoles.map((role) => ({
+        userId: user.id,
+        roleId: role.id,
+      })),
+      skipDuplicates: true,
+    });
+    return this.listRoles(uuid, prisma);
+  }
+
+  async removeRoles(uuid: UUID, roles: string[], prisma?: PrismaClientType) {
+    if (!prisma) prisma = this.prisma;
+    const getValidRoles = await prisma.role.findMany({
+      where: { name: { in: roles, mode: 'insensitive' } },
+    });
+    if (getValidRoles.length < 1) this.listRoles(uuid);
+    const user = await prisma.user.findUnique({
+      where: { uuid },
+    });
+    if (!user) throw ERRORS.USER_NOT_FOUND;
+
+    await prisma.userRole.deleteMany({
+      where: {
+        userId: user.id,
+        roleId: { in: getValidRoles.map((role) => role.id) },
+      },
+    });
+    return this.listRoles(uuid);
   }
 }

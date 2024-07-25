@@ -1,0 +1,18 @@
+{
+  "name": "@rumsan/react-query",
+  "version": "0.0.43",
+  "description": "Zustand and tanstack powered state management for Rumsan services",
+  "author": "rumsan.com",
+  "license": "AGPL-3.0",
+  "licenses": [
+    {
+      "type": "AGPL-3.0",
+      "url": "https://opensource.org/licenses/AGPL-3.0"
+    },
+    {
+      "type": "Commercial License",
+      "url": "https://www.rumsan.com"
+    }
+  ],
+  "typings": "./index.d.ts"
+}

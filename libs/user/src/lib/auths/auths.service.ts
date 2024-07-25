@@ -1,30 +1,34 @@
-const CONSTANTS = {
-  CLIENT_TOKEN_LIFETIME: 600,
-};
-
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
-import { Service, User } from '@prisma/client';
-import { ERRORS, TRequestDetails, WalletUtils } from '@rumsan/core';
+import { User } from '@prisma/client';
+import {
+  ChallengeDto,
+  OtpDto,
+  OtpLoginDto,
+  WalletLoginDto,
+} from '@rumsan/extensions/dtos';
+import { ERRORS } from '@rumsan/extensions/exceptions';
 import { PrismaService } from '@rumsan/prisma';
-import { SettingsService } from '@rumsan/settings';
-import { ethers } from 'ethers';
+import { CONSTANTS } from '@rumsan/sdk/constants';
+import { Service } from '@rumsan/sdk/enums';
+import { Request } from '@rumsan/sdk/types';
+import { hashMessage, recoverAddress } from 'viem';
 import { EVENTS } from '../constants';
-import { getSecret } from '../utils/configUtils';
+import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
+import { getSecret } from '../utils/config.utils';
 import { getServiceTypeByAddress } from '../utils/service.utils';
-import { ChallengeDto, OtpDto, OtpLoginDto, WalletLoginDto } from './dto';
 import { TokenDataInterface } from './interfaces/auth.interface';
 
 @Injectable()
 export class AuthsService {
+  private readonly logger = new Logger(AuthsService.name);
   constructor(
     protected prisma: PrismaService,
     private jwt: JwtService,
     private config: ConfigService,
     private eventEmitter: EventEmitter2,
-    private settingsService: SettingsService,
   ) {}
 
   getUserById(userId: number) {
@@ -36,9 +40,9 @@ export class AuthsService {
     });
   }
 
-  async getOtp(dto: OtpDto, requestInfo: TRequestDetails) {
+  async getOtp(dto: OtpDto, requestInfo: Request) {
     if (!dto.service) {
-      dto.service = getServiceTypeByAddress(dto.address);
+      dto.service = getServiceTypeByAddress(dto.address) as Service;
     }
     const auth = await this.prisma.auth.findUnique({
       where: {
@@ -48,7 +52,7 @@ export class AuthsService {
         },
       },
     });
-    if (!auth) throw new ForbiddenException('Invalid credentials!');
+    if (!auth) throw new ForbiddenException(`Invalid ${dto.service}!`);
     const otp = Math.floor(100000 + Math.random() * 900000);
     await this.prisma.auth.update({
       where: {
@@ -59,7 +63,8 @@ export class AuthsService {
       },
     });
     const user = await this.getUserById(auth.userId);
-    const challenge = WalletUtils.createChallenge(getSecret(), {
+    if (!user) throw new ForbiddenException('User does not exist!');
+    const challenge = createChallenge(getSecret(), {
       address: dto.address,
       clientId: dto.clientId,
       ip: requestInfo.ip,
@@ -72,15 +77,17 @@ export class AuthsService {
     });
     this.eventEmitter.emit(EVENTS.CHALLENGE_CREATED, {
       ...dto,
+      requestInfo,
       challenge,
     });
+    this.logger.log('OTP created: ' + otp);
 
     return challenge;
   }
 
-  async loginByOtp(dto: OtpLoginDto, requestInfo: TRequestDetails) {
+  async loginByOtp(dto: OtpLoginDto, requestInfo: Request) {
     const { challenge, otp } = dto;
-    const challengeData = WalletUtils.decryptChallenge(
+    const challengeData = decryptChallenge(
       getSecret(),
       challenge,
       CONSTANTS.CLIENT_TOKEN_LIFETIME,
@@ -88,7 +95,7 @@ export class AuthsService {
     if (!challengeData.address)
       throw new ForbiddenException('Invalid credentials in challenge!');
     if (!dto.service) {
-      dto.service = getServiceTypeByAddress(challengeData.address);
+      dto.service = getServiceTypeByAddress(challengeData.address) as Service;
     }
 
     const auth = await this.getByServiceId(
@@ -103,6 +110,7 @@ export class AuthsService {
     const user = await this.getUserById(auth.userId);
     if (!user) throw new ForbiddenException('User does not exist!');
     const authority = await this.getPermissionsByUserId(auth.userId);
+    await this.updateLastLogin(auth.id);
 
     // Add authLog
     this.prisma.authSession
@@ -118,29 +126,33 @@ export class AuthsService {
     return this.signToken(user, authority);
   }
 
-  getChallengeForWallet(dto: ChallengeDto, requestInfo: TRequestDetails) {
-    return WalletUtils.createChallenge(getSecret(), {
+  getChallengeForWallet(dto: ChallengeDto, requestInfo: Request) {
+    return createChallenge(getSecret(), {
       clientId: dto.clientId,
       ip: requestInfo.ip,
     });
   }
 
-  async loginByWallet(dto: WalletLoginDto, requestInfo: TRequestDetails) {
-    const challengeData = WalletUtils.decryptChallenge(
+  async loginByWallet(dto: WalletLoginDto, requestInfo: Request) {
+    const challengeData = decryptChallenge(
       getSecret(),
       dto.challenge,
       CONSTANTS.CLIENT_TOKEN_LIFETIME,
     );
     if (requestInfo.ip !== challengeData.ip) throw ERRORS.NO_MATCH_IP;
 
-    const messageHash = ethers?.hashMessage(ethers?.toUtf8Bytes(dto.challenge));
-    const walletAddress = ethers?.recoverAddress(messageHash, dto.signature);
+    const hash = hashMessage(dto.challenge);
+    const walletAddress = await recoverAddress({
+      hash,
+      signature: dto.signature,
+    });
 
     const auth = await this.getByServiceId(walletAddress, Service.WALLET);
     if (!auth) throw new ForbiddenException('Invalid credentials!');
     const user = await this.getUserById(auth.userId);
     if (!user) throw new ForbiddenException('User does not exist!');
     const authority = await this.getPermissionsByUserId(auth.userId);
+    await this.updateLastLogin(auth.id);
 
     // Add authLog
     this.prisma.authSession.create({
@@ -204,6 +216,17 @@ export class AuthsService {
           serviceId,
           service,
         },
+      },
+    });
+  }
+
+  updateLastLogin(id: number) {
+    return this.prisma.auth.update({
+      where: {
+        id,
+      },
+      data: {
+        lastLoginAt: new Date(),
       },
     });
   }

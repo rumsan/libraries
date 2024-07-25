@@ -8,6 +8,5 @@ export class AppUsersService {
   constructor(private readonly userService: UsersService) {}
   async Test(dto: any) {
     return this.userService.getById(2);
-    return {};
   }
 }

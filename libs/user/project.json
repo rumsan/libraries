@@ -1,38 +1,41 @@
 {
-	"name": "user",
-	"$schema": "../../node_modules/nx/schemas/project-schema.json",
-	"sourceRoot": "libs/user/src",
-	"projectType": "library",
-	"targets": {
-		"build": {
-			"executor": "@nx/js:tsc",
-			"outputs": ["{options.outputPath}"],
-			"options": {
-				"outputPath": "dist/libs/user",
-				"tsConfig": "libs/user/tsconfig.lib.json",
-				"packageJson": "libs/user/package.json",
-				"main": "libs/user/src/index.ts",
-				"assets": ["libs/user/*.md"]
-			}
-		},
-		"publish": {
-			"command": "node tools/scripts/publish.mjs user {args.ver} {args.tag}",
-			"dependsOn": ["build"]
-		},
-		"lint": {
-			"executor": "@nx/eslint:lint",
-			"outputs": ["{options.outputFile}"],
-			"options": {
-				"lintFilePatterns": ["libs/user/**/*.ts", "libs/user/package.json"]
-			}
-		},
-		"test": {
-			"executor": "@nx/jest:jest",
-			"outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
-			"options": {
-				"jestConfig": "libs/user/jest.config.ts"
-			}
-		}
-	},
-	"tags": []
+  "name": "user",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/user/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/user",
+        "tsConfig": "libs/user/tsconfig.lib.json",
+        "packageJson": "libs/user/package.json",
+        "main": "libs/user/index.ts",
+        "rootDir": "libs/user/src",
+        "assets": ["libs/user/*.md"],
+        "updateBuildableProjectDepsInPackageJson": true,
+        "buildableProjectDepsInPackageJsonType": "dependencies"
+      }
+    },
+    "publish": {
+      "command": "node tools/scripts/publish.mjs user {args.ver} {args.tag}",
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/user/**/*.ts", "libs/user/package.json"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/user/jest.config.ts"
+      }
+    }
+  },
+  "tags": []
 }

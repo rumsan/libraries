@@ -16,12 +16,13 @@ datasource db {
 model User {
   id     Int     @id @default(autoincrement())
   uuid   String  @unique @default(uuid())
-  name   String?
+  name   String
   gender Gender  @default(UNKNOWN)
   email  String?
   phone  String?
   wallet String?
   extras Json?   @db.JsonB()
+  notes  String? @db.Text()
 
   Auth     Auth[]
   UserRole UserRole[]
@@ -137,6 +138,7 @@ model AuthSession {
 }
 
 enum Service {
+  API
   EMAIL
   PHONE
   WALLET
@@ -178,7 +180,7 @@ enum SignupStatus {
 
 // ++++++++++++++++++ END: @rumsan/user - Signup +++++++++++++++++++++++++++
 
-// ++++++++++++++++++ START: @rumsan/settings +++++++++++++++++++++++++++
+// ++++++++++++++++++ START: @rumsan/extensions/settings +++++++++++++++++++++++++++
 
 model Setting {
   name           String          @id @unique
@@ -198,4 +200,4 @@ enum SettingDataType {
   OBJECT
 }
 
-// ++++++++++++++++++ END: @rumsan/settings +++++++++++++++++++++++++++
+// ++++++++++++++++++ END: @rumsan/extensions/settings +++++++++++++++++++++++++++

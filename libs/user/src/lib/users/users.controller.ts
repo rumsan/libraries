@@ -10,8 +10,15 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
-import { ERRORS, RequestDetails, TRequestDetails } from '@rumsan/core';
+import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiUuidParam, RequestDetails } from '@rumsan/extensions/decorators';
+import {
+  CreateUserDto,
+  ListUserDto,
+  UpdateUserDto,
+} from '@rumsan/extensions/dtos';
+import { ERRORS } from '@rumsan/extensions/exceptions';
+import { Request } from '@rumsan/sdk/types';
 import { UUID } from 'crypto';
 import { CheckAbilities } from '../ability/ability.decorator';
 import { AbilitiesGuard } from '../ability/ability.guard';
@@ -19,9 +26,6 @@ import { CU, CurrentUser } from '../auths/decorator';
 import { JwtGuard } from '../auths/guard';
 import { CUI } from '../auths/interfaces/current-user.interface';
 import { ACTIONS, APP, SUBJECTS } from '../constants';
-import { CreateUserDto, UpdateUserDto } from './dto';
-import { GetUserDto } from './dto/users-get';
-import { UserListDto } from './dto/users-list.dto';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -33,13 +37,14 @@ export class UsersController {
 
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
   @Get('')
-  list(@Query() dto: UserListDto) {
+  list(@Query() dto: ListUserDto) {
     return this.userService.list(dto);
   }
 
   @Post('')
   @CheckAbilities({ actions: ACTIONS.CREATE, subject: SUBJECTS.USER })
-  create(@Body() dto: CreateUserDto) {
+  create(@Body() dto: CreateUserDto, @CurrentUser() cu: CUI) {
+    dto.createdBy = cu.id;
     return this.userService.create(dto);
   }
 
@@ -55,7 +60,7 @@ export class UsersController {
   updateMe(
     @CU() cu: CUI,
     @Body() dto: UpdateUserDto,
-    @RequestDetails() rdetails: TRequestDetails,
+    @RequestDetails() rdetails: Request,
   ) {
     return this.userService.updateMe(cu.userId, dto, rdetails);
   }
@@ -75,46 +80,70 @@ export class UsersController {
     // );
   }
 
+  @ApiUuidParam()
   @Get(':uuid')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
   get(@Param('uuid') uuid: UUID) {
     return this.userService.get(uuid);
   }
 
+  @ApiUuidParam()
   @Patch(':uuid')
   @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.USER })
-  update(@Param('uuid') uuid: UUID, @Body() dto: UpdateUserDto) {
+  update(
+    @Param('uuid') uuid: UUID,
+    @Body() dto: UpdateUserDto,
+    @CurrentUser() cu: CUI,
+  ) {
+    dto.updatedBy = cu.id;
     return this.userService.update(uuid, dto);
   }
 
+  @ApiUuidParam()
   @Delete(':uuid')
   @CheckAbilities({ actions: ACTIONS.DELETE, subject: SUBJECTS.USER })
   delete(@Param('uuid') uuid: UUID) {
     return this.userService.delete(uuid);
   }
 
-  @ApiParam({
-    name: 'identifier',
-    required: true,
-    description:
-      'either an integer for the project id or a string for the project name',
-    schema: { oneOf: [{ type: 'string' }, { type: 'integer' }] },
-  })
+  @ApiUuidParam()
   @Get(':uuid/roles')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
-  getRoles(@Param() dto: GetUserDto) {
-    return this.userService.listRoles(dto.uuid);
+  getRoles(@Param('uuid') uuid: UUID) {
+    return this.userService.listRoles(uuid);
   }
 
+  @ApiUuidParam()
+  @ApiBody({
+    schema: {
+      type: 'array',
+      example: ['admin', 'user'],
+      items: {
+        type: 'string',
+      },
+    },
+  })
   @Post(':uuid/roles')
   @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.USER })
-  addRoles(@Param('uuid') uuid: UUID, @Body() dto: UpdateUserDto) {
-    return this.userService.update(uuid, dto);
+  addRoles(@Param('uuid') uuid: UUID, @Body() roles: string[]) {
+    return this.userService.addRoles(uuid, roles);
   }
 
+  @ApiUuidParam()
+  @ApiBody({
+    schema: {
+      type: 'array',
+      example: ['admin', 'user'],
+      items: {
+        type: 'string',
+      },
+    },
+  })
   @Delete(':uuid/roles')
   @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.USER })
-  removeRoles(@Param('uuid') uuid: UUID, @Body() dto: UpdateUserDto) {
-    return this.userService.update(uuid, dto);
+  removeRoles(@Param('uuid') uuid: UUID, @Body() roles: string[]) {
+    return this.userService.removeRoles(uuid, roles);
   }
 }
+
+//cff095ac-3927-4dd6-91a0-72a62aaa05e6
