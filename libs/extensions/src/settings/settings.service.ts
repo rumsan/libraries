@@ -1,8 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Prisma, PrismaClient, Setting, SettingDataType } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
-import { PrismaService } from '@rumsan/prisma';
-import { CreateSettingDto } from '../dtos';
+import { PaginatorTypes, PrismaService } from '@rumsan/prisma';
+import { paginator } from '@rumsan/prisma/pagination/paginator';
+import { PROTECTED_SETTINGS } from '../constants';
+import { CreateSettingDto, ListSettingDto, UpdateSettngsDto } from '../dtos';
+
+const paginate: PaginatorTypes.PaginateFunction = paginator({ perPage: 20 });
 
 function capitalizeObjectKeys(obj: any): any {
   if (typeof obj !== 'object' || obj === null) {
@@ -52,7 +56,7 @@ type PrismaClientType = Omit<
 @Injectable()
 export class SettingsService {
   private static data: any = {};
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   public static get(path: string) {
     const keys = path.split('.');
@@ -81,16 +85,62 @@ export class SettingsService {
     return publicSetting;
   }
 
-  async listPublic() {
-    const publicSettings = await this.prisma.setting.findMany({
-      where: { isPrivate: false },
-    });
-    const result: any = {};
-    for (const setting of publicSettings) {
-      result[setting.name] = setting.value;
+  async list(query: ListSettingDto) {
+    // console.log(query);
+    const AND_CONDITIONS = [];
+    let conditions = {};
+
+    if (query.name) {
+      AND_CONDITIONS.push({
+        name: { contains: query.name, mode: 'insensitive' },
+      });
+      conditions = { AND: AND_CONDITIONS };
     }
-    console.log({ result });
-    return result;
+
+    if (query.private !== undefined) {
+      AND_CONDITIONS.push({
+        isPrivate: query.private,
+      });
+      conditions = { AND: AND_CONDITIONS };
+    }
+
+    if (query.readOnly !== undefined) {
+      AND_CONDITIONS.push({
+        isReadOnly: query.readOnly,
+      });
+      conditions = { AND: AND_CONDITIONS };
+    }
+
+    const select: Prisma.SettingSelect = {
+      name: true,
+      dataType: true,
+      isPrivate: true,
+      isReadOnly: true,
+      requiredFields: true,
+      value: true,
+    };
+
+    const rData = await paginate(
+      this.prisma.setting,
+      {
+        where: { ...conditions },
+        select,
+      },
+      {
+        page: query.page,
+        perPage: query.perPage,
+      },
+    );
+
+    rData.data = rData.data?.map((item: any) => ({
+      ...item,
+      value: item.isPrivate ? PROTECTED_SETTINGS : item.value,
+      requiredFields: item.isPrivate
+        ? [PROTECTED_SETTINGS]
+        : item.requiredFields,
+    }));
+
+    return rData;
   }
 
   async load() {
@@ -103,79 +153,47 @@ export class SettingsService {
     SettingsService.data = result;
   }
 
-  async update(name: string, value: any) {
-    // Ensure that the name is stored in uppercase
-    const uppercaseName = name.toUpperCase();
-
-    // Check if the setting exists in the database
-    const existingSetting = await this.prisma.setting.findUnique({
-      where: { name: uppercaseName },
+  async update(name: string, dto: UpdateSettngsDto) {
+    const { value, requiredFields } = dto;
+    const settingsName = await this.prisma.setting.findUnique({
+      where: {
+        name,
+      },
     });
-
-    console.log({ existingSetting });
-
-    if (!existingSetting) {
-      throw new Error(
-        `Setting '${uppercaseName}' not found. Valid settings: ${this.listValidSettingsName()}`,
-      );
-    }
+    if (!settingsName) throw new Error('Setting not found');
 
     // Check if the setting is read-only
-    if (existingSetting.isReadOnly) {
-      throw new Error(
-        `Setting '${uppercaseName}' is read-only and cannot be updated`,
-      );
+    if (settingsName.isReadOnly) {
+      throw new Error(`Setting '${name}' is read-only and cannot be updated`);
     }
 
-    const dataType = getDataType(value);
-    if (dataType !== existingSetting.dataType)
-      throw new Error(
-        `Invalid data type for 'value'. Valid data type is: ${existingSetting.dataType}`,
-      );
-
-    // Check if 'value' is an object and not an array or null
-    if (existingSetting.dataType === SettingDataType.OBJECT) {
-      // Use type assertion here to tell TypeScript that value is an object
-      const rawValueObject = value as Record<string, any>;
-      const requiredFields = existingSetting.requiredFields.map((field) =>
-        field.toUpperCase(),
-      );
-      // Capitalize keys of the 'value' object without changing the values
-      value = capitalizeObjectKeys(rawValueObject);
-      value = Object.keys(value)
-        .filter((key) => requiredFields.includes(key))
-        .reduce((obj: any, key) => {
-          obj[key] = value[key];
-          return obj;
-        }, {});
-
-      // Check if 'value' object has all the properties specified in 'requiredFields' (case-insensitive)
-      if (requiredFields && requiredFields.length > 0) {
-        const missingFields = requiredFields.filter((field) => {
-          const matchingKey = Object.keys(value).find(
-            (key) => key.toUpperCase() === field,
-          );
-          return !matchingKey;
-        });
-
-        if (missingFields.length > 0) {
-          throw new Error(
-            `Required fields missing in 'value' object: ${missingFields.join(
-              ', ',
-            )}`,
-          ); // 400 Bad Request
-        }
-      }
+    if (!value || typeof value !== 'object' || !Array.isArray(requiredFields)) {
+      throw new Error('Invalid data structure');
     }
 
-    // Update the value of the existing setting
-    await this.prisma.setting.update({
-      where: { name: uppercaseName },
-      data: { value },
+    const matchKeysWithRequiredFields = Object.keys(value).every((key) =>
+      requiredFields.includes(key),
+    );
+
+    const matchRequiredFieldsWithKey = requiredFields.every((field) =>
+      Object.keys(value).includes(field),
+    );
+    if (!matchKeysWithRequiredFields || !matchRequiredFieldsWithKey)
+      throw new Error('Key did not match with the Required Fields');
+    const updatedData = await this.prisma.setting.update({
+      where: {
+        name,
+      },
+      data: {
+        value: dto.value,
+        requiredFields: dto.requiredFields,
+        isPrivate: dto.isPrivate,
+        isReadOnly: dto.isReadOnly,
+      },
     });
-
     this.load();
-    return this.listPublic();
+
+    return updatedData;
   }
 
   private listValidSettingsName() {
@@ -187,7 +205,7 @@ export class SettingsService {
   //   Checks if value is an object and not an array or null.
   //   Validates that the value object has all the properties specified in requiredFields in a case-insensitive manner.
   //   Capitalizes keys of the value object without changing the values.
-  //   If value is not an object, it sets requiredFields to an empty array [].
+  //   If value is not an o,bject, it sets requiredFields to an empty array [].
 
   //DO NOT EXPOSE THIS USING CONTROLLER
   async create(
@@ -306,5 +324,28 @@ export class SettingsService {
   //DO NOT EXPOSE THIS USING CONTROLLER
   async listAll() {
     return this.prisma.setting.findMany();
+  }
+
+  async getByName(name: string) {
+    const uppercaseName = name.toUpperCase();
+
+    const rData = await this.prisma.setting.findUnique({
+      where: { name: uppercaseName },
+      select: {
+        name: true,
+        dataType: true,
+        isPrivate: true,
+        isReadOnly: true,
+        requiredFields: true,
+        value: true,
+      },
+    });
+
+    if (rData?.isPrivate) {
+      rData.value = PROTECTED_SETTINGS;
+      rData.requiredFields = [PROTECTED_SETTINGS];
+    }
+
+    return rData;
   }
 }

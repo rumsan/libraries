@@ -52,7 +52,7 @@ export class AuthsService {
         },
       },
     });
-    if (!auth) throw new ForbiddenException('Invalid credentials!');
+    if (!auth) throw new ForbiddenException(`Invalid ${dto.service}!`);
     const otp = Math.floor(100000 + Math.random() * 900000);
     await this.prisma.auth.update({
       where: {
@@ -63,6 +63,7 @@ export class AuthsService {
       },
     });
     const user = await this.getUserById(auth.userId);
+    if (!user) throw new ForbiddenException('User does not exist!');
     const challenge = createChallenge(getSecret(), {
       address: dto.address,
       clientId: dto.clientId,
@@ -109,6 +110,7 @@ export class AuthsService {
     const user = await this.getUserById(auth.userId);
     if (!user) throw new ForbiddenException('User does not exist!');
     const authority = await this.getPermissionsByUserId(auth.userId);
+    await this.updateLastLogin(auth.id);
 
     // Add authLog
     this.prisma.authSession
@@ -150,6 +152,7 @@ export class AuthsService {
     const user = await this.getUserById(auth.userId);
     if (!user) throw new ForbiddenException('User does not exist!');
     const authority = await this.getPermissionsByUserId(auth.userId);
+    await this.updateLastLogin(auth.id);
 
     // Add authLog
     this.prisma.authSession.create({
@@ -213,6 +216,17 @@ export class AuthsService {
           serviceId,
           service,
         },
+      },
+    });
+  }
+
+  updateLastLogin(id: number) {
+    return this.prisma.auth.update({
+      where: {
+        id,
+      },
+      data: {
+        lastLoginAt: new Date(),
       },
     });
   }

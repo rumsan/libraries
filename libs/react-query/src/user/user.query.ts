@@ -51,7 +51,7 @@ export const useUserCurrentUser = (enabled = true) => {
 
   const query = useQuery(
     {
-      queryKey: [TAGS.GET_ME],
+      queryKey: [TAGS.GET_ME, enabled],
       queryFn: rumsanService.user.getMe,
       enabled,
       initialData: userStore.user,
@@ -119,7 +119,7 @@ export const useUserRoleList = (uuid: UUID) => {
 
   return useQuery(
     {
-      queryKey: [TAGS.GET_USER_ROLES],
+      queryKey: [TAGS.GET_USER_ROLES, uuid],
       queryFn: () => rumsanService.user.listRoles(uuid),
     },
     queryClient,
