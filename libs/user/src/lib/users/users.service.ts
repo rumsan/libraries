@@ -44,11 +44,15 @@ export class UsersService {
   ): Promise<User> {
     return this.prisma.$transaction(async (tx) => {
       try {
+        const { roles, ...data } = dto;
         const user = await tx.user.create({
-          data: { ...dto },
+          data,
         });
 
-        await this.addRoles(user.uuid as UUID, dto.roles, tx);
+        if (roles?.length) {
+          await this.addRoles(user.uuid as UUID, roles, tx);
+        }
+        // await this.addRoles(user.uuid as UUID, dto.roles, tx);
 
         await Promise.all([
           this._createAuth(user.id, Service.EMAIL, user.email, tx),

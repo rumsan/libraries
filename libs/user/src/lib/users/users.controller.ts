@@ -43,7 +43,8 @@ export class UsersController {
 
   @Post('')
   @CheckAbilities({ actions: ACTIONS.CREATE, subject: SUBJECTS.USER })
-  create(@Body() dto: CreateUserDto) {
+  create(@Body() dto: CreateUserDto, @CurrentUser() cu: CUI) {
+    dto.createdBy = cu.id;
     return this.userService.create(dto);
   }
 
@@ -89,7 +90,12 @@ export class UsersController {
   @ApiUuidParam()
   @Patch(':uuid')
   @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.USER })
-  update(@Param('uuid') uuid: UUID, @Body() dto: UpdateUserDto) {
+  update(
+    @Param('uuid') uuid: UUID,
+    @Body() dto: UpdateUserDto,
+    @CurrentUser() cu: CUI,
+  ) {
+    dto.updatedBy = cu.id;
     return this.userService.update(uuid, dto);
   }
 
