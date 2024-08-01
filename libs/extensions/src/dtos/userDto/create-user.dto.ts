@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Gender } from '@rumsan/sdk/enums';
 import { User } from '@rumsan/sdk/types';
 import { listGenders } from '@rumsan/sdk/utils';
-import { IsIn, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsOptional, IsString } from 'class-validator';
 
 export class CreateUserDto implements User {
   @ApiProperty({
@@ -54,11 +54,11 @@ export class CreateUserDto implements User {
   @IsOptional()
   roles: string[];
 
-  @ApiProperty({
-    example: 1,
-    description: 'User ID',
-  })
-  @IsNumber()
+  @IsString()
   @IsOptional()
-  createdBy?: number;
+  createdBy?: string;
+
+  @IsString()
+  @IsOptional()
+  updatedBy?: string;
 }

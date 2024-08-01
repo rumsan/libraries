@@ -47,11 +47,7 @@ export class UpdateUserDto implements User {
   @IsOptional()
   wallet?: string;
 
-  @ApiProperty({
-    example: 1,
-    description: 'User ID',
-  })
   @IsNumber()
   @IsOptional()
-  updatedBy?: number;
+  updatedBy?: string;
 }

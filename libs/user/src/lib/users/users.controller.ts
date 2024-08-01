@@ -44,7 +44,7 @@ export class UsersController {
   @Post('')
   @CheckAbilities({ actions: ACTIONS.CREATE, subject: SUBJECTS.USER })
   create(@Body() dto: CreateUserDto, @CurrentUser() cu: CUI) {
-    dto.createdBy = cu.id;
+    dto.createdBy = cu.uuid;
     return this.userService.create(dto);
   }
 
@@ -60,7 +60,7 @@ export class UsersController {
   updateMe(
     @CU() cu: CUI,
     @Body() dto: UpdateUserDto,
-    @RequestDetails() rdetails: Request,
+    @RequestDetails() rdetails: any,
   ) {
     return this.userService.updateMe(cu.userId, dto, rdetails);
   }
@@ -95,7 +95,7 @@ export class UsersController {
     @Body() dto: UpdateUserDto,
     @CurrentUser() cu: CUI,
   ) {
-    dto.updatedBy = cu.id;
+    dto.updatedBy = cu.uuid;
     return this.userService.update(uuid, dto);
   }
 

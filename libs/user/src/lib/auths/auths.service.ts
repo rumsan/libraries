@@ -35,7 +35,6 @@ export class AuthsService {
     return this.prisma.user.findUnique({
       where: {
         id: userId,
-        deletedAt: null,
       },
     });
   }
