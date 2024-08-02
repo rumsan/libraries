@@ -96,6 +96,9 @@ export class UsersService {
     return paginate(
       this.prisma.user,
       {
+        where: {
+          deletedAt: null,
+        },
         orderBy,
       },
       {
@@ -107,14 +110,14 @@ export class UsersService {
 
   getById(userId: number) {
     return this.prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: userId, deletedAt: null },
     });
   }
 
   async get(uuid: UUID, prisma?: PrismaClientType) {
     if (!prisma) prisma = this.prisma;
     const user = await prisma.user.findUnique({
-      where: { uuid },
+      where: { uuid, deletedAt: null },
       include: {
         UserRole: {
           include: {
@@ -129,7 +132,7 @@ export class UsersService {
   async update(uuid: UUID, dto: UpdateUserDto) {
     return this.prisma.$transaction(async (tx) => {
       const user = await this.prisma.user.findUnique({
-        where: { uuid },
+        where: { uuid, deletedAt: null },
       });
 
       if (!user) throw ERRORS.USER_NOT_FOUND;
@@ -181,7 +184,7 @@ export class UsersService {
   async updateMe(userId: number, dto: UpdateUserDto, rdetails: Request) {
     return this.prisma.$transaction(async (tx) => {
       const user = await this.prisma.user.findUnique({
-        where: { id: userId },
+        where: { id: userId, deletedAt: null },
       });
 
       if (!user) {
@@ -235,7 +238,7 @@ export class UsersService {
     }
 
     const user = await this.prisma.user.findUnique({
-      where: { id: payload.data['userId'] },
+      where: { id: payload.data['userId'], deletedAt: null },
     });
 
     if (!user) {
