@@ -33,7 +33,6 @@ model User {
   deletedAt DateTime?
   createdBy String?
   updatedBy String?
-  deletedBy String?
 
   @@map("tbl_users")
 }
