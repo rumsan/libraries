@@ -14,15 +14,16 @@ datasource db {
 
 // ===================User Model==================
 model User {
-  id     Int     @id @default(autoincrement())
-  uuid   String  @unique @default(uuid())
-  name   String
-  gender Gender  @default(UNKNOWN)
-  email  String?
-  phone  String?
-  wallet String?
-  extras Json?   @db.JsonB()
-  notes  String? @db.Text()
+  id        Int     @id @default(autoincrement())
+  uuid      String  @unique @default(uuid())
+  name      String
+  gender    Gender  @default(UNKNOWN)
+  email     String?
+  phone     String?
+  wallet    String?
+  extras    Json?   @db.JsonB()
+  notes     String? @db.Text()
+  sessionId String?
 
   Auth     Auth[]
   UserRole UserRole[]

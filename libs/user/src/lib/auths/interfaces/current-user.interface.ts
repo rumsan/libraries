@@ -13,6 +13,7 @@ export interface CurrentUserInterface {
     inverted: boolean;
     conditions: string;
   }[];
+  sessionId: string;
 }
 
 export interface CUI extends CurrentUserInterface {}

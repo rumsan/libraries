@@ -45,6 +45,7 @@ export class UsersController {
   @CheckAbilities({ actions: ACTIONS.CREATE, subject: SUBJECTS.USER })
   create(@Body() dto: CreateUserDto, @CurrentUser() cu: CUI) {
     dto.createdBy = cu.uuid;
+    dto.sessionId = cu.sessionId;
     return this.userService.create(dto);
   }
 
@@ -96,6 +97,7 @@ export class UsersController {
     @CurrentUser() cu: CUI,
   ) {
     dto.updatedBy = cu.uuid;
+    dto.sessionId = cu.sessionId;
     return this.userService.update(uuid, dto);
   }
 
@@ -103,7 +105,7 @@ export class UsersController {
   @Delete(':uuid')
   @CheckAbilities({ actions: ACTIONS.DELETE, subject: SUBJECTS.USER })
   delete(@Param('uuid') uuid: UUID, @CurrentUser() cu: CUI) {
-    return this.userService.delete(uuid, cu.uuid);
+    return this.userService.delete(uuid, cu);
   }
 
   @ApiUuidParam()
