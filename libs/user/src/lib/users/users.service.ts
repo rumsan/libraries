@@ -264,9 +264,9 @@ export class UsersService {
     });
   }
 
-  async delete(uuid: UUID) {
+  async delete(uuid: UUID, updatedBy: string) {
     try {
-      const user = await this.rsprisma.user.softDelete({ uuid });
+      const user = await this.rsprisma.user.softDelete({ uuid }, updatedBy);
       return user;
     } catch (err) {
       throw new Error('rs-user: User not found or deletion not permitted.');

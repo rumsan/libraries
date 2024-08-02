@@ -102,8 +102,8 @@ export class UsersController {
   @ApiUuidParam()
   @Delete(':uuid')
   @CheckAbilities({ actions: ACTIONS.DELETE, subject: SUBJECTS.USER })
-  delete(@Param('uuid') uuid: UUID) {
-    return this.userService.delete(uuid);
+  delete(@Param('uuid') uuid: UUID, @CurrentUser() cu: CUI) {
+    return this.userService.delete(uuid, cu.uuid);
   }
 
   @ApiUuidParam()

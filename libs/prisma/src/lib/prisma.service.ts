@@ -4,6 +4,7 @@ import { Prisma, PrismaClient } from '@prisma/client';
 const softDelete = async function <M, A>(
   this: M,
   where: Prisma.Args<M, 'update'>['where'],
+  updatedBy: string,
 ): Promise<Prisma.Result<M, A, 'update'>> {
   const context = Prisma.getExtensionContext(this);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -11,6 +12,7 @@ const softDelete = async function <M, A>(
     where,
     data: {
       deletedAt: new Date(),
+      updatedBy,
     },
   });
 
