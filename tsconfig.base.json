@@ -27,7 +27,8 @@
       "@rumsan/react-query/*": ["libs/react-query/src/*"],
       "@rumsan/sdk": ["libs/sdk/src/index.ts"],
       "@rumsan/sdk/*": ["libs/sdk/src/*"],
-      "@rumsan/user": ["libs/user/src/index.ts"]
+      "@rumsan/user": ["libs/user/src/index.ts"],
+      "@rumsan/app": ["libs/rsapp/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
