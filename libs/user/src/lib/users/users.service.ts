@@ -7,9 +7,10 @@ import {
   ListUserDto,
   UpdateUserDto,
 } from '@rumsan/extensions/dtos';
-import { PaginatorTypes, PrismaService, paginator } from '@rumsan/prisma';
+import { paginator, PaginatorTypes, PrismaService } from '@rumsan/prisma';
 import { Request, UserRole } from '@rumsan/sdk/types';
 import { UUID } from 'crypto';
+import { CUI } from '../auths/interfaces/current-user.interface';
 import { ERRORS, EVENTS } from '../constants';
 import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
 import { getSecret } from '../utils/config.utils';
@@ -264,9 +265,14 @@ export class UsersService {
     });
   }
 
-  async delete(uuid: UUID) {
+  async delete(uuid: UUID, currentUser: CUI) {
     try {
-      const user = await this.rsprisma.user.softDelete({ uuid });
+      const { uuid: currentUseruuid, sessionId } = currentUser;
+      const user = await this.rsprisma.user.softDelete(
+        { uuid },
+        currentUseruuid,
+        sessionId,
+      );
       return user;
     } catch (err) {
       throw new Error('rs-user: User not found or deletion not permitted.');

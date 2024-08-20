@@ -2,7 +2,7 @@ import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
+import { AuthSession, User } from '@prisma/client';
 import {
   ChallengeDto,
   OtpDto,
@@ -113,7 +113,7 @@ export class AuthsService {
     await this.updateLastLogin(auth.id);
 
     // Add authLog
-    this.prisma.authSession
+    const session = await this.prisma.authSession
       .create({
         data: {
           clientId: challengeData.clientId,
@@ -123,7 +123,7 @@ export class AuthsService {
         },
       })
       .then();
-    return this.signToken(user, authority);
+    return this.signToken(user, authority, session);
   }
 
   getChallengeForWallet(dto: ChallengeDto, requestInfo: Request) {
@@ -155,7 +155,7 @@ export class AuthsService {
     await this.updateLastLogin(auth.id);
 
     // Add authLog
-    this.prisma.authSession.create({
+    const session = await this.prisma.authSession.create({
       data: {
         clientId: challengeData.clientId,
         authId: auth.id,
@@ -164,7 +164,7 @@ export class AuthsService {
       },
     });
 
-    return this.signToken(user, authority);
+    return this.signToken(user, authority, session);
   }
 
   async getRolesByUserId(userId: number) {
@@ -257,7 +257,9 @@ export class AuthsService {
   async signToken(
     user: User,
     authority: any,
+    session: AuthSession,
   ): Promise<{ accessToken: string }> {
+    const { sessionId } = session;
     const { id, uuid, name, email, phone, wallet } = user;
     const payload: TokenDataInterface = {
       id: id,
@@ -269,6 +271,7 @@ export class AuthsService {
       wallet,
       roles: authority.roles.map((role: any) => role.roleName),
       permissions: authority.permissions,
+      sessionId,
     };
 
     const expiryTime = this.config.get('JWT_EXPIRATION_TIME');

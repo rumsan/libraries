@@ -14,8 +14,8 @@ export type User = {
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
-  createdBy?: number;
-  updatedBy?: number;
+  createdBy?: string;
+  updatedBy?: string;
   permissions?: string[];
   roles?: string[];
 };
