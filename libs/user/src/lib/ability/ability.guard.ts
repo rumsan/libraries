@@ -7,7 +7,7 @@ import {
 import { Reflector } from '@nestjs/core';
 
 import { AbilityBuilder, createMongoAbility } from '@casl/ability';
-import { CurrentUserInterface } from '../auths/interfaces/current-user.interface';
+import { CurrentUserInterface } from '@rumsan/sdk/interfaces';
 import { ACTIONS } from '../constants';
 import { RSE } from '../constants/errors';
 import { CHECK_ABILITY, RequiredRule } from './ability.decorator';

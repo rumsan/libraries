@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { CurrentUserInterface } from '../interfaces/current-user.interface';
+import { CurrentUserInterface } from '@rumsan/sdk/interfaces';
 
 export const CurrentUser = createParamDecorator(
   (data: undefined, ctx: ExecutionContext): CurrentUserInterface => {
@@ -8,6 +8,7 @@ export const CurrentUser = createParamDecorator(
     // if (data) {
     //   return request.user[data];
     // }
+    console.log(request.user);
     return request.user;
   },
 );
