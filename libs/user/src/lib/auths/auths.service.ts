@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
 import { AuthSession, User } from '@prisma/client';
+import { EVENTS } from '@rumsan/extensions/constants';
 import {
   ChallengeDto,
   OtpDto,
@@ -16,7 +17,6 @@ import { Service } from '@rumsan/sdk/enums';
 import { TokenDataInterface } from '@rumsan/sdk/interfaces';
 import { Request } from '@rumsan/sdk/types';
 import { hashMessage, recoverAddress } from 'viem';
-import { EVENTS } from '../constants';
 import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
 import { getSecret } from '../utils/config.utils';
 import { getServiceTypeByAddress } from '../utils/service.utils';

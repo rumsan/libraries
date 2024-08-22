@@ -218,8 +218,20 @@ export class SettingsService {
       requiredFields,
       isReadOnly,
       isPrivate,
+      sessionId,
+      createdBy,
     } = createSettingDto;
     let value: any = dtoValue;
+
+    console.log({
+      name,
+      dtoValue,
+      requiredFields,
+      isReadOnly,
+      isPrivate,
+      sessionId,
+      createdBy,
+    });
 
     // Ensure that the name is stored in uppercase
     name = name.toUpperCase();
@@ -280,6 +292,8 @@ export class SettingsService {
         requiredFields: requiredFieldsArray,
         isReadOnly,
         isPrivate,
+        sessionId,
+        createdBy,
       },
     });
 

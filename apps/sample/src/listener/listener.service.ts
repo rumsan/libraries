@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { EVENTS } from '@rumsan/user';
+import { EVENTS } from '@rumsan/extensions/constants';
 import { DevService } from '../utils/develop.service';
 import { EmailService } from '../utils/email.service';
 

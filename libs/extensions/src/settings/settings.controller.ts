@@ -8,6 +8,8 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { CUI } from '@rumsan/sdk/interfaces';
+import { CurrentUser } from '../decorators/currentUser.decorator';
 import { CreateSettingDto, ListSettingDto, UpdateSettngsDto } from '../dtos';
 import { SettingsService } from './settings.service';
 
@@ -22,7 +24,12 @@ export class SettingsController {
   }
 
   @Post('')
-  create(@Body() createSettingDto: CreateSettingDto) {
+  create(@Body() createSettingDto: CreateSettingDto, @CurrentUser() cu: CUI) {
+    console.log({ cu });
+    if (cu.name) {
+      createSettingDto.createdBy = cu.name;
+    }
+    createSettingDto.sessionId = cu.sessionId;
     return this.settingsService.create(createSettingDto);
   }
 

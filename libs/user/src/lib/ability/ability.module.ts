@@ -1,6 +1,6 @@
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { SUBJECTS } from '../constants';
+import { SUBJECTS } from '@rumsan/extensions/constants';
 import { AbilitiesGuard } from './ability.guard';
 import { AbilitySubject } from './ability.subjects';
 
