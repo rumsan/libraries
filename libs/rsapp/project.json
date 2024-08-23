@@ -22,6 +22,8 @@
         "packageJson": "libs/rsapp/package.json",
         "main": "libs/rsapp/src/index.ts",
         "assets": ["libs/rsapp/*.md"],
+        "rootDir": "libs/rsapp/src",
+        "generatePackageJson": true,
         "updateBuildableProjectDepsInPackageJson": true,
         "buildableProjectDepsInPackageJsonType": "dependencies"
       }

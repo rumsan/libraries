@@ -1,6 +1,6 @@
 {
   "name": "@rumsan/app",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Rumsan application module to register app and its routes",
   "author": "rumsan.com",
   "license": "AGPL-3.0",
@@ -14,6 +14,9 @@
       "url": "https://www.rumsan.com"
     }
   ],
+  "dependencies": {
+    "viem": "^2.18.1"
+  },
   "main": "./src/index.js",
   "typings": "./src/index.d.ts"
 }
