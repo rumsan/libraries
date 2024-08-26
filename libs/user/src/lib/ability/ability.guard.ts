@@ -8,8 +8,8 @@ import { Reflector } from '@nestjs/core';
 
 import { AbilityBuilder, createMongoAbility } from '@casl/ability';
 import { CurrentUserInterface } from '@rumsan/sdk/interfaces';
-import { ACTIONS } from '../constants';
-import { RSE } from '../constants/errors';
+
+import { ACTIONS, RSE } from '@rumsan/extensions/constants';
 import { CHECK_ABILITY, RequiredRule } from './ability.decorator';
 
 const createForUser = (user: CurrentUserInterface) => {

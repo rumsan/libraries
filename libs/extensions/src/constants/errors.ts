@@ -1,15 +1,15 @@
-import { RSError } from '@rumsan/extensions/exceptions';
+import { RSError } from '../exceptions';
 
 export function RSE(
   message: string,
-  name: string = 'UNKNOWN',
-  httpCode: number = 500,
+  name = 'UNKNOWN',
+  httpCode = 500,
   meta?: any,
 ) {
   return new RSError({ message, name, httpCode, srcModule: 'RS_USER', meta });
 }
 
-export const ERRORS = {
+export const RSERRORS = {
   ROLE_NAME_INVALID: RSE(
     'Invalid characters in role name.',
     'ROLE_NAME_INVALID',

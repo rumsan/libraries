@@ -2,14 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { Permission, Prisma, PrismaClient, Role } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 import { StringUtils } from '@rumsan/core';
+import { RSE, RSERRORS } from '@rumsan/extensions/constants';
 import {
   CreateRoleDto,
   EditRoleDto,
   ListRoleDto,
 } from '@rumsan/extensions/dtos';
 import { PaginatorTypes, PrismaService, paginator } from '@rumsan/prisma';
-import { ERRORS } from '../constants';
-import { RSE } from '../constants/errors';
 import { PermissionSet } from '../interfaces';
 import {
   checkPermissionSet,
@@ -27,7 +26,7 @@ export class RolesService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateRoleDto) {
-    if (!StringUtils.isValidString(dto.name)) throw ERRORS.ROLE_NAME_INVALID;
+    if (!StringUtils.isValidString(dto.name)) throw RSERRORS.ROLE_NAME_INVALID;
     const { permissions, ...data } = dto;
     const { isValid, validSubjects } = checkPermissionSet(permissions);
     if (!isValid)

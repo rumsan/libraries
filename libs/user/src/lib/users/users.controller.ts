@@ -11,6 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
+import { ACTIONS, APP, SUBJECTS } from '@rumsan/extensions/constants';
 import {
   ApiUuidParam,
   CU,
@@ -29,7 +30,6 @@ import { UUID } from 'crypto';
 import { CheckAbilities } from '../ability/ability.decorator';
 import { AbilitiesGuard } from '../ability/ability.guard';
 import { JwtGuard } from '../auths/guard';
-import { ACTIONS, APP, SUBJECTS } from '../constants';
 import { UsersService } from './users.service';
 
 @Controller('users')

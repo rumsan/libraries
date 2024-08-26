@@ -55,6 +55,19 @@ export class CreateSettingDto {
   @IsOptional()
   @IsBoolean()
   isPrivate?: boolean;
+
+  @IsString()
+  @IsOptional()
+  createdBy?: string;
+
+  @IsString()
+  @IsOptional()
+  updatedBy?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  sessionId: string;
 }
 
 export class UpdateSettingDto extends PickType(CreateSettingDto, ['value']) {}

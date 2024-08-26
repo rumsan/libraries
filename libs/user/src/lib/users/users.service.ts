@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma, PrismaClient, Service, User } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
+import { EVENTS, RSERRORS } from '@rumsan/extensions/constants';
 import {
   CreateUserDto,
   ListUserDto,
@@ -11,7 +12,6 @@ import { paginator, PaginatorTypes, PrismaService } from '@rumsan/prisma';
 import { CUI } from '@rumsan/sdk/interfaces';
 import { Request, UserRole } from '@rumsan/sdk/types';
 import { UUID } from 'crypto';
-import { ERRORS, EVENTS } from '../constants';
 import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
 import { getSecret } from '../utils/config.utils';
 import {
@@ -136,7 +136,7 @@ export class UsersService {
         where: { uuid, deletedAt: null },
       });
 
-      if (!user) throw ERRORS.USER_NOT_FOUND;
+      if (!user) throw RSERRORS.USER_NOT_FOUND;
 
       // Update user details
       const updatedUser = await tx.user.update({
@@ -282,7 +282,7 @@ export class UsersService {
   async listRoles(uuid: UUID, prisma?: PrismaClientType): Promise<UserRole[]> {
     if (!prisma) prisma = this.prisma;
     const user = await this.get(uuid, prisma);
-    if (!user) throw ERRORS.USER_NOT_FOUND;
+    if (!user) throw RSERRORS.USER_NOT_FOUND;
     const roles = await prisma.userRole.findMany({
       where: { userId: user?.id },
       include: { Role: true },
@@ -309,7 +309,7 @@ export class UsersService {
     const user = await prisma.user.findUnique({
       where: { uuid },
     });
-    if (!user) throw ERRORS.USER_NOT_FOUND;
+    if (!user) throw RSERRORS.USER_NOT_FOUND;
 
     await prisma.userRole.createMany({
       data: getValidRoles.map((role) => ({
@@ -330,7 +330,7 @@ export class UsersService {
     const user = await prisma.user.findUnique({
       where: { uuid },
     });
-    if (!user) throw ERRORS.USER_NOT_FOUND;
+    if (!user) throw RSERRORS.USER_NOT_FOUND;
 
     await prisma.userRole.deleteMany({
       where: {

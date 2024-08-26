@@ -1,8 +1,8 @@
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { RumsanAppModule } from '@rumsan/extensions/apps';
+import { RSERRORS } from '@rumsan/extensions/constants';
 import { RSExceptionModule } from '@rumsan/extensions/exceptions';
 import { AbilitySubject } from './ability/ability.subjects';
-import { ERRORS } from './constants';
 
 @Global()
 @Module({})
@@ -34,7 +34,7 @@ export class RSUserModule {
       module: RSUserModule,
       imports: [
         //SignupModule.forRoot({ autoApprove: false }),
-        RSExceptionModule.forRoot({ errorSet: ERRORS }),
+        RSExceptionModule.forRoot({ errorSet: RSERRORS }),
         RumsanAppModule.forRoot({
           controllers: {
             subjects: AbilitySubject.list,
