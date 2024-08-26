@@ -8,9 +8,9 @@ import {
   UpdateUserDto,
 } from '@rumsan/extensions/dtos';
 import { paginator, PaginatorTypes, PrismaService } from '@rumsan/prisma';
+import { CUI } from '@rumsan/sdk/interfaces';
 import { Request, UserRole } from '@rumsan/sdk/types';
 import { UUID } from 'crypto';
-import { CUI } from '../auths/interfaces/current-user.interface';
 import { ERRORS, EVENTS } from '../constants';
 import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
 import { getSecret } from '../utils/config.utils';
@@ -141,7 +141,7 @@ export class UsersService {
       // Update user details
       const updatedUser = await tx.user.update({
         where: { id: user.id },
-        data: { ...dto },
+        data: { ...dto, updatedAt: new Date() },
       });
 
       // Update authentication details only if corresponding DTO field is provided
@@ -196,7 +196,7 @@ export class UsersService {
 
       const updatedUser = await tx.user.update({
         where: { id: user.id },
-        data,
+        data: { ...data, updatedAt: new Date() },
       });
 
       // Helper function to create a verification challenge and emit an event

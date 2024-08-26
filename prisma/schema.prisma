@@ -15,7 +15,7 @@ datasource db {
 // ===================User Model==================
 model User {
   id        Int     @id @default(autoincrement())
-  uuid      String  @unique @default(uuid())
+  uuid      String  @unique @default(cuid())
   name      String
   gender    Gender  @default(UNKNOWN)
   email     String?
@@ -30,7 +30,7 @@ model User {
   Signup   Signup[]
 
   createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt()
+  updatedAt DateTime?
   deletedAt DateTime?
   createdBy String?
   updatedBy String?
@@ -190,6 +190,13 @@ model Setting {
   requiredFields String[]
   isReadOnly     Boolean         @default(false)
   isPrivate      Boolean         @default(true)
+  sessionId      String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt()
+
+  createdBy String?
+  updatedBy String?
 
   @@map("tbl_settings")
 }

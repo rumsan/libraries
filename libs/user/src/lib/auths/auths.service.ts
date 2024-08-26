@@ -13,13 +13,13 @@ import { ERRORS } from '@rumsan/extensions/exceptions';
 import { PrismaService } from '@rumsan/prisma';
 import { CONSTANTS } from '@rumsan/sdk/constants';
 import { Service } from '@rumsan/sdk/enums';
+import { TokenDataInterface } from '@rumsan/sdk/interfaces';
 import { Request } from '@rumsan/sdk/types';
 import { hashMessage, recoverAddress } from 'viem';
 import { EVENTS } from '../constants';
 import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
 import { getSecret } from '../utils/config.utils';
 import { getServiceTypeByAddress } from '../utils/service.utils';
-import { TokenDataInterface } from './interfaces/auth.interface';
 
 @Injectable()
 export class AuthsService {
