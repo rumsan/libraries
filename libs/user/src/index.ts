@@ -4,7 +4,6 @@ export * from './lib/ability/ability.module';
 export * from './lib/ability/ability.subjects';
 export * from './lib/auths/auths.module';
 export * from './lib/auths/auths.service';
-export * from './lib/auths/guard';
 export * from './lib/roles/roles.module';
 export * from './lib/roles/roles.service';
 export * from './lib/rsuser-module';

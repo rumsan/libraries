@@ -32,3 +32,5 @@ export const APP = {
 };
 
 export const CLIENT_TOKEN_LIFETIME = 600;
+
+export const IS_PUBLIC_KEY = 'isPublic';

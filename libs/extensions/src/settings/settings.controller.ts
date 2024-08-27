@@ -25,11 +25,11 @@ export class SettingsController {
 
   @Post('')
   create(@Body() createSettingDto: CreateSettingDto, @CurrentUser() cu: CUI) {
-    console.log({ cu });
-    if (cu.name) {
-      createSettingDto.createdBy = cu.name;
-    }
-    createSettingDto.sessionId = cu.sessionId;
+    // console.log({ cu });
+    // if (cu.name) {
+    //   createSettingDto.createdBy = cu.name;
+    // }
+    // createSettingDto.sessionId = cu.sessionId;
     return this.settingsService.create(createSettingDto);
   }
 
@@ -39,7 +39,8 @@ export class SettingsController {
   }
 
   @Patch(':name')
-  udpdate(@Param('name') name: string, @Body() @Body() dto: UpdateSettngsDto) {
+  udpdate(@Param('name') name: string, @Body() dto: UpdateSettngsDto) {
+    console.log({ name, dto });
     return this.settingsService.update(name, dto);
   }
 }
