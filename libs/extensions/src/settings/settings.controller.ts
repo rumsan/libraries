@@ -6,15 +6,20 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CUI } from '@rumsan/sdk/interfaces';
+import { APP } from '../constants';
 import { CurrentUser } from '../decorators/currentUser.decorator';
 import { CreateSettingDto, ListSettingDto, UpdateSettngsDto } from '../dtos';
+import { JwtGuard } from '../guards';
 import { SettingsService } from './settings.service';
 
 @Controller('settings')
 @ApiTags('Settings')
+@ApiBearerAuth(APP.JWT_BEARER)
+@UseGuards(JwtGuard)
 export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}
 
@@ -25,11 +30,11 @@ export class SettingsController {
 
   @Post('')
   create(@Body() createSettingDto: CreateSettingDto, @CurrentUser() cu: CUI) {
-    // console.log({ cu });
-    // if (cu.name) {
-    //   createSettingDto.createdBy = cu.name;
-    // }
-    // createSettingDto.sessionId = cu.sessionId;
+    console.log({ cu });
+    if (cu.name) {
+      createSettingDto.createdBy = cu.name;
+    }
+    createSettingDto.sessionId = cu.sessionId;
     return this.settingsService.create(createSettingDto);
   }
 
@@ -39,8 +44,13 @@ export class SettingsController {
   }
 
   @Patch(':name')
-  udpdate(@Param('name') name: string, @Body() dto: UpdateSettngsDto) {
-    console.log({ name, dto });
+  update(
+    @Param('name') name: string,
+    @Body() dto: UpdateSettngsDto,
+    @CurrentUser() cu: CUI,
+  ) {
+    dto.sessionId = cu.sessionId;
+    if (cu.name) dto.updatedBy = cu?.name;
     return this.settingsService.update(name, dto);
   }
 }

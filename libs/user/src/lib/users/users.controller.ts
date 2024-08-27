@@ -48,7 +48,6 @@ export class UsersController {
   @Post('')
   @CheckAbilities({ actions: ACTIONS.CREATE, subject: SUBJECTS.USER })
   create(@Body() dto: CreateUserDto, @CurrentUser() cu: CUI) {
-    console.log({ cu });
     dto.createdBy = cu.uuid;
     dto.sessionId = cu.sessionId;
     return this.userService.create(dto);
