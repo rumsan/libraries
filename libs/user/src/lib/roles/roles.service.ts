@@ -39,7 +39,6 @@ export class RolesService {
 
     return this.prisma.$transaction(async (prisma) => {
       const role = await prisma.role.create({ data });
-      console.log(role);
       await this._addPermissionsToRole(role.id, permissions, prisma);
 
       return role;

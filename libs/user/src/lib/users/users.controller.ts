@@ -24,12 +24,12 @@ import {
   UpdateUserDto,
 } from '@rumsan/extensions/dtos';
 import { ERRORS } from '@rumsan/extensions/exceptions';
+import { JwtGuard } from '@rumsan/extensions/guards';
 import { CUI } from '@rumsan/sdk/interfaces';
 import { Request } from '@rumsan/sdk/types';
 import { UUID } from 'crypto';
 import { CheckAbilities } from '../ability/ability.decorator';
 import { AbilitiesGuard } from '../ability/ability.guard';
-import { JwtGuard } from '../auths/guard';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -48,7 +48,6 @@ export class UsersController {
   @Post('')
   @CheckAbilities({ actions: ACTIONS.CREATE, subject: SUBJECTS.USER })
   create(@Body() dto: CreateUserDto, @CurrentUser() cu: CUI) {
-    console.log({ cu });
     dto.createdBy = cu.uuid;
     dto.sessionId = cu.sessionId;
     return this.userService.create(dto);

@@ -189,6 +189,8 @@ export class SettingsService {
         requiredFields: dto.requiredFields,
         isPrivate: dto.isPrivate,
         isReadOnly: dto.isReadOnly,
+        sessionId: dto.sessionId,
+        updatedBy: dto.updatedBy,
       },
     });
     this.load();

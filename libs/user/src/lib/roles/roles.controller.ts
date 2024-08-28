@@ -18,9 +18,9 @@ import {
   ListRoleDto,
   SearchPermissionDto,
 } from '@rumsan/extensions/dtos';
+import { JwtGuard } from '@rumsan/extensions/guards';
 import { CheckAbilities } from '../ability/ability.decorator';
 import { AbilitiesGuard } from '../ability/ability.guard';
-import { JwtGuard } from '../auths/guard';
 import { RolesService } from './roles.service';
 
 @Controller('roles')
