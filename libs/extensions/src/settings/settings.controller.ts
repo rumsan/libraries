@@ -11,6 +11,7 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CUI } from '@rumsan/sdk/interfaces';
 import { APP } from '../constants';
+import { Public } from '../decorators';
 import { CurrentUser } from '../decorators/currentUser.decorator';
 import { CreateSettingDto, ListSettingDto, UpdateSettngsDto } from '../dtos';
 import { JwtGuard } from '../guards';
@@ -24,6 +25,7 @@ export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}
 
   @Get('')
+  @Public()
   list(@Query() query: ListSettingDto) {
     return this.settingsService.list(query);
   }
@@ -39,6 +41,7 @@ export class SettingsController {
   }
 
   @Get(':name')
+  @Public()
   get(@Param('name') name: string) {
     return this.settingsService.getByName(name);
   }
