@@ -110,6 +110,7 @@ model Auth {
   isLocked      Boolean   @default(false)
   lockedOnAt    DateTime?
   lastLoginAt   DateTime?
+  sessionId     String?
 
   User    User          @relation(fields: [userId], references: [id])
   AuthLog AuthSession[]
@@ -117,6 +118,8 @@ model Auth {
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt()
   deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
 
   @@unique([service, serviceId], name: "authIdentifier")
   @@map("tbl_auth")

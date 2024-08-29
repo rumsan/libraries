@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma, PrismaClient, Service, User } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
-import { EVENTS, RSERRORS } from '@rumsan/extensions/constants';
+import { EVENTS, NOT_AVAILABLE, RSERRORS } from '@rumsan/extensions/constants';
 import {
   CreateUserDto,
   ListUserDto,
@@ -56,9 +56,30 @@ export class UsersService {
         // await this.addRoles(user.uuid as UUID, dto.roles, tx);
 
         await Promise.all([
-          this._createAuth(user.id, Service.EMAIL, user.email, tx),
-          this._createAuth(user.id, Service.PHONE, user.phone, tx),
-          this._createAuth(user.id, Service.WALLET, user.wallet, tx),
+          this._createAuth(
+            user.id,
+            Service.EMAIL,
+            user.email,
+            user.sessionId ?? NOT_AVAILABLE,
+            user.createdBy ?? NOT_AVAILABLE,
+            tx,
+          ),
+          this._createAuth(
+            user.id,
+            Service.PHONE,
+            user.phone,
+            user.sessionId ?? NOT_AVAILABLE,
+            user.createdBy ?? NOT_AVAILABLE,
+            tx,
+          ),
+          this._createAuth(
+            user.id,
+            Service.WALLET,
+            user.wallet,
+            user.sessionId ?? NOT_AVAILABLE,
+            user.createdBy ?? NOT_AVAILABLE,
+            tx,
+          ),
         ]);
 
         if (callback) {
@@ -81,12 +102,14 @@ export class UsersService {
     userId: number,
     service: Service,
     serviceId: string | null,
+    sessionId: string,
+    createdBy: string,
     prisma: PrismaClientType,
   ): Promise<void> {
     if (!prisma) prisma = this.prisma;
     if (serviceId) {
       await prisma.auth.create({
-        data: { userId, service, serviceId },
+        data: { userId, service, serviceId, sessionId, createdBy },
       });
     }
   }
