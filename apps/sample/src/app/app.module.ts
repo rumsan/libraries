@@ -4,6 +4,7 @@ import { PrismaModule } from '@rumsan/prisma';
 
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { RumsanAppModule } from '@rumsan/app';
 import { RSExceptionModule } from '@rumsan/extensions/exceptions';
 import { SettingsModule } from '@rumsan/extensions/settings';
 import {
@@ -40,6 +41,7 @@ import { AppService } from './app.service';
     RSExceptionModule.forRoot({ errorSet: ERRORS }),
     AbilityModule.forRoot({ subjects: APP_SUBJECTS }),
     SettingsModule,
+    RumsanAppModule,
   ],
   controllers: [AppController],
   providers: [AppService],
