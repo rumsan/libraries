@@ -8,7 +8,6 @@ export const CurrentUser = createParamDecorator(
     // if (data) {
     //   return request.user[data];
     // }
-    console.log(request.user);
     return request.user;
   },
 );
