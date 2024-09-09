@@ -15,7 +15,7 @@ datasource db {
 // ===================User Model==================
 model User {
   id        Int     @id @default(autoincrement())
-  uuid      String  @unique @default(cuid())
+  uuid      String  @unique @default(uuid())
   name      String
   gender    Gender  @default(UNKNOWN)
   email     String?
@@ -50,17 +50,19 @@ enum Gender {
 
 // ===================Role Model==================
 model Role {
-  id       Int     @unique @default(autoincrement())
-  name     String  @unique @db.VarChar()
-  isSystem Boolean @default(false)
+  id        Int     @unique @default(autoincrement())
+  name      String  @unique @db.VarChar()
+  isSystem  Boolean @default(false)
+  sessionId String?
 
   Permission Permission[]
   UserRole   UserRole[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt()
-  createdBy Int?
-  updatedBy Int?
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
 
   @@map("tbl_auth_roles")
 }
@@ -74,11 +76,15 @@ model Permission {
   inverted   Boolean @default(false)
   conditions Json?   @db.JsonB()
   reason     String? @db.Text()
+  sessionId  String?
 
   Role Role @relation(fields: [roleId], references: [id])
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt()
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
 
   @@map("tbl_auth_permissions")
 }

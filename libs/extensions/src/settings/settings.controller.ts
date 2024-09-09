@@ -32,7 +32,6 @@ export class SettingsController {
 
   @Post('')
   create(@Body() createSettingDto: CreateSettingDto, @CurrentUser() cu: CUI) {
-    console.log({ cu });
     if (cu.name) {
       createSettingDto.createdBy = cu.name;
     }
