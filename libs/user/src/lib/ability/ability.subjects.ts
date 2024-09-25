@@ -1,10 +1,10 @@
-import { SUBJECTS } from '../constants';
+import { SUBJECTS } from '@rumsan/extensions/constants';
 
 //TODO: register source of subjects
 const subjectsList: any = SUBJECTS;
 
 export const AbilitySubject = {
-  add: (subjects: { [key: string]: string }, source: string = '') => {
+  add: (subjects: { [key: string]: string }, source = '') => {
     Object.keys(subjects).forEach((key) => {
       subjectsList[key] = subjects[key];
     });

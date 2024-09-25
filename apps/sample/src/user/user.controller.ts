@@ -1,12 +1,8 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import {
-  ACTIONS,
-  AbilitiesGuard,
-  CheckAbilities,
-  JwtGuard,
-  SUBJECTS,
-} from '@rumsan/user';
+import { ACTIONS, SUBJECTS } from '@rumsan/extensions/constants';
+import { JwtGuard } from '@rumsan/extensions/guards';
+import { AbilitiesGuard, CheckAbilities } from '@rumsan/user';
 import { APP } from '../constants';
 import { AppUsersService } from './user.service';
 

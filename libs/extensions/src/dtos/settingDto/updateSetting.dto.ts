@@ -45,4 +45,12 @@ export class UpdateSettngsDto {
   })
   @IsBoolean()
   isReadOnly!: false;
+
+  @IsOptional()
+  @IsNotEmpty()
+  sessionId?: string;
+
+  @IsOptional()
+  @IsNotEmpty()
+  updatedBy?: string;
 }

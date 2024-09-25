@@ -1,6 +1,6 @@
 import { Permission } from '@prisma/client';
+import { RSERRORS } from '@rumsan/extensions/constants';
 import { AbilitySubject } from '../ability/ability.subjects';
-import { ERRORS } from '../constants';
 import { PermissionSet } from '../interfaces';
 
 export function isPermissionSet(variable: any): variable is PermissionSet {
@@ -29,7 +29,7 @@ export function checkPermissionSet(permissions: PermissionSet) {
       validSubjects: AbilitySubject.listArray(),
     };
   }
-  if (!isPermissionSet(permissions)) throw ERRORS.PERMISSION_SET_INVALID;
+  if (!isPermissionSet(permissions)) throw RSERRORS.PERMISSION_SET_INVALID;
   return AbilitySubject.checkForValidSubjects(Object.keys(permissions));
 }
 

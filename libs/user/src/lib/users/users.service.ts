@@ -2,16 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma, PrismaClient, Service, User } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
+import { EVENTS, NOT_AVAILABLE, RSERRORS } from '@rumsan/extensions/constants';
 import {
   CreateUserDto,
   ListUserDto,
   UpdateUserDto,
 } from '@rumsan/extensions/dtos';
 import { paginator, PaginatorTypes, PrismaService } from '@rumsan/prisma';
+import { CUI } from '@rumsan/sdk/interfaces';
 import { Request, UserRole } from '@rumsan/sdk/types';
 import { UUID } from 'crypto';
-import { CUI } from '../auths/interfaces/current-user.interface';
-import { ERRORS, EVENTS } from '../constants';
 import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
 import { getSecret } from '../utils/config.utils';
 import {
@@ -56,9 +56,30 @@ export class UsersService {
         // await this.addRoles(user.uuid as UUID, dto.roles, tx);
 
         await Promise.all([
-          this._createAuth(user.id, Service.EMAIL, user.email, tx),
-          this._createAuth(user.id, Service.PHONE, user.phone, tx),
-          this._createAuth(user.id, Service.WALLET, user.wallet, tx),
+          this._createAuth(
+            user.id,
+            Service.EMAIL,
+            user.email,
+            user.sessionId ?? NOT_AVAILABLE,
+            user.createdBy ?? NOT_AVAILABLE,
+            tx,
+          ),
+          this._createAuth(
+            user.id,
+            Service.PHONE,
+            user.phone,
+            user.sessionId ?? NOT_AVAILABLE,
+            user.createdBy ?? NOT_AVAILABLE,
+            tx,
+          ),
+          this._createAuth(
+            user.id,
+            Service.WALLET,
+            user.wallet,
+            user.sessionId ?? NOT_AVAILABLE,
+            user.createdBy ?? NOT_AVAILABLE,
+            tx,
+          ),
         ]);
 
         if (callback) {
@@ -81,12 +102,14 @@ export class UsersService {
     userId: number,
     service: Service,
     serviceId: string | null,
+    sessionId: string,
+    createdBy: string,
     prisma: PrismaClientType,
   ): Promise<void> {
     if (!prisma) prisma = this.prisma;
     if (serviceId) {
       await prisma.auth.create({
-        data: { userId, service, serviceId },
+        data: { userId, service, serviceId, sessionId, createdBy },
       });
     }
   }
@@ -136,12 +159,12 @@ export class UsersService {
         where: { uuid, deletedAt: null },
       });
 
-      if (!user) throw ERRORS.USER_NOT_FOUND;
+      if (!user) throw RSERRORS.USER_NOT_FOUND;
 
       // Update user details
       const updatedUser = await tx.user.update({
         where: { id: user.id },
-        data: { ...dto },
+        data: { ...dto, updatedAt: new Date() },
       });
 
       // Update authentication details only if corresponding DTO field is provided
@@ -196,7 +219,7 @@ export class UsersService {
 
       const updatedUser = await tx.user.update({
         where: { id: user.id },
-        data,
+        data: { ...data, updatedAt: new Date() },
       });
 
       // Helper function to create a verification challenge and emit an event
@@ -282,7 +305,7 @@ export class UsersService {
   async listRoles(uuid: UUID, prisma?: PrismaClientType): Promise<UserRole[]> {
     if (!prisma) prisma = this.prisma;
     const user = await this.get(uuid, prisma);
-    if (!user) throw ERRORS.USER_NOT_FOUND;
+    if (!user) throw RSERRORS.USER_NOT_FOUND;
     const roles = await prisma.userRole.findMany({
       where: { userId: user?.id },
       include: { Role: true },
@@ -309,7 +332,7 @@ export class UsersService {
     const user = await prisma.user.findUnique({
       where: { uuid },
     });
-    if (!user) throw ERRORS.USER_NOT_FOUND;
+    if (!user) throw RSERRORS.USER_NOT_FOUND;
 
     await prisma.userRole.createMany({
       data: getValidRoles.map((role) => ({
@@ -330,7 +353,7 @@ export class UsersService {
     const user = await prisma.user.findUnique({
       where: { uuid },
     });
-    if (!user) throw ERRORS.USER_NOT_FOUND;
+    if (!user) throw RSERRORS.USER_NOT_FOUND;
 
     await prisma.userRole.deleteMany({
       where: {

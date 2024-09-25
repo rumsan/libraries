@@ -86,7 +86,6 @@ export class SettingsService {
   }
 
   async list(query: ListSettingDto) {
-    // console.log(query);
     const AND_CONDITIONS = [];
     let conditions = {};
 
@@ -189,6 +188,8 @@ export class SettingsService {
         requiredFields: dto.requiredFields,
         isPrivate: dto.isPrivate,
         isReadOnly: dto.isReadOnly,
+        sessionId: dto.sessionId,
+        updatedBy: dto.updatedBy,
       },
     });
     this.load();
@@ -218,6 +219,8 @@ export class SettingsService {
       requiredFields,
       isReadOnly,
       isPrivate,
+      sessionId,
+      createdBy,
     } = createSettingDto;
     let value: any = dtoValue;
 
@@ -280,6 +283,8 @@ export class SettingsService {
         requiredFields: requiredFieldsArray,
         isReadOnly,
         isPrivate,
+        sessionId,
+        createdBy,
       },
     });
 
