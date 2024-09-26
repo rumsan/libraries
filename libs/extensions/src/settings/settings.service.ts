@@ -86,30 +86,24 @@ export class SettingsService {
   }
 
   async list(query: ListSettingDto) {
-    // console.log(query);
     const AND_CONDITIONS = [];
-    let conditions = {};
 
-    if (query.name) {
+    if (query.name)
       AND_CONDITIONS.push({
         name: { contains: query.name, mode: 'insensitive' },
       });
-      conditions = { AND: AND_CONDITIONS };
-    }
 
-    if (query.private !== undefined) {
+    if (query.private !== undefined)
       AND_CONDITIONS.push({
         isPrivate: query.private,
       });
-      conditions = { AND: AND_CONDITIONS };
-    }
 
-    if (query.readOnly !== undefined) {
+    if (query.readOnly !== undefined)
       AND_CONDITIONS.push({
         isReadOnly: query.readOnly,
       });
-      conditions = { AND: AND_CONDITIONS };
-    }
+
+    const conditions = AND_CONDITIONS.length ? {} : {};
 
     const select: Prisma.SettingSelect = {
       name: true,
@@ -154,7 +148,8 @@ export class SettingsService {
   }
 
   async update(name: string, dto: UpdateSettngsDto) {
-    const { value, requiredFields } = dto;
+    const { isPrivate, isReadOnly } = dto;
+    let { value, requiredFields } = dto;
     const settingsName = await this.prisma.setting.findUnique({
       where: {
         name,
@@ -171,24 +166,56 @@ export class SettingsService {
       throw new Error('Invalid data structure');
     }
 
-    const matchKeysWithRequiredFields = Object.keys(value).every((key) =>
-      requiredFields.includes(key),
-    );
+    const requiredFieldsArray: string[] = requiredFields
+      ? requiredFields.map((field) => field.toUpperCase())
+      : [];
+    const dataType = getDataType(value);
 
-    const matchRequiredFieldsWithKey = requiredFields.every((field) =>
-      Object.keys(value).includes(field),
-    );
-    if (!matchKeysWithRequiredFields || !matchRequiredFieldsWithKey)
-      throw new Error('Key did not match with the Required Fields');
+    // Check if 'value' is an object and not an array or null
+    if (dataType === SettingDataType.OBJECT) {
+      // Use type assertion here to tell TypeScript that value is an object
+      const rawValueObject = value as Record<string, any>;
+      // Capitalize keys of the 'value' object without changing the values
+      value = capitalizeObjectKeys(rawValueObject);
+
+      // Check if 'value' object has all the properties specified in 'requiredFields' (case-insensitive)
+      if (requiredFieldsArray && requiredFieldsArray.length > 0) {
+        value = Object.keys(value)
+          .filter((key) => requiredFieldsArray.includes(key))
+          .reduce((obj: any, key) => {
+            obj[key] = value[key];
+            return obj;
+          }, {});
+
+        const missingFields = requiredFieldsArray.filter((field) => {
+          const matchingKey = Object.keys(value).find(
+            (key) => key.toUpperCase() === field,
+          );
+          return !matchingKey;
+        });
+
+        if (missingFields.length > 0) {
+          throw new Error(
+            `Required fields missing in 'value' object: ${missingFields.join(
+              ', ',
+            )}`,
+          ); // 400 Bad Request
+        }
+      }
+    } else {
+      // If 'value' is not an object, set 'requiredFields' to an empty array []
+      requiredFields = [];
+    }
+
     const updatedData = await this.prisma.setting.update({
       where: {
         name,
       },
       data: {
-        value: dto.value,
-        requiredFields: dto.requiredFields,
-        isPrivate: dto.isPrivate,
-        isReadOnly: dto.isReadOnly,
+        value,
+        requiredFields: requiredFieldsArray,
+        isPrivate,
+        isReadOnly,
       },
     });
     this.load();
@@ -212,13 +239,8 @@ export class SettingsService {
     createSettingDto: CreateSettingDto,
     prisma: PrismaClientType = this.prisma,
   ) {
-    let {
-      name,
-      value: dtoValue,
-      requiredFields,
-      isReadOnly,
-      isPrivate,
-    } = createSettingDto;
+    let { name, value: dtoValue, requiredFields } = createSettingDto;
+    const { isReadOnly, isPrivate } = createSettingDto;
     let value: any = dtoValue;
 
     // Ensure that the name is stored in uppercase
