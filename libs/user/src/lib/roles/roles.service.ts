@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { Permission, Prisma, PrismaClient, Role } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
-import { StringUtils } from '@rumsan/core';
 import {
   CreateRoleDto,
   EditRoleDto,
   ListRoleDto,
 } from '@rumsan/extensions/dtos';
 import { PaginatorTypes, PrismaService, paginator } from '@rumsan/prisma';
+import { StringUtils } from '@rumsan/sdk/utils';
 import { ERRORS } from '../constants';
 import { RSE } from '../constants/errors';
 import { PermissionSet } from '../interfaces';

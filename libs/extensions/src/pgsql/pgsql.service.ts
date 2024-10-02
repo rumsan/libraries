@@ -37,16 +37,25 @@ export class PgSqlService implements OnModuleInit, OnModuleDestroy {
     console.log('Connected to PostgreSQL and listening for changes...');
   }
 
-  async listenToChanges(
+  async listen<T>(channel: string, callback: (payload: T) => void) {
+    this.subscriber.notifications.on(channel, callback);
+    await this.subscriber.listenTo(channel);
+  }
+
+  async unlisten(channel: string) {
+    this.subscriber.notifications.removeAllListeners(channel);
+    await this.subscriber.unlisten(channel);
+  }
+
+  async notify(
     channel: string,
-    callback: (payload: {
+    payload: {
       table: string;
       operation: 'INSERT' | 'UPDATE' | 'DELETE';
       before: any;
       after: any;
-    }) => void,
+    },
   ) {
-    this.subscriber.notifications.on(channel, callback);
-    await this.subscriber.listenTo(channel);
+    await this.subscriber.notify(channel, payload);
   }
 }
