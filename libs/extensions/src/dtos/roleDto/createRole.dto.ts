@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { StringUtils } from '@rumsan/core';
 import { PermissionSet } from '@rumsan/sdk/types';
+import { StringUtils } from '@rumsan/sdk/utils';
 import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsOptional, ValidateIf } from 'class-validator';
 export class CreateRoleDto {

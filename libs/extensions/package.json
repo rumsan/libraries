@@ -1,6 +1,10 @@
 {
   "name": "@rumsan/extensions",
-  "version": "0.0.30",
+  "version": "0.0.301",
   "type": "commonjs",
+  "dependencies": {
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1"
+  },
   "typings": "./index.d.ts"
 }

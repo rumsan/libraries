@@ -1,5 +1,5 @@
-import { DateUtils } from '@rumsan/core';
 import { Challenge, CreateChallenge } from '@rumsan/sdk/types';
+import { DateUtils } from '@rumsan/sdk/utils';
 import { v4 as uuidv4 } from 'uuid';
 import { decrypt, encrypt } from './crypto.utils';
 const ERRORS = {
