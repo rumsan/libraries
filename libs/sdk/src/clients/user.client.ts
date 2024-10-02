@@ -1,5 +1,4 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
-import { UUID } from 'crypto';
 import { Pagination, User, UserRole } from '../types';
 import { UserClient } from '../types/client.types';
 import { formatResponse } from '../utils/formatResponse.utils';
@@ -10,20 +9,20 @@ export const getUserClient = (client: AxiosInstance): UserClient => {
       const response = await client.post('/users', data, config);
       return formatResponse<User>(response);
     },
-    getUser: async (uuid: string, config?: AxiosRequestConfig) => {
-      const response = await client.get(`/users/${uuid}`, config);
+    getUser: async (cuid: string, config?: AxiosRequestConfig) => {
+      const response = await client.get(`/users/${cuid}`, config);
       return formatResponse<User>(response);
     },
     updateUser: async (
-      uuid: string,
+      cuid: string,
       data: User,
       config?: AxiosRequestConfig,
     ) => {
-      const response = await client.patch(`/users/${uuid}`, data, config);
+      const response = await client.patch(`/users/${cuid}`, data, config);
       return formatResponse<User>(response);
     },
-    removeUser: async (uuid: string, config?: AxiosRequestConfig) => {
-      const response = await client.delete(`/users/${uuid}`, config);
+    removeUser: async (cuid: string, config?: AxiosRequestConfig) => {
+      const response = await client.delete(`/users/${cuid}`, config);
       return formatResponse<User>(response);
     },
     listUsers: async (data?: Pagination, config?: AxiosRequestConfig) => {
@@ -42,24 +41,24 @@ export const getUserClient = (client: AxiosInstance): UserClient => {
       return formatResponse<User>(response);
     },
 
-    listRoles: async (uuid: UUID, config?: AxiosRequestConfig) => {
-      const response = await client.get(`/users/${uuid}/roles`, config);
+    listRoles: async (cuid: string, config?: AxiosRequestConfig) => {
+      const response = await client.get(`/users/${cuid}/roles`, config);
       return formatResponse<UserRole[]>(response);
     },
     addRoles: async (
-      uuid: UUID,
+      cuid: string,
       roles: string[],
       config?: AxiosRequestConfig,
     ) => {
-      const response = await client.post(`/users/${uuid}/roles`, roles, config);
+      const response = await client.post(`/users/${cuid}/roles`, roles, config);
       return formatResponse<UserRole[]>(response);
     },
     removeRoles: async (
-      uuid: UUID,
+      cuid: string,
       roles: string[],
       config?: AxiosRequestConfig,
     ) => {
-      const response = await client.delete(`/users/${uuid}/roles`, {
+      const response = await client.delete(`/users/${cuid}/roles`, {
         ...config,
         data: roles,
       });
@@ -69,12 +68,12 @@ export const getUserClient = (client: AxiosInstance): UserClient => {
 };
 
 // removeRoles: async (
-//   uuid: UUID,
+//   cuid: string,
 //   data: UpdateUserDto,
 //   config?: AxiosRequestConfig,
 // ) => {
 //   const response = await RumsanService.client.delete(
-//     `/users/${uuid}/roles`,
+//     `/users/${cuid}/roles`,
 //     data,
 //     config,
 //   );

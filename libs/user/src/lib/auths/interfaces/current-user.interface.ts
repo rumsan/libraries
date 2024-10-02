@@ -1,7 +1,7 @@
 export interface CurrentUserInterface {
   id: number;
   userId: number;
-  uuid: string;
+  cuid: string;
   name: string | null;
   email: string | null;
   phone: string | null;

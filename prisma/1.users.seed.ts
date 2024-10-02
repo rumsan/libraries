@@ -79,7 +79,7 @@ export const users: Array<{
   {
     id: 1,
     name: 'Rumsan Admin',
-    email: 'rumsan@mailinator.com',
+    email: 'rumsan@maile.uk',
   },
   {
     id: 2,
@@ -89,7 +89,7 @@ export const users: Array<{
   {
     id: 3,
     name: 'Mr User',
-    email: 'user@mailinator.com',
+    email: 'user@maile.uk',
   },
 ];
 
@@ -125,7 +125,7 @@ export const auths: Array<{
     id: 1,
     userId: 1,
     service: Service.EMAIL,
-    serviceId: 'rumsan@mailinator.com',
+    serviceId: 'rumsan@maile.uk',
   },
   {
     id: 2,
@@ -137,7 +137,7 @@ export const auths: Array<{
     id: 3,
     userId: 3,
     service: Service.EMAIL,
-    serviceId: 'user@mailinator.com',
+    serviceId: 'user@maile.uk',
   },
 ];
 

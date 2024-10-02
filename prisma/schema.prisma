@@ -15,19 +15,19 @@ datasource db {
 // ===================User Model==================
 model User {
   id        Int     @id @default(autoincrement())
-  uuid      String  @unique @default(uuid())
+  cuid      String  @unique @default(cuid())
   name      String
   gender    Gender  @default(UNKNOWN)
   email     String?
   phone     String?
   wallet    String?
-  extras    Json?   @db.JsonB()
   notes     String? @db.Text()
   sessionId String?
 
-  Auth     Auth[]
-  UserRole UserRole[]
-  Signup   Signup[]
+  Auth      Auth[]
+  UserRole  UserRole[]
+  Signup    Signup[]
+  UserDetails UserDetails?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt()
@@ -38,6 +38,21 @@ model User {
   @@map("tbl_users")
 }
 
+model UserDetails {
+  id        Int     @id @default(autoincrement())
+  cuid      String  @unique
+  extras    Json?   @db.JsonB()
+
+  user      User     @relation(fields: [cuid], references: [cuid]) // Reference to the User model
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt()
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+
+  @@map("tbl_users_details")
+}
 enum Gender {
   MALE
   FEMALE
@@ -125,7 +140,7 @@ model Auth {
 model AuthSession {
   id        Int     @id @default(autoincrement())
   clientId  String
-  sessionId String  @unique @default(uuid())
+  sessionId String  @unique @default(cuid())
   authId    Int
   ip        String?
   details   Json?   @db.JsonB()
@@ -156,7 +171,7 @@ enum Service {
 
 model Signup {
   id             Int          @id @default(autoincrement())
-  uuid           String       @unique @default(uuid())
+  cuid           String       @unique @default(cuid())
   userIdentifier String?
   data           Json?        @db.JsonB()
   status         SignupStatus @default(PENDING)

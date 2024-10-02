@@ -1,6 +1,5 @@
 import { Pagination, User } from '@rumsan/sdk/types';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { UUID } from 'crypto';
 import { useEffect } from 'react';
 import { useRSQuery } from '../providers/rs-query-provider';
 import { useErrorStore } from '../utils';
@@ -67,13 +66,13 @@ export const useUserCurrentUser = (enabled = true) => {
   return query;
 };
 
-export const useUserGet = (uuid: UUID) => {
+export const useUserGet = (cuid: string) => {
   const { queryClient, rumsanService } = useRSQuery();
 
   return useQuery(
     {
       queryKey: [TAGS.GET_USER],
-      queryFn: () => rumsanService.user.getUser(uuid),
+      queryFn: () => rumsanService.user.getUser(cuid),
     },
     queryClient,
   );
@@ -85,8 +84,8 @@ export const useUserEdit = () => {
 
   return useMutation(
     {
-      mutationFn: ({ uuid, data }: { uuid: UUID; data: User }) =>
-        rumsanService.user.updateUser(uuid, data),
+      mutationFn: ({ cuid, data }: { cuid: string; data: User }) =>
+        rumsanService.user.updateUser(cuid, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: [TAGS.GET_ALL_USER] });
       },
@@ -102,7 +101,7 @@ export const useUserRemove = () => {
 
   return useMutation(
     {
-      mutationFn: (uuid: UUID) => rumsanService.user.removeUser(uuid),
+      mutationFn: (cuid: string) => rumsanService.user.removeUser(cuid),
       onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: [TAGS.GET_ALL_USER, TAGS.GET_USER],
@@ -114,13 +113,13 @@ export const useUserRemove = () => {
   );
 };
 
-export const useUserRoleList = (uuid: UUID) => {
+export const useUserRoleList = (cuid: string) => {
   const { queryClient, rumsanService } = useRSQuery();
 
   return useQuery(
     {
-      queryKey: [TAGS.GET_USER_ROLES, uuid],
-      queryFn: () => rumsanService.user.listRoles(uuid),
+      queryKey: [TAGS.GET_USER_ROLES, cuid],
+      queryFn: () => rumsanService.user.listRoles(cuid),
     },
     queryClient,
   );
@@ -132,8 +131,8 @@ export const useUserRolesRemove = () => {
 
   return useMutation(
     {
-      mutationFn: ({ roles, uuid }: { uuid: UUID; roles: string[] }) =>
-        rumsanService.user.removeRoles(uuid, roles),
+      mutationFn: ({ roles, cuid }: { cuid: string; roles: string[] }) =>
+        rumsanService.user.removeRoles(cuid, roles),
       onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: [TAGS.GET_USER_ROLES],
@@ -151,8 +150,8 @@ export const useUserAddRoles = () => {
 
   return useMutation(
     {
-      mutationFn: ({ roles, uuid }: { uuid: UUID; roles: string[] }) =>
-        rumsanService.user.addRoles(uuid, roles),
+      mutationFn: ({ roles, cuid }: { cuid: string; roles: string[] }) =>
+        rumsanService.user.addRoles(cuid, roles),
       onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: [TAGS.GET_USER_ROLES],

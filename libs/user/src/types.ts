@@ -17,7 +17,7 @@ export type Auth = {
 
 export type User = {
   id: number;
-  uuid: string;
+  cuid: string;
   name: string | null;
   gender: 'MALE' | 'FEMALE' | 'OTHER' | 'UNKNOWN';
   email: string | null;

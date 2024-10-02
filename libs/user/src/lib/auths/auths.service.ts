@@ -260,11 +260,11 @@ export class AuthsService {
     session: AuthSession,
   ): Promise<{ accessToken: string }> {
     const { sessionId } = session;
-    const { id, uuid, name, email, phone, wallet } = user;
+    const { id, cuid, name, email, phone, wallet } = user;
     const payload: TokenDataInterface = {
       id: id,
       userId: id,
-      uuid,
+      cuid,
       name,
       email,
       phone,

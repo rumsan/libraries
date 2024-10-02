@@ -1,6 +1,6 @@
+import { createId } from '@paralleldrive/cuid2';
 import { Challenge, CreateChallenge } from '@rumsan/sdk/types';
 import { DateUtils } from '@rumsan/sdk/utils';
-import { v4 as uuidv4 } from 'uuid';
 import { decrypt, encrypt } from './crypto.utils';
 const ERRORS = {
   NO_SECRET: 'WalletUtils: Must send secret in to generate challenge data.',
@@ -14,7 +14,7 @@ export function createChallenge(
   if (!secret) throw new Error(ERRORS.NO_SECRET);
 
   const payload: Challenge = {
-    clientId: challengeData.clientId || uuidv4(),
+    clientId: challengeData.clientId || createId(),
     timestamp: DateUtils.getUnixTimestamp(),
     ip: challengeData.ip || null,
     address: challengeData.address || null,

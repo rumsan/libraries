@@ -1,9 +1,8 @@
-import { UUID } from 'crypto';
 import { Gender } from '../enums';
 
 export type User = {
   id?: number;
-  uuid?: UUID;
+  cuid?: string;
   name: string;
   gender?: Gender;
   email?: string;

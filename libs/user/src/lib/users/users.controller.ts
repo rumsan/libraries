@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
-import { ApiUuidParam, RequestDetails } from '@rumsan/extensions/decorators';
+import { ApiCuidParam, RequestDetails } from '@rumsan/extensions/decorators';
 import {
   CreateUserDto,
   ListUserDto,
@@ -19,7 +19,6 @@ import {
 } from '@rumsan/extensions/dtos';
 import { ERRORS } from '@rumsan/extensions/exceptions';
 import { Request } from '@rumsan/sdk/types';
-import { UUID } from 'crypto';
 import { CheckAbilities } from '../ability/ability.decorator';
 import { AbilitiesGuard } from '../ability/ability.guard';
 import { CU, CurrentUser } from '../auths/decorator';
@@ -44,7 +43,7 @@ export class UsersController {
   @Post('')
   @CheckAbilities({ actions: ACTIONS.CREATE, subject: SUBJECTS.USER })
   create(@Body() dto: CreateUserDto, @CurrentUser() cu: CUI) {
-    dto.createdBy = cu.uuid;
+    dto.createdBy = cu.cuid;
     dto.sessionId = cu.sessionId;
     return this.userService.create(dto);
   }
@@ -81,41 +80,41 @@ export class UsersController {
     // );
   }
 
-  @ApiUuidParam()
-  @Get(':uuid')
+  @ApiCuidParam()
+  @Get(':cuid')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
-  get(@Param('uuid') uuid: UUID) {
-    return this.userService.get(uuid);
+  get(@Param('cuid') cuid: string) {
+    return this.userService.get(cuid);
   }
 
-  @ApiUuidParam()
-  @Patch(':uuid')
+  @ApiCuidParam()
+  @Patch(':cuid')
   @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.USER })
   update(
-    @Param('uuid') uuid: UUID,
+    @Param('cuid') cuid: string,
     @Body() dto: UpdateUserDto,
     @CurrentUser() cu: CUI,
   ) {
-    dto.updatedBy = cu.uuid;
+    dto.updatedBy = cu.cuid;
     dto.sessionId = cu.sessionId;
-    return this.userService.update(uuid, dto);
+    return this.userService.update(cuid, dto);
   }
 
-  @ApiUuidParam()
-  @Delete(':uuid')
+  @ApiCuidParam()
+  @Delete(':cuid')
   @CheckAbilities({ actions: ACTIONS.DELETE, subject: SUBJECTS.USER })
-  delete(@Param('uuid') uuid: UUID, @CurrentUser() cu: CUI) {
-    return this.userService.delete(uuid, cu);
+  delete(@Param('cuid') cuid: string, @CurrentUser() cu: CUI) {
+    return this.userService.delete(cuid, cu);
   }
 
-  @ApiUuidParam()
-  @Get(':uuid/roles')
+  @ApiCuidParam()
+  @Get(':cuid/roles')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
-  getRoles(@Param('uuid') uuid: UUID) {
-    return this.userService.listRoles(uuid);
+  getRoles(@Param('cuid') cuid: string) {
+    return this.userService.listRoles(cuid);
   }
 
-  @ApiUuidParam()
+  @ApiCuidParam()
   @ApiBody({
     schema: {
       type: 'array',
@@ -125,13 +124,13 @@ export class UsersController {
       },
     },
   })
-  @Post(':uuid/roles')
+  @Post(':cuid/roles')
   @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.USER })
-  addRoles(@Param('uuid') uuid: UUID, @Body() roles: string[]) {
-    return this.userService.addRoles(uuid, roles);
+  addRoles(@Param('cuid') cuid: string, @Body() roles: string[]) {
+    return this.userService.addRoles(cuid, roles);
   }
 
-  @ApiUuidParam()
+  @ApiCuidParam()
   @ApiBody({
     schema: {
       type: 'array',
@@ -141,10 +140,10 @@ export class UsersController {
       },
     },
   })
-  @Delete(':uuid/roles')
+  @Delete(':cuid/roles')
   @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.USER })
-  removeRoles(@Param('uuid') uuid: UUID, @Body() roles: string[]) {
-    return this.userService.removeRoles(uuid, roles);
+  removeRoles(@Param('cuid') cuid: string, @Body() roles: string[]) {
+    return this.userService.removeRoles(cuid, roles);
   }
 }
 

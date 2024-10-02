@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AppId } from '@rumsan/app';
+import { AppId } from '@rumsan/extensions/app';
 import { APP } from '../constants';
 import { AppService } from './app.service';
 

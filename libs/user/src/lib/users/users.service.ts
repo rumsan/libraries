@@ -9,7 +9,6 @@ import {
 } from '@rumsan/extensions/dtos';
 import { paginator, PaginatorTypes, PrismaService } from '@rumsan/prisma';
 import { Request, UserRole } from '@rumsan/sdk/types';
-import { UUID } from 'crypto';
 import { CUI } from '../auths/interfaces/current-user.interface';
 import { ERRORS, EVENTS } from '../constants';
 import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
@@ -51,9 +50,8 @@ export class UsersService {
         });
 
         if (roles?.length) {
-          await this.addRoles(user.uuid as UUID, roles, tx);
+          await this.addRoles(user.cuid, roles, tx);
         }
-        // await this.addRoles(user.uuid as UUID, dto.roles, tx);
 
         await Promise.all([
           this._createAuth(user.id, Service.EMAIL, user.email, tx),
@@ -115,10 +113,10 @@ export class UsersService {
     });
   }
 
-  async get(uuid: UUID, prisma?: PrismaClientType) {
+  async get(cuid: string, prisma?: PrismaClientType) {
     if (!prisma) prisma = this.prisma;
     const user = await prisma.user.findUnique({
-      where: { uuid, deletedAt: null },
+      where: { cuid, deletedAt: null },
       include: {
         UserRole: {
           include: {
@@ -130,10 +128,10 @@ export class UsersService {
     return user;
   }
 
-  async update(uuid: UUID, dto: UpdateUserDto) {
+  async update(cuid: string, dto: UpdateUserDto) {
     return this.prisma.$transaction(async (tx) => {
       const user = await this.prisma.user.findUnique({
-        where: { uuid, deletedAt: null },
+        where: { cuid, deletedAt: null },
       });
 
       if (!user) throw ERRORS.USER_NOT_FOUND;
@@ -265,13 +263,12 @@ export class UsersService {
     });
   }
 
-  async delete(uuid: UUID, currentUser: CUI) {
+  async delete(cuid: string, cui: CUI) {
     try {
-      const { uuid: currentUseruuid, sessionId } = currentUser;
       const user = await this.rsprisma.user.softDelete(
-        { uuid },
-        currentUseruuid,
-        sessionId,
+        { cuid },
+        cui.cuid,
+        cui.sessionId,
       );
       return user;
     } catch (err) {
@@ -279,9 +276,12 @@ export class UsersService {
     }
   }
 
-  async listRoles(uuid: UUID, prisma?: PrismaClientType): Promise<UserRole[]> {
+  async listRoles(
+    cuid: string,
+    prisma?: PrismaClientType,
+  ): Promise<UserRole[]> {
     if (!prisma) prisma = this.prisma;
-    const user = await this.get(uuid, prisma);
+    const user = await this.get(cuid, prisma);
     if (!user) throw ERRORS.USER_NOT_FOUND;
     const roles = await prisma.userRole.findMany({
       where: { userId: user?.id },
@@ -299,7 +299,7 @@ export class UsersService {
     }));
   }
 
-  async addRoles(uuid: UUID, roles: string[], prisma?: PrismaClientType) {
+  async addRoles(cuid: string, roles: string[], prisma?: PrismaClientType) {
     if (!prisma) prisma = this.prisma;
 
     const getValidRoles = await prisma.role.findMany({
@@ -307,7 +307,7 @@ export class UsersService {
     });
     if (getValidRoles.length < 1) return [];
     const user = await prisma.user.findUnique({
-      where: { uuid },
+      where: { cuid },
     });
     if (!user) throw ERRORS.USER_NOT_FOUND;
 
@@ -318,17 +318,17 @@ export class UsersService {
       })),
       skipDuplicates: true,
     });
-    return this.listRoles(uuid, prisma);
+    return this.listRoles(cuid, prisma);
   }
 
-  async removeRoles(uuid: UUID, roles: string[], prisma?: PrismaClientType) {
+  async removeRoles(cuid: string, roles: string[], prisma?: PrismaClientType) {
     if (!prisma) prisma = this.prisma;
     const getValidRoles = await prisma.role.findMany({
       where: { name: { in: roles, mode: 'insensitive' } },
     });
-    if (getValidRoles.length < 1) this.listRoles(uuid);
+    if (getValidRoles.length < 1) this.listRoles(cuid);
     const user = await prisma.user.findUnique({
-      where: { uuid },
+      where: { cuid },
     });
     if (!user) throw ERRORS.USER_NOT_FOUND;
 
@@ -338,6 +338,6 @@ export class UsersService {
         roleId: { in: getValidRoles.map((role) => role.id) },
       },
     });
-    return this.listRoles(uuid);
+    return this.listRoles(cuid);
   }
 }

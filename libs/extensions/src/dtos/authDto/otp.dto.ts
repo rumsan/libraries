@@ -1,10 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { isCuid } from '@paralleldrive/cuid2';
 import { Service } from '@rumsan/sdk/enums';
-import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, ValidateIf } from 'class-validator';
 
 export class OtpDto {
   @ApiProperty({
-    example: 'rumsan@mailinator.com',
+    example: 'rumsan@maile.uk',
     required: true,
   })
   @IsString()
@@ -19,7 +20,7 @@ export class OtpDto {
   @ApiProperty({
     example: '105cd449-53f6-44e4-85f3-feaa7d762ffa',
   })
-  @IsUUID()
+  @ValidateIf((o) => isCuid(o.clientId))
   @IsOptional()
   clientId?: string;
 }

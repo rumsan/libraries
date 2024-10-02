@@ -14,9 +14,6 @@
       "url": "https://www.rumsan.com"
     }
   ],
-  "prisma": {
-    "seed": "ts-node prisma/seed.ts"
-  },
   "scripts": {
     "format": "prettier --write \"libs/**/*.ts\" \"apps/**/*.ts\""
   },
@@ -53,7 +50,6 @@
     "react": "^18.3.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "uuid": "^10.0.0",
     "viem": "^2.21.16",
     "winston": "^3.14.2",
     "zlib": "^1.0.5",
@@ -84,7 +80,6 @@
     "@types/passport-jwt": "^4.0.1",
     "@types/pg": "^8.11.10",
     "@types/react": "^18.3.10",
-    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.8.0",
     "@typescript-eslint/parser": "^8.8.0",
     "esbuild": "^0.24.0",
