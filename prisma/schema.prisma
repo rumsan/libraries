@@ -202,3 +202,27 @@ enum SettingDataType {
 }
 
 // ++++++++++++++++++ END: @rumsan/extensions/settings +++++++++++++++++++++++++++
+
+// ++++++++++++++++++ START: @rumsan/extensions/apps +++++++++++++++++++++++++++
+enum ApplicationEnvironment {
+  PRODUCTION
+  STAGING
+  DEVELOPMENT
+  TEST
+}
+
+model Application {
+  cuid        String                 @id @default(cuid())
+  name        String
+  publicKey   String
+  description String?
+  environment ApplicationEnvironment
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@map("tbl_applications")
+}
+
+// ++++++++++++++++++ END: @rumsan/extensions/apps ++++++++++++++++++++++++++++++++
