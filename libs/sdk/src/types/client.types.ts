@@ -1,5 +1,4 @@
 import { AxiosRequestConfig } from 'axios';
-import { UUID } from 'crypto';
 import { FormattedResponse } from '../utils/formatResponse.utils';
 import { AuthResponse } from './auth.types';
 import { CreateChallenge } from './challenge.types';
@@ -99,16 +98,16 @@ export type UserClient = {
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<User>>;
   getUser: (
-    uuid: UUID,
+    cuid: string,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<User>>;
   updateUser: (
-    uuid: UUID,
+    cuid: string,
     data: User,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<User>>;
   removeUser: (
-    uuid: UUID,
+    cuid: string,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<User>>;
   listUsers: (
@@ -121,16 +120,16 @@ export type UserClient = {
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<User>>;
   listRoles: (
-    uuid: UUID,
+    cuid: string,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<UserRole[]>>;
   addRoles: (
-    uuid: UUID,
+    cuid: string,
     roles: string[],
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<UserRole[]>>;
   removeRoles: (
-    uuid: UUID,
+    cuid: string,
     roles: string[],
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<UserRole[]>>;

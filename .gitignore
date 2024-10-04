@@ -49,3 +49,5 @@ testem.log
 Thumbs.db
 
 .nx/cache
+prisma/migrations
+pnpm-lock.yaml

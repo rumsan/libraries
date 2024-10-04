@@ -9,7 +9,6 @@ import {
 import { RumsanService } from '@rumsan/sdk';
 import { Role } from '@rumsan/sdk/types';
 import { FormattedResponse } from '@rumsan/sdk/utils/formatResponse.utils';
-import { UUID } from 'crypto';
 import { TAGS } from '../utils/tags';
 
 export class RoleQuery {
@@ -51,8 +50,8 @@ export class RoleQuery {
 
     return useMutation(
       {
-        mutationFn: (payload: { uuid: UUID; data: any }) =>
-          this.client.role.updateRole(payload.uuid, payload.data),
+        mutationFn: (payload: { cuid: string; data: any }) =>
+          this.client.role.updateRole(payload.cuid, payload.data),
         onSuccess: () => {
           qc.invalidateQueries({ queryKey: [TAGS.GET_ALL_ROLES] });
         },
@@ -66,7 +65,7 @@ export class RoleQuery {
 
     return useMutation(
       {
-        mutationFn: (uuid: UUID) => this.client.role.deleteRole(uuid),
+        mutationFn: (cuid: string) => this.client.role.deleteRole(cuid),
         onSuccess: () => {
           qc.invalidateQueries({ queryKey: [TAGS.GET_ALL_ROLES] });
         },

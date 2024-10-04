@@ -13,7 +13,7 @@ import { ERRORS } from '@rumsan/extensions/exceptions';
 import { PrismaService } from '@rumsan/prisma';
 import { CONSTANTS } from '@rumsan/sdk/constants';
 import { Service } from '@rumsan/sdk/enums';
-import { Request } from '@rumsan/sdk/types';
+import { tRC } from '@rumsan/sdk/types';
 import { hashMessage, recoverAddress } from 'viem';
 import { EVENTS } from '../constants';
 import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
@@ -40,7 +40,7 @@ export class AuthsService {
     });
   }
 
-  async getOtp(dto: OtpDto, requestInfo: Request) {
+  async getOtp(dto: OtpDto, requestInfo: tRC) {
     if (!dto.service) {
       dto.service = getServiceTypeByAddress(dto.address) as Service;
     }
@@ -85,7 +85,7 @@ export class AuthsService {
     return challenge;
   }
 
-  async loginByOtp(dto: OtpLoginDto, requestInfo: Request) {
+  async loginByOtp(dto: OtpLoginDto, requestInfo: tRC) {
     const { challenge, otp } = dto;
     const challengeData = decryptChallenge(
       getSecret(),
@@ -126,14 +126,14 @@ export class AuthsService {
     return this.signToken(user, authority, session);
   }
 
-  getChallengeForWallet(dto: ChallengeDto, requestInfo: Request) {
+  getChallengeForWallet(dto: ChallengeDto, requestInfo: tRC) {
     return createChallenge(getSecret(), {
       clientId: dto.clientId,
       ip: requestInfo.ip,
     });
   }
 
-  async loginByWallet(dto: WalletLoginDto, requestInfo: Request) {
+  async loginByWallet(dto: WalletLoginDto, requestInfo: tRC) {
     const challengeData = decryptChallenge(
       getSecret(),
       dto.challenge,
@@ -242,7 +242,6 @@ export class AuthsService {
   }
 
   createEmail(userId: number, email: string) {
-    console.log('createEmail', userId, email);
     return this.create(userId, email, Service.EMAIL);
   }
 
@@ -260,11 +259,11 @@ export class AuthsService {
     session: AuthSession,
   ): Promise<{ accessToken: string }> {
     const { sessionId } = session;
-    const { id, uuid, name, email, phone, wallet } = user;
+    const { id, cuid, name, email, phone, wallet } = user;
     const payload: TokenDataInterface = {
       id: id,
       userId: id,
-      uuid,
+      cuid,
       name,
       email,
       phone,

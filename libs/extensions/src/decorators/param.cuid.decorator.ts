@@ -1,8 +1,8 @@
 import { ApiParam } from '@nestjs/swagger';
 
-export function ApiUuidParam() {
+export function ApiCuidParam() {
   return ApiParam({
-    name: 'uuid',
+    name: 'cuid',
     required: true,
     description: 'Unique identifier',
     type: String,

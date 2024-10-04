@@ -74,6 +74,5 @@ export const calculateIPFSHash1 = (data: Buffer): string => {
   const hash = crypto.createHash('sha256');
   hash.update(data);
   const heshHex = hash.digest('hex');
-  console.log(heshHex);
   return heshHex.toString();
 };

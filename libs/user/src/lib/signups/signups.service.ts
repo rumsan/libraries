@@ -53,7 +53,7 @@ export class SignupsService {
     });
 
     if (this.config.autoApprove) {
-      await this.approve({ uuid: rec.uuid });
+      await this.approve({ cuid: rec.cuid });
     }
     return rec;
   }
@@ -81,7 +81,7 @@ export class SignupsService {
   async approve(dto: SignupApproveDto) {
     const signup = await this.prisma.signup.findUnique({
       where: {
-        uuid: dto.uuid,
+        cuid: dto.cuid,
       },
     });
     if (!signup) throw new Error('Signup not found');
@@ -98,7 +98,7 @@ export class SignupsService {
         if (err) throw err;
         await tx.signup.update({
           where: {
-            uuid: dto.uuid,
+            cuid: dto.cuid,
           },
           data: {
             status: SignupStatus.APPROVED,
@@ -115,12 +115,11 @@ export class SignupsService {
       if (err instanceof Error) rejectedReason = err.message;
       if (err instanceof PrismaClientKnownRequestError) {
         rejectedReason = err.message;
-        console.log(err.message);
       }
 
       return this.prisma.signup.update({
         where: {
-          uuid: dto.uuid,
+          cuid: dto.cuid,
         },
         data: {
           status: SignupStatus.FAILED,

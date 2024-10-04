@@ -9,7 +9,6 @@ import {
   getAuthClient,
   getRoleClient,
   getSettingClient,
-  getUserClient,
 } from './clients';
 import {
   AppClient,
@@ -33,7 +32,6 @@ export class RumsanService {
     this.app = getAppClient(this._client);
     this.setting = getSettingClient(this._client);
     this.role = getRoleClient(this._client);
-    this.user = getUserClient(this._client);
   }
 
   public set accessToken(token: string | null) {

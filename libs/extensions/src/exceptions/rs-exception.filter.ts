@@ -70,8 +70,7 @@ export class RsExceptionFilter implements PipeTransform<any>, ExceptionFilter {
       success: false,
       name: 'DEFAULT',
       message:
-        'Our server is not happy. It threw an error. Please try again or contact support.' ||
-        '',
+        'Our server is not happy. It threw an error. Please try again or contact support.',
       meta: {},
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       sourceModule: null,

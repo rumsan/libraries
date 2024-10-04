@@ -6,7 +6,6 @@ import {
   useQuery,
   UseQueryResult,
 } from '@tanstack/react-query';
-import { UUID } from 'crypto';
 import { useEffect } from 'react';
 import { useErrorStore } from '../utils';
 import { TAGS } from '../utils/tags';
@@ -79,11 +78,11 @@ export class UserQuery {
     return userQuery?.data?.data;
   }
 
-  useUserGet(payload: { uuid: UUID }): UseQueryResult<any, Error> {
+  useUserGet(payload: { cuid: string }): UseQueryResult<any, Error> {
     return useQuery(
       {
         queryKey: [TAGS.GET_USER],
-        queryFn: () => this.client.user.getUser(payload.uuid),
+        queryFn: () => this.client.user.getUser(payload.cuid),
       },
       this.reactQueryClient,
     );
@@ -93,7 +92,7 @@ export class UserQuery {
     return useMutation(
       {
         mutationFn: (payload: any) =>
-          this.client.user.updateUser(payload.uuid, payload.data),
+          this.client.user.updateUser(payload.cuid, payload.data),
         onSuccess: () => {
           this.reactQueryClient.invalidateQueries({
             queryKey: [TAGS.GET_ALL_USER],
@@ -104,10 +103,10 @@ export class UserQuery {
     );
   }
 
-  useUserRemove(payload: { uuid: UUID }) {
+  useUserRemove(payload: { cuid: string }) {
     return useMutation(
       {
-        mutationFn: () => this.client.user.removeUser(payload.uuid),
+        mutationFn: () => this.client.user.removeUser(payload.cuid),
         onSuccess: () => {
           this.reactQueryClient.invalidateQueries({
             queryKey: [TAGS.GET_ALL_USER],
@@ -118,12 +117,12 @@ export class UserQuery {
     );
   }
 
-  useUserRoleList(uuid: UUID): UseQueryResult<any, Error> {
+  useUserRoleList(cuid: string): UseQueryResult<any, Error> {
     return useQuery(
       {
-        queryKey: [TAGS.GET_USER_ROLES, uuid],
+        queryKey: [TAGS.GET_USER_ROLES, cuid],
         queryFn: async () => {
-          const { response } = await this.client.user.listRoles(uuid);
+          const { response } = await this.client.user.listRoles(cuid);
           return response;
         },
       },
@@ -131,14 +130,14 @@ export class UserQuery {
     );
   }
 
-  useUserRolesRemove(payload: { uuid: UUID; roles: string[] }) {
+  useUserRolesRemove(payload: { cuid: string; roles: string[] }) {
     return useMutation(
       {
         mutationFn: () =>
-          this.client.user.removeRoles(payload.uuid, payload.roles),
+          this.client.user.removeRoles(payload.cuid, payload.roles),
         onSuccess: () => {
           this.reactQueryClient.invalidateQueries({
-            queryKey: [TAGS.GET_USER_ROLES, payload.uuid],
+            queryKey: [TAGS.GET_USER_ROLES, payload.cuid],
           });
         },
       },

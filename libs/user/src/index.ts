@@ -11,6 +11,6 @@ export * from './lib/roles/roles.service';
 export * from './lib/rsuser-module';
 export * from './lib/signups/signups.module';
 export * from './lib/signups/signups.service';
+export * from './lib/users/users.controller';
 export * from './lib/users/users.module';
 export * from './lib/users/users.service';
-export * from './types';
