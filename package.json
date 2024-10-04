@@ -15,7 +15,9 @@
     }
   ],
   "scripts": {
-    "format": "prettier --write \"libs/**/*.ts\" \"apps/**/*.ts\""
+    "format": "prettier --write \"libs/**/*.ts\" \"apps/**/*.ts\"",
+    "seed": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts",
+    "play": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' play/user.ts"
   },
   "private": true,
   "dependencies": {

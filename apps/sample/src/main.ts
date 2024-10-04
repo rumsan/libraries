@@ -6,15 +6,14 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
-
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { RsExceptionFilter } from '@rumsan/extensions/exceptions';
 import { ResponseTransformInterceptor } from '@rumsan/extensions/interceptors';
 import { WinstonModule } from 'nest-winston';
 import { AppModule } from './app/app.module';
-import { APP } from './constants';
 import { loggerInstance } from './logger/winston.logger';
 
+//dotenv.config();
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, {
     logger: WinstonModule.createLogger({
@@ -39,12 +38,12 @@ async function bootstrap() {
   const port = process.env.PORT || 3333;
 
   const config = new DocumentBuilder()
-    .setTitle('Rumsan Libraries')
-    .setDescription('Rumsan libraries API')
+    .setTitle('HLB Event App')
+    .setDescription('API service for HLB Event App')
     .setVersion('1.0')
     .addBearerAuth(
-      { type: 'http', scheme: 'bearer', bearerFormat: APP.JWT_BEARER },
-      APP.JWT_BEARER,
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      'JWT',
     )
     .build();
 

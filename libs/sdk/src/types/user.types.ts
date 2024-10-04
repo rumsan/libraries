@@ -1,6 +1,6 @@
 import { Gender } from '../enums';
 
-export type User = {
+export type User<T = Record<string, any>> = {
   id?: number;
   cuid?: string;
   name: string;
@@ -8,8 +8,9 @@ export type User = {
   email?: string;
   phone?: string;
   wallet?: string;
-  extras?: Record<string, any>;
   notes?: string;
+  sessionId?: string;
+  details?: T;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;

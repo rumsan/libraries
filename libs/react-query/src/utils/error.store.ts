@@ -19,7 +19,6 @@ export const useErrorStore = zustandStore<ErrorStore>(
   (set) => ({
     error: null,
     setError(error) {
-      console.log('error', error);
       set({ error });
     },
   }),

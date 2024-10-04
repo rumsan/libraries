@@ -1,0 +1,27 @@
+meta {
+  name: Auth - OTP
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{url}}/auth/otp
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "address": "test@maile.uk",
+    "clientId": "105cd449-53f6-44e4-85f3-feaa7d762ffa"
+  }
+}
+
+tests {
+  var data = res.getBody().data;
+  var reqBody = req.body
+  
+  if(data){
+    bru.setVar("auth-challenge", data.challenge);
+  }
+}

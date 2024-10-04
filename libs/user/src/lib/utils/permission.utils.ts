@@ -36,7 +36,6 @@ export function checkPermissionSet(permissions: PermissionSet) {
 export function convertToPermissionSet(permissions: Permission[]): {
   [subject: string]: string[];
 } {
-  console.log(permissions);
   const result: { [subject: string]: string[] } = {};
 
   permissions.forEach((permission) => {

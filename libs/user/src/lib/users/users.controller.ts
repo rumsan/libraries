@@ -7,18 +7,17 @@ import {
   Patch,
   Post,
   Query,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
-import { ApiCuidParam, RequestDetails } from '@rumsan/extensions/decorators';
+import { ApiCuidParam, xRC } from '@rumsan/extensions/decorators';
 import {
   CreateUserDto,
   ListUserDto,
   UpdateUserDto,
 } from '@rumsan/extensions/dtos';
 import { ERRORS } from '@rumsan/extensions/exceptions';
-import { Request } from '@rumsan/sdk/types';
+import { tRC } from '@rumsan/sdk/types';
 import { CheckAbilities } from '../ability/ability.decorator';
 import { AbilitiesGuard } from '../ability/ability.guard';
 import { CU, CurrentUser } from '../auths/decorator';
@@ -28,10 +27,10 @@ import { ACTIONS, APP, SUBJECTS } from '../constants';
 import { UsersService } from './users.service';
 
 @Controller('users')
-@ApiTags('Users')
+@ApiTags('User')
 @ApiBearerAuth(APP.JWT_BEARER)
 @UseGuards(JwtGuard, AbilitiesGuard)
-export class UsersController {
+export class UsersController<T> {
   constructor(private userService: UsersService) {}
 
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
@@ -43,8 +42,6 @@ export class UsersController {
   @Post('')
   @CheckAbilities({ actions: ACTIONS.CREATE, subject: SUBJECTS.USER })
   create(@Body() dto: CreateUserDto, @CurrentUser() cu: CUI) {
-    dto.createdBy = cu.cuid;
-    dto.sessionId = cu.sessionId;
     return this.userService.create(dto);
   }
 
@@ -57,21 +54,13 @@ export class UsersController {
 
   @Patch('me')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.PUBLIC })
-  updateMe(
-    @CU() cu: CUI,
-    @Body() dto: UpdateUserDto,
-    @RequestDetails() rdetails: any,
-  ) {
+  updateMe(@CU() cu: CUI, @Body() dto: UpdateUserDto, @xRC() rdetails: tRC) {
     return this.userService.updateMe(cu.userId, dto, rdetails);
   }
 
   @Patch('me/update-auth')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.PUBLIC })
-  changePassword(
-    @CU() cu: CUI,
-    @Body() dto: UpdateUserDto,
-    @Req() request: Request,
-  ) {
+  changePassword(@CU() cu: CUI, @Body() dto: UpdateUserDto) {
     throw ERRORS.NOT_IMPLEMENTED;
     // return this.userService.changePassword(
     //   cu.userId,
@@ -95,8 +84,6 @@ export class UsersController {
     @Body() dto: UpdateUserDto,
     @CurrentUser() cu: CUI,
   ) {
-    dto.updatedBy = cu.cuid;
-    dto.sessionId = cu.sessionId;
     return this.userService.update(cuid, dto);
   }
 

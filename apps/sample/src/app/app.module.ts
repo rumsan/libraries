@@ -7,10 +7,17 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RSExceptionModule } from '@rumsan/extensions/exceptions';
 import { PgClient, PgNotificationService } from '@rumsan/extensions/pgsql';
 import { SettingsModule } from '@rumsan/extensions/settings';
-import { AbilityModule } from '@rumsan/user';
+import {
+  AbilityModule,
+  AuthsModule,
+  RolesModule,
+  RSUserModule,
+  SignupModule,
+} from '@rumsan/user';
 import { APP_SUBJECTS } from '../constants';
 import { ERRORS } from '../constants/errors';
 import { ListenerModule } from '../listener/listener.module';
+import { AppUsersModule } from '../user/user.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -24,12 +31,12 @@ import { AppService } from './app.service';
     ListenerModule,
     PrismaModule,
     //AppUsersModule,
-    // RSUserModule.forRoot([
-    //   UsersModule,
-    //   AuthsModule,
-    //   RolesModule,
-    //   SignupModule.forRoot({ autoApprove: true }),
-    // ]),
+    RSUserModule.forRoot([
+      AuthsModule,
+      RolesModule,
+      SignupModule.forRoot({ autoApprove: true }),
+    ]),
+    AppUsersModule,
     RSExceptionModule.forRoot({ errorSet: ERRORS }),
     AbilityModule.forRoot({ subjects: APP_SUBJECTS }),
     SettingsModule,

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Prisma, PrismaClient, Service, User } from '@prisma/client';
+import { createId } from '@paralleldrive/cuid2';
+import { Prisma, PrismaClient, Service } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 import {
   CreateUserDto,
@@ -8,7 +9,7 @@ import {
   UpdateUserDto,
 } from '@rumsan/extensions/dtos';
 import { paginator, PaginatorTypes, PrismaService } from '@rumsan/prisma';
-import { Request, UserRole } from '@rumsan/sdk/types';
+import { tRC, User, UserRole } from '@rumsan/sdk/types';
 import { CUI } from '../auths/interfaces/current-user.interface';
 import { ERRORS, EVENTS } from '../constants';
 import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
@@ -44,27 +45,54 @@ export class UsersService {
   ): Promise<User> {
     return this.prisma.$transaction(async (tx) => {
       try {
-        const { roles, ...data } = dto;
-        const user = await tx.user.create({
-          data,
-        });
+        const { roles, details, ...data } = dto;
+        const userPayload: User = { ...data, cuid: createId() };
+
+        const user: User = (await tx.user.create({
+          data: userPayload,
+        })) as User;
+
+        if (details) {
+          await tx.userDetails.create({
+            data: { cuid: user.cuid, ...details },
+          });
+        }
 
         if (roles?.length) {
-          await this.addRoles(user.cuid, roles, tx);
+          await this.addRoles(user.cuid as string, roles, tx);
         }
 
         await Promise.all([
-          this._createAuth(user.id, Service.EMAIL, user.email, tx),
-          this._createAuth(user.id, Service.PHONE, user.phone, tx),
-          this._createAuth(user.id, Service.WALLET, user.wallet, tx),
+          this._createAuth(
+            user.id as number,
+            Service.EMAIL,
+            user.email as string,
+            tx,
+          ),
+          this._createAuth(
+            user.id as number,
+            Service.PHONE,
+            user.phone as string,
+            tx,
+          ),
+          this._createAuth(
+            user.id as number,
+            Service.WALLET,
+            user.wallet as string,
+            tx,
+          ),
         ]);
 
         if (callback) {
           await callback(null, tx, user);
         }
+
+        user.details = details;
+
         this.eventEmitter.emit(EVENTS.USER_CREATED, {
-          address: user.email,
+          user,
         });
+
         return user;
       } catch (error: any) {
         if (callback) {
@@ -98,6 +126,9 @@ export class UsersService {
         where: {
           deletedAt: null,
         },
+        include: {
+          details: true,
+        },
         orderBy,
       },
       {
@@ -110,6 +141,14 @@ export class UsersService {
   getById(userId: number) {
     return this.prisma.user.findUnique({
       where: { id: userId, deletedAt: null },
+      include: {
+        details: true,
+        UserRole: {
+          include: {
+            Role: true,
+          },
+        },
+      },
     });
   }
 
@@ -123,6 +162,7 @@ export class UsersService {
             Role: true,
           },
         },
+        details: true,
       },
     });
     return user;
@@ -130,17 +170,29 @@ export class UsersService {
 
   async update(cuid: string, dto: UpdateUserDto) {
     return this.prisma.$transaction(async (tx) => {
-      const user = await this.prisma.user.findUnique({
+      const user = (await this.prisma.user.findUnique({
         where: { cuid, deletedAt: null },
-      });
+      })) as User;
 
       if (!user) throw ERRORS.USER_NOT_FOUND;
+
+      const { details, ...data } = dto;
 
       // Update user details
       const updatedUser = await tx.user.update({
         where: { id: user.id },
-        data: { ...dto },
+        data,
+        include: {
+          details: true,
+        },
       });
+
+      if (details) {
+        await tx.userDetails.update({
+          data: { cuid: user.cuid, ...details },
+          where: { cuid: user.cuid },
+        });
+      }
 
       // Update authentication details only if corresponding DTO field is provided
       await this._updateAuth(tx, user, Service.EMAIL, dto.email);
@@ -174,13 +226,13 @@ export class UsersService {
       } else {
         // If there is no existing entry, create a new one
         await tx.auth.create({
-          data: { userId: user.id, service, serviceId: newServiceId },
+          data: { userId: user.id as number, service, serviceId: newServiceId },
         });
       }
     }
   }
 
-  async updateMe(userId: number, dto: UpdateUserDto, rdetails: Request) {
+  async updateMe(userId: number, dto: UpdateUserDto, rdetails: tRC) {
     return this.prisma.$transaction(async (tx) => {
       const user = await this.prisma.user.findUnique({
         where: { id: userId, deletedAt: null },
@@ -194,6 +246,9 @@ export class UsersService {
 
       const updatedUser = await tx.user.update({
         where: { id: user.id },
+        include: {
+          details: true,
+        },
         data,
       });
 
@@ -224,7 +279,7 @@ export class UsersService {
     });
   }
 
-  async processVerificationChallenge(challenge: string, rdetails: Request) {
+  async processVerificationChallenge(challenge: string, rdetails: tRC) {
     const payload = decryptChallenge(getSecret(), challenge, 1200);
 
     if (!payload.address) {
@@ -236,9 +291,9 @@ export class UsersService {
       throw new Error('IP mismatch');
     }
 
-    const user = await this.prisma.user.findUnique({
+    const user = (await this.prisma.user.findUnique({
       where: { id: payload.data['userId'], deletedAt: null },
-    });
+    })) as User;
 
     if (!user) {
       throw new Error('User not found');
@@ -258,6 +313,9 @@ export class UsersService {
       await this._updateAuth(tx, user, service, payload.address);
       await tx.user.update({
         where: { id: user.id },
+        include: {
+          details: true,
+        },
         data,
       });
     });

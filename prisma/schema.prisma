@@ -27,7 +27,7 @@ model User {
   Auth      Auth[]
   UserRole  UserRole[]
   Signup    Signup[]
-  UserDetails UserDetails?
+  details   UserDetails?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt()
@@ -39,11 +39,10 @@ model User {
 }
 
 model UserDetails {
-  id        Int     @id @default(autoincrement())
   cuid      String  @unique
   extras    Json?   @db.JsonB()
 
-  user      User     @relation(fields: [cuid], references: [cuid]) // Reference to the User model
+  user      User?     @relation(fields: [cuid], references: [cuid])
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt()

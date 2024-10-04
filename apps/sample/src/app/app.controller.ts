@@ -15,7 +15,6 @@ export class AppController {
   // @UseGuards(JwtGuard, AbilitiesGuard)
   @Get()
   getData(@AppId() appId: string) {
-    console.log(appId);
     return this.appService.getData();
   }
 }

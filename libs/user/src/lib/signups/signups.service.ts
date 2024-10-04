@@ -115,7 +115,6 @@ export class SignupsService {
       if (err instanceof Error) rejectedReason = err.message;
       if (err instanceof PrismaClientKnownRequestError) {
         rejectedReason = err.message;
-        console.log(err.message);
       }
 
       return this.prisma.signup.update({

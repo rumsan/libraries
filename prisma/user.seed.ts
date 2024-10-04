@@ -1,4 +1,5 @@
-import { PrismaClient, Service } from '@prisma/client';
+import { Prisma, PrismaClient, Service } from '@prisma/client';
+import { DefaultArgs } from '@prisma/client/runtime/library';
 
 function cloneDeep<T>(obj: T): T {
   if (obj === null || typeof obj !== 'object') {
@@ -156,9 +157,9 @@ const projectTypes: Array<{
   },
 ];
 
-const prisma = new PrismaClient();
-
-async function main() {
+export async function UserSeed(
+  prisma: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
+) {
   // await prisma.$transaction([
   // 	prisma.permission.deleteMany(),
   // 	prisma.user.deleteMany(),
@@ -229,12 +230,3 @@ async function main() {
     });
   }
 }
-
-main()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
-  .catch(async (error) => {
-    console.log(error);
-    await prisma.$disconnect();
-  });

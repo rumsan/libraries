@@ -1,13 +1,13 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { RequestDetails } from '@rumsan/extensions/decorators';
+import { xRC } from '@rumsan/extensions/decorators';
 import {
   ChallengeDto,
   OtpDto,
   OtpLoginDto,
   WalletLoginDto,
 } from '@rumsan/extensions/dtos';
-import { Request } from '@rumsan/sdk/types';
+import { tRC } from '@rumsan/sdk/types';
 import { AuthsService } from './auths.service';
 
 @Controller('auth')
@@ -17,26 +17,23 @@ export class AuthsController {
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  loginOtp(@Body() dto: OtpLoginDto, @RequestDetails() rdetails: Request) {
+  loginOtp(@Body() dto: OtpLoginDto, @xRC() rdetails: tRC) {
     return this.authService.loginByOtp(dto, rdetails);
   }
 
   @HttpCode(HttpStatus.OK)
   @Post('otp')
-  getOtp(@Body() dto: OtpDto, @RequestDetails() rdetails: Request) {
+  getOtp(@Body() dto: OtpDto, @xRC() rdetails: tRC) {
     return this.authService.getOtp(dto, rdetails);
   }
 
   @Post('wallet')
-  walletLogin(
-    @Body() dto: WalletLoginDto,
-    @RequestDetails() rdetails: Request,
-  ) {
+  walletLogin(@Body() dto: WalletLoginDto, @xRC() rdetails: tRC) {
     return this.authService.loginByWallet(dto, rdetails);
   }
 
   @Post('challenge')
-  getChallenge(@Body() dto: ChallengeDto, @RequestDetails() rdetails: Request) {
+  getChallenge(@Body() dto: ChallengeDto, @xRC() rdetails: tRC) {
     return this.authService.getChallengeForWallet(dto, rdetails);
   }
 }
