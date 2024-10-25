@@ -12,7 +12,11 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
 import { ApiUuidParam, RequestDetails } from '@rumsan/extensions/decorators';
-import { CreateUserDto, UpdateUserDto } from '@rumsan/extensions/dtos';
+import {
+  CreateUserDto,
+  ListUserDto,
+  UpdateUserDto,
+} from '@rumsan/extensions/dtos';
 import { ERRORS } from '@rumsan/extensions/exceptions';
 import { Request } from '@rumsan/sdk/types';
 import { UUID } from 'crypto';
@@ -33,8 +37,7 @@ export class UsersController {
 
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
   @Get('')
-  list(@Query() dto: any) {
-    //TODO ListUserDto
+  list(@Query() dto: ListUserDto) {
     return this.userService.list(dto);
   }
 
