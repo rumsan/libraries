@@ -1,9 +1,9 @@
 import { Gender } from '../enums';
+import { CommonFields } from './commonFields.type';
 
-export type User<T = Record<string, any>> = {
+export type UserBase<T> = {
   id?: number;
   cuid?: string;
-  name: string;
   gender?: Gender;
   email?: string;
   phone?: string;
@@ -11,19 +11,17 @@ export type User<T = Record<string, any>> = {
   notes?: string;
   sessionId?: string;
   details?: T;
-  createdAt?: Date;
-  updatedAt?: Date;
-  deletedAt?: Date;
-  createdBy?: string;
-  updatedBy?: string;
   permissions?: string[];
   roles?: string[];
 };
 
+export type User<T = Record<string, unknown>> = UserBase<T> &
+  CommonFields & { cuid: string };
+
 export type UserRole = {
   id: number;
-  userId: number;
-  roleId: number;
+  userId: string;
+  roleId: string;
   expiry: Date | null;
   createdAt: Date;
   createdBy: number | null;

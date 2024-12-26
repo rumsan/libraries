@@ -1,1 +1,1 @@
-export * from './rs-query-provider';
+export * from './query.provider';

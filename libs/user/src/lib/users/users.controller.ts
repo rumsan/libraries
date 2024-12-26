@@ -17,7 +17,7 @@ import {
   UpdateUserDto,
 } from '@rumsan/extensions/dtos';
 import { ERRORS } from '@rumsan/extensions/exceptions';
-import { tRC } from '@rumsan/sdk/types';
+import { tRC } from '@rumsan/sdk';
 import { CheckAbilities } from '../ability/ability.decorator';
 import { AbilitiesGuard } from '../ability/ability.guard';
 import { CU, CurrentUser } from '../auths/decorator';
@@ -30,7 +30,7 @@ import { UsersService } from './users.service';
 @ApiTags('User')
 @ApiBearerAuth(APP.JWT_BEARER)
 @UseGuards(JwtGuard, AbilitiesGuard)
-export class UsersController<T> {
+export class UsersController {
   constructor(private userService: UsersService) {}
 
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
@@ -55,7 +55,7 @@ export class UsersController<T> {
   @Patch('me')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.PUBLIC })
   updateMe(@CU() cu: CUI, @Body() dto: UpdateUserDto, @xRC() rdetails: tRC) {
-    return this.userService.updateMe(cu.userId, dto, rdetails);
+    return this.userService.updateMe(cu.cuid, dto, rdetails);
   }
 
   @Patch('me/update-auth')

@@ -7,7 +7,7 @@ interface ICreateStoreOptions<T, U> {
   devtoolsEnabled?: boolean;
 }
 
-export function zustandStore<T extends object>(
+export function createZustandStore<T extends object>(
   createState: StateCreator<T>,
   options?: ICreateStoreOptions<T, any>,
 ): UseBoundStore<StoreApi<T>> {

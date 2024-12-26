@@ -40,7 +40,7 @@ export class RolesService {
 
     return this.prisma.$transaction(async (prisma) => {
       const role = await prisma.role.create({ data });
-      await this._addPermissionsToRole(role.id, permissions, prisma);
+      await this._addPermissionsToRole(role.cuid, permissions, prisma);
 
       return role;
     });
@@ -53,7 +53,7 @@ export class RolesService {
 
       // Update the role details
       const updatedRole = await prisma.role.update({
-        where: { id: existingRole.id },
+        where: { cuid: existingRole.cuid },
         data,
       });
 
@@ -61,15 +61,22 @@ export class RolesService {
       if (permissions) {
         // Delete existing permissions
         await prisma.permission.deleteMany({
-          where: { roleId: existingRole.id },
+          where: { roleId: existingRole.cuid },
         });
 
-        await this._addPermissionsToRole(existingRole.id, permissions, prisma);
+        await this._addPermissionsToRole(
+          existingRole.cuid,
+          permissions,
+          prisma,
+        );
       }
 
       return {
         role: updatedRole,
-        permissions: await this._getPermissionsByRoleId(updatedRole.id, prisma),
+        permissions: await this._getPermissionsByRoleId(
+          updatedRole.cuid,
+          prisma,
+        ),
       };
     });
   }
@@ -82,10 +89,12 @@ export class RolesService {
 
       // Delete existing permissions
       await prisma.permission.deleteMany({
-        where: { roleId: role.id },
+        where: { roleId: role.cuid },
       });
 
-      return prisma.role.delete({ where: { id: role.id, isSystem: false } });
+      return prisma.role.delete({
+        where: { cuid: role.cuid, isSystem: false },
+      });
     });
   }
 
@@ -105,25 +114,25 @@ export class RolesService {
     );
   }
 
-  async getById(roleId: number) {
-    return this.prisma.role.findUnique({ where: { id: +roleId } });
+  async getById(roleId: string) {
+    return this.prisma.role.findUnique({ where: { cuid: roleId } });
   }
 
   async getRoleByName(name: string, includePermissions = false) {
     const role = await this.prisma.role.findUnique({ where: { name } });
     if (!role) throw RSE('Roles does not exist!', 'ROLE_NOEXIST', 404);
     if (includePermissions) {
-      const permissions = await this._getPermissionsByRoleId(role.id);
+      const permissions = await this._getPermissionsByRoleId(role.cuid);
       return { role, permissions };
     }
     return { role, permissions: null };
   }
 
-  async getRoleById(roleId: number, includePermissions = false) {
-    const role = await this.prisma.role.findUnique({ where: { id: roleId } });
+  async getRoleById(roleId: string, includePermissions = false) {
+    const role = await this.prisma.role.findUnique({ where: { cuid: roleId } });
     if (!role) throw RSE('Roles does not exist!', 'ROLE_NOEXIST', 404);
     if (includePermissions) {
-      const permissions = await this._getPermissionsByRoleId(role.id);
+      const permissions = await this._getPermissionsByRoleId(role.cuid);
       return { role, permissions };
     }
     return { role, permissions: null };
@@ -144,7 +153,7 @@ export class RolesService {
 
     const roles = await this.prisma.role.findMany({
       where: {
-        id: {
+        cuid: {
           in: roleIds,
         },
       },
@@ -157,13 +166,13 @@ export class RolesService {
     const { role } = await this.getRoleByName(name);
     return this.prisma.permission.findMany({
       where: {
-        roleId: role.id,
+        roleId: role.cuid,
       },
     });
   }
 
   async _getPermissionsByRoleId(
-    roleId: number,
+    roleId: string,
     prisma: PrismaClientType = this.prisma,
   ) {
     const permissions = await prisma.permission.findMany({
@@ -176,7 +185,7 @@ export class RolesService {
   }
 
   _addPermissionsToRole(
-    roleId: number,
+    roleId: string,
     permissions: PermissionSet,
     prisma: PrismaClientType = this.prisma,
   ) {

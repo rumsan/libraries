@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Gender } from '@prisma/client';
-import { listGenders } from '@rumsan/sdk/utils';
+import { EnumUtils } from '@rumsan/sdk/utils';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsIn, IsObject, IsOptional, IsString } from 'class-validator';
 
@@ -26,7 +26,7 @@ export class SignupEmailDto {
   })
   @IsOptional()
   @Transform(({ value }) => value.toUpperCase())
-  @IsIn(listGenders())
+  @IsIn(EnumUtils.listGenders())
   gender: Gender;
 
   @ApiProperty({

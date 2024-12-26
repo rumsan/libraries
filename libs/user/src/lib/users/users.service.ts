@@ -25,6 +25,10 @@ type PrismaClientType = Omit<
   '$on' | '$connect' | '$disconnect' | '$use' | '$transaction' | '$extends'
 >;
 
+class Details {
+  extras: Record<string, any>;
+}
+
 @Injectable()
 export class UsersService {
   private rsprisma;
@@ -63,20 +67,10 @@ export class UsersService {
         }
 
         await Promise.all([
+          this._createAuth(user.cuid, Service.EMAIL, user.email as string, tx),
+          this._createAuth(user.cuid, Service.PHONE, user.phone as string, tx),
           this._createAuth(
-            user.id as number,
-            Service.EMAIL,
-            user.email as string,
-            tx,
-          ),
-          this._createAuth(
-            user.id as number,
-            Service.PHONE,
-            user.phone as string,
-            tx,
-          ),
-          this._createAuth(
-            user.id as number,
+            user.cuid,
             Service.WALLET,
             user.wallet as string,
             tx,
@@ -104,7 +98,7 @@ export class UsersService {
   }
 
   private async _createAuth(
-    userId: number,
+    userId: string,
     service: Service,
     serviceId: string | null,
     prisma: PrismaClientType,
@@ -143,7 +137,7 @@ export class UsersService {
       where: { id: userId, deletedAt: null },
       include: {
         details: true,
-        UserRole: {
+        UserRoles: {
           include: {
             Role: true,
           },
@@ -157,7 +151,7 @@ export class UsersService {
     const user = await prisma.user.findUnique({
       where: { cuid, deletedAt: null },
       include: {
-        UserRole: {
+        UserRoles: {
           include: {
             Role: true,
           },
@@ -212,7 +206,7 @@ export class UsersService {
     if (newServiceId) {
       const existingAuth = await tx.auth.findFirst({
         where: {
-          userId: user.id,
+          userId: user.cuid,
           service,
         },
       });
@@ -226,16 +220,16 @@ export class UsersService {
       } else {
         // If there is no existing entry, create a new one
         await tx.auth.create({
-          data: { userId: user.id as number, service, serviceId: newServiceId },
+          data: { userId: user.cuid, service, serviceId: newServiceId },
         });
       }
     }
   }
 
-  async updateMe(userId: number, dto: UpdateUserDto, rdetails: tRC) {
+  async updateMe(userId: string, dto: UpdateUserDto, rdetails: tRC) {
     return this.prisma.$transaction(async (tx) => {
       const user = await this.prisma.user.findUnique({
-        where: { id: userId, deletedAt: null },
+        where: { cuid: userId, deletedAt: null },
       });
 
       if (!user) {
@@ -342,7 +336,7 @@ export class UsersService {
     const user = await this.get(cuid, prisma);
     if (!user) throw ERRORS.USER_NOT_FOUND;
     const roles = await prisma.userRole.findMany({
-      where: { userId: user?.id },
+      where: { userId: user?.cuid },
       include: { Role: true },
     });
 
@@ -371,8 +365,8 @@ export class UsersService {
 
     await prisma.userRole.createMany({
       data: getValidRoles.map((role) => ({
-        userId: user.id,
-        roleId: role.id,
+        userId: user.cuid,
+        roleId: role.cuid,
       })),
       skipDuplicates: true,
     });
@@ -392,8 +386,8 @@ export class UsersService {
 
     await prisma.userRole.deleteMany({
       where: {
-        userId: user.id,
-        roleId: { in: getValidRoles.map((role) => role.id) },
+        userId: user.cuid,
+        roleId: { in: getValidRoles.map((role) => role.cuid) },
       },
     });
     return this.listRoles(cuid);

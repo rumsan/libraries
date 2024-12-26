@@ -3,6 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { xRC } from '@rumsan/extensions/decorators';
 import {
   ChallengeDto,
+  GoogleAuthDto,
   OtpDto,
   OtpLoginDto,
   WalletLoginDto,
@@ -32,6 +33,10 @@ export class AuthsController {
     return this.authService.loginByWallet(dto, rdetails);
   }
 
+  @Post('google')
+  googleLogin(@Body() dto: GoogleAuthDto, @xRC() rdetails: tRC) {
+    return this.authService.loginByGoogle(dto, rdetails);
+  }
   @Post('challenge')
   getChallenge(@Body() dto: ChallengeDto, @xRC() rdetails: tRC) {
     return this.authService.getChallengeForWallet(dto, rdetails);

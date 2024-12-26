@@ -17,7 +17,7 @@ export type AppUser = User & {
 
 @Module({
   imports: [UsersModule, PrismaModule],
-  controllers: [UsersController<AppUser>],
+  controllers: [UsersController],
   providers: [UsersService],
 })
 export class AppUsersModule {}

@@ -1,20 +1,21 @@
+import { RumsanClient } from '@rumsan/sdk';
 import { CreateRole, EditRole, Pagination } from '@rumsan/sdk/types';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { useRoleStore } from '.';
-import { useRSQuery } from '../providers/rs-query-provider';
+import { useRumsan } from '../providers/query.provider';
+import { useRoleStore } from '../stores/role.store';
 import { useErrorStore } from '../utils';
 import { TAGS } from '../utils/tags';
 
 export const useUserRoleCreate = () => {
   const onError = useErrorStore((state) => state.setError);
-  const { queryClient, rumsanService } = useRSQuery();
+  const { queryClient, RsClient } = useRumsan<RumsanClient>();
 
   return useMutation(
     {
-      mutationFn: (role: CreateRole) => rumsanService.role.createRole(role),
+      mutationFn: (role: CreateRole) => RsClient.Role.createRole(role),
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [TAGS.GET_ALL_ROLES] });
+        queryClient?.invalidateQueries({ queryKey: [TAGS.ROLE_LIST] });
       },
       onError,
     },
@@ -24,14 +25,14 @@ export const useUserRoleCreate = () => {
 
 export const useUserRoleEdit = () => {
   const onError = useErrorStore((state) => state.setError);
-  const { queryClient, rumsanService } = useRSQuery();
+  const { queryClient, RsClient } = useRumsan<RumsanClient>();
 
   return useMutation(
     {
       mutationFn: (payload: { name: string; data: EditRole }) =>
-        rumsanService.role.updateRole(payload.name, payload.data),
+        RsClient.Role.updateRole(payload.name, payload.data),
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [TAGS.GET_ALL_ROLES] });
+        queryClient?.invalidateQueries({ queryKey: [TAGS.ROLE_LIST] });
       },
       onError,
     },
@@ -41,13 +42,13 @@ export const useUserRoleEdit = () => {
 
 export const useUserRoleDelete = () => {
   const onError = useErrorStore((state) => state.setError);
-  const { queryClient, rumsanService } = useRSQuery();
+  const { queryClient, RsClient } = useRumsan<RumsanClient>();
 
   return useMutation(
     {
-      mutationFn: (name: string) => rumsanService.role.deleteRole(name),
+      mutationFn: (name: string) => RsClient.Role.deleteRole(name),
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [TAGS.GET_ALL_ROLES] });
+        queryClient?.invalidateQueries({ queryKey: [TAGS.ROLE_LIST] });
       },
       onError,
     },
@@ -56,13 +57,13 @@ export const useUserRoleDelete = () => {
 };
 
 export const useRoleList = (payload: Pagination) => {
-  const { queryClient, rumsanService } = useRSQuery();
-  const setRoles = useRoleStore((state) => state.setRoleList);
+  const { queryClient, RsClient } = useRumsan<RumsanClient>();
+  const { setRoles } = useRoleStore();
 
   const query = useQuery(
     {
-      queryKey: [TAGS.GET_ALL_ROLES, payload],
-      queryFn: () => rumsanService.role.listRole(payload),
+      queryKey: [TAGS.ROLE_LIST, payload],
+      queryFn: () => RsClient.Role.listRole(payload),
     },
     queryClient,
   );

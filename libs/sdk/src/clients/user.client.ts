@@ -1,17 +1,17 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
+import { CreateUserDto } from '../dtos';
 import { Pagination, User, UserRole } from '../types';
 import { formatResponse } from '../utils';
-import { ApiClient } from './api.client';
 
 export class UserClient {
   private _client: AxiosInstance;
   private _prefix = 'users';
 
-  constructor(private apiClient: ApiClient) {
-    this._client = apiClient.client;
+  constructor(private apiClient: AxiosInstance) {
+    this._client = apiClient;
   }
 
-  async create<T>(data: User<T>, config?: AxiosRequestConfig) {
+  async create<T>(data: CreateUserDto, config?: AxiosRequestConfig) {
     const response = await this._client.post(`${this._prefix}`, data, config);
     return formatResponse<User<T>>(response);
   }

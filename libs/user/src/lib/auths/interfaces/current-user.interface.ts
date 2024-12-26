@@ -1,8 +1,6 @@
 export interface CurrentUserInterface {
   id: number;
-  userId: number;
   cuid: string;
-  name: string | null;
   email: string | null;
   phone: string | null;
   wallet: string | null;

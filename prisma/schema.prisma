@@ -16,7 +16,6 @@ datasource db {
 model User {
   id        Int     @id @default(autoincrement())
   cuid      String  @unique @default(cuid())
-  name      String
   gender    Gender  @default(UNKNOWN)
   email     String?
   phone     String?
@@ -24,25 +23,27 @@ model User {
   notes     String? @db.Text()
   sessionId String?
 
-  Auth      Auth[]
-  UserRole  UserRole[]
-  Signup    Signup[]
   details   UserDetails?
+  Auths     Auth[]
+  UserRoles UserRole[]
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt()
-  deletedAt DateTime?
-  createdBy String?
-  updatedBy String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime? @updatedAt()
+  deletedAt       DateTime?
+  createdBy       String?
+  updatedBy       String?
+  userDetailsCuid String?   @unique
+  Signup          Signup[]
 
   @@map("tbl_users")
 }
 
 model UserDetails {
-  cuid      String  @unique
-  extras    Json?   @db.JsonB()
+  cuid   String  @unique
+  name   String?
+  extras Json?   @db.JsonB()
 
-  user      User?     @relation(fields: [cuid], references: [cuid])
+  User User? @relation(fields: [cuid], references: [cuid])
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt()
@@ -52,6 +53,7 @@ model UserDetails {
 
   @@map("tbl_users_details")
 }
+
 enum Gender {
   MALE
   FEMALE
@@ -59,17 +61,24 @@ enum Gender {
   UNKNOWN
 }
 
+enum InvoiceType {
+  VAT
+  PAN
+  ESTIMATE
+  NONE
+}
+
 // ++++++++++++++++++ END: @rumsan/user - User +++++++++++++++++++++++++++++++
 // ++++++++++++++++++ START: @rumsan/user - Role/Auth ++++++++++++++++++++++++
 
 // ===================Role Model==================
 model Role {
-  id       Int     @unique @default(autoincrement())
+  cuid     String  @id @unique @default(cuid())
   name     String  @unique @db.VarChar()
   isSystem Boolean @default(false)
 
-  Permission Permission[]
-  UserRole   UserRole[]
+  Permissions Permission[]
+  UserRoles   UserRole[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt()
@@ -81,15 +90,15 @@ model Role {
 
 // ===================Permission Model==================
 model Permission {
-  id         Int     @unique @default(autoincrement())
-  roleId     Int
+  cuid       String  @id @unique @default(cuid())
+  roleId     String
   action     String  @db.VarChar()
   subject    String  @db.VarChar()
   inverted   Boolean @default(false)
   conditions Json?   @db.JsonB()
   reason     String? @db.Text()
 
-  Role Role @relation(fields: [roleId], references: [id])
+  Role Role @relation(fields: [roleId], references: [cuid])
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt()
@@ -99,23 +108,23 @@ model Permission {
 
 model UserRole {
   id     Int       @id @default(autoincrement())
-  userId Int
-  roleId Int
+  userId String
+  roleId String
   expiry DateTime?
 
-  User User @relation(fields: [userId], references: [id])
-  Role Role @relation(fields: [roleId], references: [id])
+  User User @relation(fields: [userId], references: [cuid])
+  Role Role @relation(fields: [roleId], references: [cuid])
 
   createdAt DateTime @default(now())
   createdBy Int?
 
-  @@unique([userId, roleId], name: "userRoleIdentifier")
+  @@unique([userId, roleId], name: "UserRoleIdentifier")
   @@map("tbl_users_roles")
 }
 
 model Auth {
   id            Int       @id @default(autoincrement())
-  userId        Int
+  userId        String
   service       Service
   serviceId     String
   details       Json?     @db.JsonB()
@@ -125,21 +134,21 @@ model Auth {
   lockedOnAt    DateTime?
   lastLoginAt   DateTime?
 
-  User    User          @relation(fields: [userId], references: [id])
-  AuthLog AuthSession[]
+  User     User          @relation(fields: [userId], references: [cuid])
+  AuthLogs AuthSession[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt()
   deletedAt DateTime?
 
-  @@unique([service, serviceId], name: "authIdentifier")
+  @@unique([service, serviceId], name: "AuthServiceIdentifier")
   @@map("tbl_auth")
 }
 
 model AuthSession {
   id        Int     @id @default(autoincrement())
   clientId  String
-  sessionId String  @unique @default(cuid())
+  sessionId String  @unique @default(uuid())
   authId    Int
   ip        String?
   details   Json?   @db.JsonB()

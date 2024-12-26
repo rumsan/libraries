@@ -31,6 +31,11 @@ export class SignupController {
     return this.service.signup(dto);
   }
 
+  @Post('social')
+  signupUsingSocial(@Body() dto: SignupWalletDto) {
+    return this.service.signup(dto);
+  }
+
   @Get('')
   list(@Query() dto: SignupListDto) {
     return this.service.list(dto);

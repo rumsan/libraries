@@ -1,10 +1,17 @@
-import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
+import { createId } from '@paralleldrive/cuid2';
 import { AuthSession, User } from '@prisma/client';
 import {
   ChallengeDto,
+  GoogleAuthDto,
   OtpDto,
   OtpLoginDto,
   WalletLoginDto,
@@ -14,6 +21,7 @@ import { PrismaService } from '@rumsan/prisma';
 import { CONSTANTS } from '@rumsan/sdk/constants';
 import { Service } from '@rumsan/sdk/enums';
 import { tRC } from '@rumsan/sdk/types';
+import axios from 'axios';
 import { hashMessage, recoverAddress } from 'viem';
 import { EVENTS } from '../constants';
 import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
@@ -31,10 +39,10 @@ export class AuthsService {
     private eventEmitter: EventEmitter2,
   ) {}
 
-  getUserById(userId: number) {
+  getUserByCuid(userId: string) {
     return this.prisma.user.findUnique({
       where: {
-        id: userId,
+        cuid: userId,
         deletedAt: null,
       },
     });
@@ -46,7 +54,7 @@ export class AuthsService {
     }
     const auth = await this.prisma.auth.findUnique({
       where: {
-        authIdentifier: {
+        AuthServiceIdentifier: {
           service: dto.service as Service,
           serviceId: dto.address,
         },
@@ -62,7 +70,7 @@ export class AuthsService {
         challenge: otp.toString(),
       },
     });
-    const user = await this.getUserById(auth.userId);
+    const user = await this.getUserByCuid(auth.userId);
     if (!user) throw new ForbiddenException('User does not exist!');
     const challenge = createChallenge(getSecret(), {
       address: dto.address,
@@ -72,7 +80,6 @@ export class AuthsService {
     this.eventEmitter.emit(EVENTS.OTP_CREATED, {
       ...dto,
       requestInfo,
-      name: user?.name,
       otp,
     });
     this.eventEmitter.emit(EVENTS.CHALLENGE_CREATED, {
@@ -107,7 +114,7 @@ export class AuthsService {
     if (otp.toString() !== auth.challenge)
       throw new ForbiddenException('OTP did not match!');
     // Get user by authAddress
-    const user = await this.getUserById(auth.userId);
+    const user = await this.getUserByCuid(auth.userId);
     if (!user) throw new ForbiddenException('User does not exist!');
     const authority = await this.getPermissionsByUserId(auth.userId);
     await this.updateLastLogin(auth.id);
@@ -133,6 +140,92 @@ export class AuthsService {
     });
   }
 
+  async loginByGoogle(dto: GoogleAuthDto, requestInfo: tRC) {
+    //validate google idToken
+
+    let gUser,
+      walletAddress = null;
+    try {
+      const { data } = await axios.get(
+        `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${dto.idToken}`,
+      );
+      gUser = data;
+    } catch (error) {
+      throw new UnauthorizedException('Invalid Google Token');
+    }
+
+    if (dto.walletSignature)
+      walletAddress = await this.getWalletAddressFromSignature(
+        dto.walletSignature,
+        dto.idToken,
+      );
+
+    let user = await this.prisma.user.findFirst({
+      where: {
+        email: gUser?.email as string,
+        deletedAt: null,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    user = await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        wallet: walletAddress,
+      },
+    });
+
+    const auth = await this.prisma.auth.upsert({
+      where: {
+        AuthServiceIdentifier: {
+          service: Service.WALLET,
+          serviceId: walletAddress as string,
+        },
+      },
+      create: {
+        userId: user.cuid,
+        service: Service.WALLET,
+        serviceId: walletAddress as string,
+      },
+      update: {},
+    });
+
+    const authority = await this.getPermissionsByUserId(auth.userId);
+    await this.updateLastLogin(auth.id);
+    // Add authLog
+    const session = await this.prisma.authSession
+      .create({
+        data: {
+          clientId: createId(),
+          authId: auth.id,
+          ip: requestInfo.ip,
+          userAgent: requestInfo.userAgent,
+        },
+      })
+      .then();
+    return this.signToken(user, authority, session);
+  }
+
+  async getWalletAddressFromSignature(
+    signature: `0x${string}`,
+    message: string,
+  ) {
+    try {
+      const hash = hashMessage(message);
+      return recoverAddress({
+        hash,
+        signature,
+      });
+    } catch (error) {
+      throw new UnauthorizedException('Invalid Wallet Signature');
+    }
+  }
+
   async loginByWallet(dto: WalletLoginDto, requestInfo: tRC) {
     const challengeData = decryptChallenge(
       getSecret(),
@@ -149,7 +242,7 @@ export class AuthsService {
 
     const auth = await this.getByServiceId(walletAddress, Service.WALLET);
     if (!auth) throw new ForbiddenException('Invalid credentials!');
-    const user = await this.getUserById(auth.userId);
+    const user = await this.getUserByCuid(auth.userId);
     if (!user) throw new ForbiddenException('User does not exist!');
     const authority = await this.getPermissionsByUserId(auth.userId);
     await this.updateLastLogin(auth.id);
@@ -167,8 +260,8 @@ export class AuthsService {
     return this.signToken(user, authority, session);
   }
 
-  async getRolesByUserId(userId: number) {
-    const user = await this.getUserById(userId);
+  async getRolesByUserId(userId: string) {
+    const user = await this.getUserByCuid(userId);
     if (!user) throw new ForbiddenException('User does not exist!');
     const roles = await this.prisma.userRole.findMany({
       where: {
@@ -190,7 +283,7 @@ export class AuthsService {
     }));
   }
 
-  async getPermissionsByUserId(userId: number) {
+  async getPermissionsByUserId(userId: string) {
     const roles = await this.getRolesByUserId(userId);
     const rolesIdArray = roles.map((role) => role.roleId);
     const permissions = await this.prisma.permission.findMany({
@@ -212,7 +305,7 @@ export class AuthsService {
   getByServiceId(serviceId: string, service: Service) {
     return this.prisma.auth.findUnique({
       where: {
-        authIdentifier: {
+        AuthServiceIdentifier: {
           serviceId,
           service,
         },
@@ -231,7 +324,7 @@ export class AuthsService {
     });
   }
 
-  create(userId: number, serviceId: string, service: Service) {
+  create(userId: string, serviceId: string, service: Service) {
     return this.prisma.auth.create({
       data: {
         userId,
@@ -241,15 +334,15 @@ export class AuthsService {
     });
   }
 
-  createEmail(userId: number, email: string) {
+  createEmail(userId: string, email: string) {
     return this.create(userId, email, Service.EMAIL);
   }
 
-  createPhone(userId: number, phone: string) {
+  createPhone(userId: string, phone: string) {
     return this.create(userId, phone, Service.PHONE);
   }
 
-  createWallet(userId: number, wallet: string) {
+  createWallet(userId: string, wallet: string) {
     return this.create(userId, wallet, Service.WALLET);
   }
 
@@ -259,12 +352,10 @@ export class AuthsService {
     session: AuthSession,
   ): Promise<{ accessToken: string }> {
     const { sessionId } = session;
-    const { id, cuid, name, email, phone, wallet } = user;
+    const { id, cuid, email, phone, wallet } = user;
     const payload: TokenDataInterface = {
       id: id,
-      userId: id,
       cuid,
-      name,
       email,
       phone,
       wallet,

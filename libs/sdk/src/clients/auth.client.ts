@@ -1,37 +1,72 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
+import { Service } from '../enums';
 import {
   AuthResponse,
   CreateChallenge,
+  GoogleAuth,
   LoginResponse,
   OTP,
   WalletLogin,
 } from '../types';
-import { AuthClient } from '../types/client.types';
-import { formatResponse } from '../utils/formatResponse.utils';
+import { formatResponse } from '../utils';
 
-export const getAuthClient = (client: AxiosInstance): AuthClient => {
-  return {
-    login: async (data: OTP, config?: AxiosRequestConfig) => {
-      const response = await client.post('/auth/login', data, config);
-      return formatResponse<LoginResponse>(response);
-    },
+export class AuthClient {
+  private _client: AxiosInstance;
+  private _prefix = 'auth';
 
-    getOtp: async (data: OTP, config?: AxiosRequestConfig) => {
-      const response = await client.post('/auth/otp', data, config);
-      return formatResponse<AuthResponse>(response);
+  constructor(private apiClient: AxiosInstance) {
+    this._client = apiClient;
+  }
+  async login(
+    data: {
+      otp: string;
+      challenge: string;
+      service?: Service;
     },
+    config?: AxiosRequestConfig,
+  ) {
+    data.service = data.service || Service.EMAIL;
+    const response = await this._client.post(
+      `${this._prefix}/login`,
+      data,
+      config,
+    );
+    return formatResponse<LoginResponse>(response);
+  }
 
-    walletLogin: async (data: WalletLogin, config?: AxiosRequestConfig) => {
-      const response = await client.post('/auth/wallet', data, config);
-      return formatResponse<any>(response);
-    },
+  async getOtp(data: OTP, config?: AxiosRequestConfig) {
+    const response = await this._client.post(
+      `${this._prefix}/otp`,
+      data,
+      config,
+    );
+    return formatResponse<AuthResponse>(response);
+  }
 
-    getChallenge: async (
-      data: CreateChallenge,
-      config?: AxiosRequestConfig,
-    ) => {
-      const response = await client.post('/auth/challenge', data, config);
-      return formatResponse<AuthResponse>(response);
-    },
-  };
-};
+  async walletLogin(data: WalletLogin, config?: AxiosRequestConfig) {
+    const response = await this._client.post(
+      `${this._prefix}/wallet`,
+      data,
+      config,
+    );
+    return formatResponse<LoginResponse>(response);
+  }
+
+  async googleLogin(data: GoogleAuth, config?: AxiosRequestConfig) {
+    const response = await this._client.post(
+      `${this._prefix}/google`,
+      data,
+      config,
+    );
+    return formatResponse<LoginResponse>(response);
+  }
+
+  async getChallenge(data: CreateChallenge, config?: AxiosRequestConfig) {
+    const response = await this._client.post(
+      `${this._prefix}/challenge`,
+      data,
+      config,
+    );
+    return formatResponse<AuthResponse>(response);
+  }
+}

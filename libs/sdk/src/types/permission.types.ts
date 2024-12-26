@@ -1,6 +1,6 @@
 export type Permission = {
-  id?: number;
-  roleId: number;
+  cuid?: string;
+  roleId: string;
   action: string;
   subject: string;
   inverted: boolean;

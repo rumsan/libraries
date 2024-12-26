@@ -2,7 +2,7 @@ import { Service } from '../enums';
 
 export type Auth = {
   id?: number;
-  userId: number;
+  userId: string;
   service: Service;
   serviceId: string;
   details?: Record<string, any>;

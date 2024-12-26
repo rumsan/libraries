@@ -1,1 +1,2 @@
-export * from './rumsan.service';
+export * from './clients';
+export * from './types';

@@ -1,4 +1,4 @@
-import { zustandStore } from './zustand.store';
+import { createZustandStore } from '../utils/zustand.store';
 
 export interface ErrorRes extends Error {
   status?: number;
@@ -15,7 +15,7 @@ type ErrorActions = {
 
 export type ErrorStore = ErrorState & ErrorActions;
 
-export const useErrorStore = zustandStore<ErrorStore>(
+export const useErrorStore = createZustandStore<ErrorStore>(
   (set) => ({
     error: null,
     setError(error) {

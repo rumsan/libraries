@@ -1,7 +1,7 @@
 import { Pagination, Permission, PermissionSet } from '.';
 
 export type Role = {
-  id?: number;
+  cuid?: string;
   name: string;
   isSystem?: boolean;
   permissions?: Permission[];

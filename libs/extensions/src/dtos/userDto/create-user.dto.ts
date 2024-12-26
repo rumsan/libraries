@@ -1,29 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { CreateUserDto as dto } from '@rumsan/sdk/dtos';
 import { Gender } from '@rumsan/sdk/enums';
-import { listGenders } from '@rumsan/sdk/utils';
+import { EnumUtils } from '@rumsan/sdk/utils';
 import { IsIn, IsOptional, IsString } from 'class-validator';
 
-export class CreateUserDto {
-  @ApiProperty({
-    example: 'Jane',
-    description: 'The full name of the User',
-    required: true,
-  })
-  @IsString()
-  name: string;
-
+export class CreateUserDto<T = Record<string, unknown>> implements dto<T> {
   @ApiProperty({
     description: 'Custom details of the User',
   })
   @IsOptional()
-  details: Record<string, any>;
+  details?: T;
 
   @ApiProperty({
     example: 'FEMALE',
     description: 'Gender of the User',
   })
   @IsOptional()
-  @IsIn(listGenders())
+  @IsIn(EnumUtils.listGenders())
   gender: Gender;
 
   @ApiProperty({

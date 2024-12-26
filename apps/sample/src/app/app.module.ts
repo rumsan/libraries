@@ -11,13 +11,12 @@ import {
   AbilityModule,
   AuthsModule,
   RolesModule,
-  RSUserModule,
   SignupModule,
+  UsersModule,
 } from '@rumsan/user';
 import { APP_SUBJECTS } from '../constants';
 import { ERRORS } from '../constants/errors';
 import { ListenerModule } from '../listener/listener.module';
-import { AppUsersModule } from '../user/user.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -30,13 +29,10 @@ import { AppService } from './app.service';
     }),
     ListenerModule,
     PrismaModule,
-    //AppUsersModule,
-    RSUserModule.forRoot([
-      AuthsModule,
-      RolesModule,
-      SignupModule.forRoot({ autoApprove: true }),
-    ]),
-    AppUsersModule,
+    AuthsModule,
+    RolesModule,
+    SignupModule.forRoot({ autoApprove: true }),
+    UsersModule.forRoot(),
     RSExceptionModule.forRoot({ errorSet: ERRORS }),
     AbilityModule.forRoot({ subjects: APP_SUBJECTS }),
     SettingsModule,

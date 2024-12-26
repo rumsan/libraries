@@ -42,9 +42,10 @@ export type SearchPaginateFunction = <T>(
   options?: SearchPaginateOptions,
 ) => Promise<PaginatedResult<T>>;
 
-export interface Pagination {
+export interface Pagination<T = Record<string, unknown>> {
   page: number;
   perPage: number;
   sort?: string;
   order?: 'asc' | 'desc';
+  filter?: T;
 }

@@ -1,33 +1,36 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { Pagination, Setting, SettingList } from '../types';
-import { SettingClient } from '../types/client.types';
 import { formatResponse } from '../utils/formatResponse.utils';
 
-export const getSettingClient = (client: AxiosInstance): SettingClient => {
-  return {
-    listSettings: async (data?: Pagination, config?: AxiosRequestConfig) => {
-      const response = await client.get('/settings', {
-        params: data,
-        ...config,
-      });
-      return formatResponse<SettingList>(response);
-    },
-    create: async (data: Setting, config?: AxiosRequestConfig) => {
-      const response = await client.post('/settings', data, config);
-      return formatResponse<Setting>(response);
-    },
-    getByName: async (name: string, config?: AxiosRequestConfig) => {
-      const response = await client.get(`/settings/${name}`, config);
-      return formatResponse<Setting>(response);
-    },
+export class SettingsClient {
+  private _client: AxiosInstance;
+  private _prefix = 'settings';
 
-    update: async (data: Setting, config?: AxiosRequestConfig) => {
-      const response = await client.patch(
-        `/settings/${data?.name}`,
-        data,
-        config,
-      );
-      return formatResponse<Setting>(response);
-    },
-  };
-};
+  constructor(private apiClient: AxiosInstance) {
+    this._client = apiClient;
+  }
+  async listSettings(data?: Pagination, config?: AxiosRequestConfig) {
+    const response = await this._client.get(`${this._prefix}`, {
+      params: data,
+      ...config,
+    });
+    return formatResponse<SettingList>(response);
+  }
+  async create(data: Setting, config?: AxiosRequestConfig) {
+    const response = await this._client.post(`${this._prefix}`, data, config);
+    return formatResponse<Setting>(response);
+  }
+  async getByName(name: string, config?: AxiosRequestConfig) {
+    const response = await this._client.get(`${this._prefix}/${name}`, config);
+    return formatResponse<Setting>(response);
+  }
+
+  async update(data: Setting, config?: AxiosRequestConfig) {
+    const response = await this._client.patch(
+      `${this._prefix}/${data?.name}`,
+      data,
+      config,
+    );
+    return formatResponse<Setting>(response);
+  }
+}
