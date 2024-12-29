@@ -2,7 +2,8 @@
 
 import { QueryClient } from '@tanstack/react-query';
 import React, { FC, createContext, useEffect } from 'react';
-import { RumsanClient } from '../../../sdk/src';
+
+import { RumsanClient } from '@rumsan/sdk';
 import { useRumsanAppStore } from '../stores';
 
 export const queryClient = new QueryClient({
@@ -18,7 +19,7 @@ export const queryClient = new QueryClient({
 });
 
 export const RsClient = new RumsanClient({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: process.env['NEXT_PUBLIC_API_URL'],
 });
 
 export type RumsanContextType = {
