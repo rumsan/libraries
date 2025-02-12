@@ -15,6 +15,7 @@
     "strictPropertyInitialization": false,
     "baseUrl": ".",
     "paths": {
+      "@rumsan/app": ["libs/app/src/index.ts"],
       "@rumsan/communication-query": ["libs/communication-query/src/index.ts"],
       "@rumsan/extensions": ["libs/extensions/src/index.ts"],
       "@rumsan/extensions/*": ["libs/extensions/src/*"],

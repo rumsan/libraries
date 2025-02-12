@@ -214,7 +214,7 @@ enum ApplicationEnvironment {
 model Application {
   cuid        String                 @id @default(cuid())
   name        String
-  publicKey   String
+  publicKey   String?
   description String?
   environment ApplicationEnvironment
 
