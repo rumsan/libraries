@@ -72,12 +72,15 @@ export class AbilitiesGuard implements CanActivate {
     }
 
     let routeActions = actions;
-    if (actions === '*') {
+    if (actions === '*' || actions === 'manage') {
       routeActions = [
         ACTIONS.CREATE,
         ACTIONS.READ,
         ACTIONS.UPDATE,
         ACTIONS.DELETE,
+        ACTIONS.APPROVE,
+        ACTIONS.VERIFY,
+        ACTIONS.RESTORE,
       ];
     }
     const actionsArray = Array.isArray(routeActions)

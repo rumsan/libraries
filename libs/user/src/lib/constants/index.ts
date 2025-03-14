@@ -8,6 +8,9 @@ export const ACTIONS = {
   UPDATE: 'update',
   DELETE: 'delete',
   READ: 'read',
+  VERIFY: 'verify',
+  APPROVE: 'approve',
+  RESTORE: 'restore',
 };
 
 // For Ability Guard

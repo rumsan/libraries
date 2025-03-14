@@ -8,6 +8,7 @@ export interface RequestContext<T = Record<string, unknown>> {
   currentUser?: User;
   sessionId?: string;
   appId?: string;
+  clientId?: string;
   meta?: T;
 }
 

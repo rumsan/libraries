@@ -28,6 +28,7 @@ import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
 import { getSecret } from '../utils/config.utils';
 import { getServiceTypeByAddress } from '../utils/service.utils';
 import { TokenDataInterface } from './interfaces/auth.interface';
+import { CurrentUserInterface } from './interfaces/current-user.interface';
 
 @Injectable()
 export class AuthsService {
@@ -350,15 +351,12 @@ export class AuthsService {
     user: User,
     authority: any,
     session: AuthSession,
-  ): Promise<{ accessToken: string }> {
+  ): Promise<{ currentUser: CurrentUserInterface; accessToken: string }> {
     const { sessionId } = session;
-    const { id, cuid, email, phone, wallet } = user;
-    const payload: TokenDataInterface = {
+    const { id, cuid } = user;
+    const currentUser: TokenDataInterface = {
       id: id,
       cuid,
-      email,
-      phone,
-      wallet,
       roles: authority.roles.map((role: any) => role.roleName),
       permissions: authority.permissions,
       sessionId,
@@ -366,12 +364,13 @@ export class AuthsService {
 
     const expiryTime = this.config.get('JWT_EXPIRATION_TIME');
 
-    const token = await this.jwt.signAsync(payload, {
+    const token = await this.jwt.signAsync(currentUser, {
       expiresIn: expiryTime,
       secret: getSecret(),
     });
 
     return {
+      currentUser,
       accessToken: token,
     };
   }

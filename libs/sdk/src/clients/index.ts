@@ -34,6 +34,14 @@ export class RumsanClient implements IRumsanClient {
     this.apiClient.defaults.headers['rs-app-id'] = appId;
   }
 
+  public get clientId() {
+    return this.apiClient.defaults.headers['rs-client-id'] as string;
+  }
+
+  public set clientId(clientId: string) {
+    this.apiClient.defaults.headers['rs-client-id'] = clientId;
+  }
+
   public get url() {
     return this.apiClient.defaults.baseURL as string;
   }
@@ -58,6 +66,10 @@ export class RumsanClient implements IRumsanClient {
 
   public setAppId(appId: string) {
     this.apiClient.defaults.headers['rs-app-id'] = appId;
+  }
+
+  public setClientId(clientId: string) {
+    this.apiClient.defaults.headers['rs-client-id'] = clientId;
   }
 
   public setUrl(url: string) {

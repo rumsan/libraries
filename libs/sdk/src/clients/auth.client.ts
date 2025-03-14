@@ -17,7 +17,7 @@ export class AuthClient {
   constructor(private apiClient: AxiosInstance) {
     this._client = apiClient;
   }
-  async login(
+  async login<T>(
     data: {
       otp: string;
       challenge: string;
@@ -31,7 +31,7 @@ export class AuthClient {
       data,
       config,
     );
-    return formatResponse<LoginResponse>(response);
+    return formatResponse<LoginResponse<T>>(response);
   }
 
   async getOtp(data: OTP, config?: AxiosRequestConfig) {

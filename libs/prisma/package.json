@@ -14,5 +14,8 @@
       "url": "https://www.rumsan.com"
     }
   ],
+  "dependencies": {
+    "@prisma/client": "^6.2.1"
+  },
   "typings": "./index.d.ts"
 }

@@ -1,9 +1,10 @@
 export interface CurrentUserInterface {
   id: number;
   cuid: string;
-  email: string | null;
-  phone: string | null;
-  wallet: string | null;
+  name?: string;
+  email?: string | null;
+  phone?: string | null;
+  wallet?: string | null;
   roles: string[];
   permissions: {
     action: string;

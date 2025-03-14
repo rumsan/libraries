@@ -1,6 +1,7 @@
 import { User } from './user.types';
 
-export type LoginResponse = {
+export type LoginResponse<T = Record<string, any>> = {
   accessToken: string;
-  user?: User;
+  currentUser?: User;
+  userDetails: T;
 };

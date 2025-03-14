@@ -26,7 +26,7 @@ export const RumsanProvider: FC<RumsanProviderProps> = ({
   rumsanClient,
   queryClient,
 }) => {
-  const { accessToken, appId } = useRumsanAppStore();
+  const { accessToken, appId, clientId } = useRumsanAppStore();
   const rsClient: IRumsanClient = rumsanClient as IRumsanClient;
   useEffect(() => {
     if (!rsClient) return;
@@ -36,7 +36,11 @@ export const RumsanProvider: FC<RumsanProviderProps> = ({
     if (appId) {
       rsClient.setAppId(appId);
     }
-  }, [appId, accessToken, rsClient]);
+
+    if (clientId) {
+      rsClient.setClientId(clientId);
+    }
+  }, [appId, accessToken, clientId, rsClient]);
 
   return (
     <RumsanProviderContext.Provider

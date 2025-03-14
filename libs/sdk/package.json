@@ -1,6 +1,6 @@
 {
   "name": "@rumsan/sdk",
-  "version": "0.1.150",
+  "version": "0.1.158",
   "description": "Rumsan sdk types, dtos and services for rumsan libraries",
   "author": "rumsan.com",
   "license": "AGPL-3.0",
@@ -14,5 +14,8 @@
       "url": "https://www.rumsan.com"
     }
   ],
+  "dependencies": {
+    "http-status-codes": "^2.3.0"
+  },
   "typings": "./index.d.ts"
 }

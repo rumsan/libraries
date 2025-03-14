@@ -5,6 +5,7 @@ export interface IRumsanClient {
 
   accessToken: string;
   appId: string;
+  clientId: string;
   url: string;
   headers: { [key: string]: AxiosHeaderValue };
 
@@ -12,6 +13,7 @@ export interface IRumsanClient {
 
   setAccessToken(token: string): void;
   setAppId(appId: string): void;
+  setClientId(clientId: string): void;
   setUrl(url: string): void;
   setHeaders(headers: { [key: string]: AxiosHeaderValue }): void;
 }
