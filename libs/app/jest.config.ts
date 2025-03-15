@@ -1,3 +1,4 @@
+/* eslint-disable */
 export default {
   displayName: 'app',
   preset: '../../jest.preset.js',
@@ -6,5 +7,5 @@ export default {
     '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
-  coverageDirectory: '../../coverage/libs/app',
+  coverageDirectory: '../../coverage/libs/rsapp',
 };

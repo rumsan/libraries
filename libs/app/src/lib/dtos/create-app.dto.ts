@@ -8,7 +8,7 @@ export class CreateApplicationDto {
     description: 'Name of the application',
   })
   @IsString()
-  name: string;
+  public name: string;
 
   @ApiProperty({
     example: 'Rahat is a decentralized application',
@@ -16,20 +16,19 @@ export class CreateApplicationDto {
   })
   @IsString()
   @IsOptional()
-  description?: string;
+  public description: string;
 
   @ApiProperty({
     example: ApplicationEnvironment.DEVELOPMENT,
     enum: ApplicationEnvironment,
   })
   @IsString()
-  environment: ApplicationEnvironment;
+  public environment: ApplicationEnvironment;
 
   @ApiProperty({
     example: '0x1234567890123456789012345678901234567890',
     description: 'Ethereum address format compressed public key',
   })
   @IsOptional()
-  @IsString()
-  publicKey?: string;
+  public publicKey: string;
 }

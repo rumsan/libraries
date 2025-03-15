@@ -3,8 +3,8 @@ import { ApiTags } from '@nestjs/swagger';
 import { CreateApplicationDto } from './dtos/create-app.dto';
 import { RumsanAppService } from './rsapp.service';
 
-@ApiTags('Applications')
 @Controller('apps')
+@ApiTags('Applications')
 export class RumsanAppController {
   constructor(private readonly appService: RumsanAppService) {}
 
