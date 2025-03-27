@@ -109,7 +109,7 @@ export class UsersService {
     );
   }
 
-  getById(userId: number) {
+  async getById(userId: number) {
     return this.prisma.user.findUnique({
       where: { id: userId, deletedAt: null },
     });
@@ -265,15 +265,18 @@ export class UsersService {
     });
   }
 
-  async delete(uuid: UUID, currentUser: CUI) {
+  async delete(uuid: UUID, currentUser?: CUI): Promise<User> {
     try {
-      const { uuid: currentUseruuid, sessionId } = currentUser;
-      const user = await this.rsprisma.user.softDelete(
-        { uuid },
-        currentUseruuid,
-        sessionId,
-      );
-      return user;
+      if (currentUser) {
+        const { uuid: currentUseruuid, sessionId } = currentUser;
+        return await this.rsprisma.user.softDelete(
+          { uuid },
+          currentUseruuid,
+          sessionId,
+        );
+      } else {
+        return await this.rsprisma.user.softDelete({ uuid });
+      }
     } catch (err) {
       throw new Error('rs-user: User not found or deletion not permitted.');
     }
