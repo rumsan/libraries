@@ -4,20 +4,18 @@ import { Prisma, PrismaClient } from '@prisma/client';
 const softDelete = async function <M, A>(
   this: M,
   where: Prisma.Args<M, 'update'>['where'],
-  updatedBy: string,
-  sessionId: string,
+  updatedBy?: string,
+  sessionId?: string,
 ): Promise<Prisma.Result<M, A, 'update'>> {
   const context = Prisma.getExtensionContext(this);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data: Record<string, unknown> = { deletedAt: new Date() };
+  if (updatedBy !== undefined) data['updatedBy'] = updatedBy;
+  if (sessionId !== undefined) data['sessionId'] = sessionId;
   const result = (context as any).update({
     where,
-    data: {
-      deletedAt: new Date(),
-      updatedBy,
-      sessionId,
-    },
+    data,
   });
-
   return result;
 };
 
@@ -58,8 +56,7 @@ export const PrismaExtendedClient = (prismaClient: PrismaClient) =>
 @Injectable()
 export class PrismaService
   extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy
-{
+  implements OnModuleInit, OnModuleDestroy {
   public readonly rsclient = PrismaExtendedClient(this);
 
   constructor() {
