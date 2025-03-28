@@ -65,5 +65,5 @@ export class CreateUserDto implements User {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  sessionId: string;
+  sessionId?: string;
 }

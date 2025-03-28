@@ -30,7 +30,7 @@ export class UsersService {
   private rsprisma;
   constructor(
     protected prisma: PrismaService,
-    private eventEmitter: EventEmitter2,
+    protected eventEmitter: EventEmitter2,
   ) {
     this.rsprisma = this.prisma.rsclient;
   }
