@@ -5,7 +5,7 @@ import { PaginatorTypes, PrismaService } from '@rumsan/prisma';
 import { paginator } from '@rumsan/prisma/pagination/paginator';
 import { PROTECTED_SETTINGS } from '../constants';
 import { CreateSettingDto, ListSettingDto, UpdateSettngsDto } from '../dtos';
-import { SettingsUtilsService } from './settings.utils.service';
+import { settingsUtils } from './settings.utils';
 
 const paginate: PaginatorTypes.PaginateFunction = paginator({ perPage: 20 });
 
@@ -19,8 +19,7 @@ export class SettingsService {
   private static data: any = {};
   constructor(
     private prisma: PrismaService,
-    private readonly settingsUtilsServie: SettingsUtilsService,
-  ) {}
+  ) { }
 
   public static get(path: string) {
     const keys = path.split('.');
@@ -39,7 +38,7 @@ export class SettingsService {
 
   async getPublic(name: string) {
     // Ensure that the name is stored in uppercase
-    const uppercaseName = this.settingsUtilsServie.changeToUpperCase(name);
+    const uppercaseName = settingsUtils.changeToUpperCase(name);
     const publicSetting = await this.prisma.setting.findUnique({
       where: { name: uppercaseName, isPrivate: false },
     });
@@ -111,22 +110,36 @@ export class SettingsService {
     SettingsService.data = result;
   }
 
+  async getSettingsByName(name: string) {
+    const setting = await this.prisma.setting.findUnique({
+      where: {
+        name,
+      },
+    });
+
+    if (!setting) {
+      throw new Error('Setting not Found.');
+    }
+
+    return setting;
+  }
+
   async update(name: string, dto: UpdateSettngsDto) {
     const { isPrivate, isReadOnly, value: dtoValue, requiredFields } = dto;
 
-    name = this.settingsUtilsServie.changeToUpperCase(name);
-    const setting = await this.settingsUtilsServie.getSettingsByName(name);
+    name = settingsUtils.changeToUpperCase(name);
+    const setting = await this.getSettingsByName(name);
 
-    this.settingsUtilsServie.validateReadOnly(setting);
+    settingsUtils.validateReadOnly(setting);
     let value = dtoValue;
     const requiredFieldsArray =
-      this.settingsUtilsServie.formatRequiredFields(requiredFields);
+      settingsUtils.formatRequiredFields(requiredFields);
 
-    const dataType = this.settingsUtilsServie.getDataType(value);
+    const dataType = settingsUtils.getDataType(value);
 
     // Handle value if Object
     if (dataType == SettingDataType.OBJECT) {
-      value = this.settingsUtilsServie.handleObjectValue(
+      value = settingsUtils.handleObjectValue(
         value,
         requiredFieldsArray,
       );
@@ -173,16 +186,16 @@ export class SettingsService {
       isPrivate,
     } = createSettingDto;
 
-    const name = this.settingsUtilsServie.changeToUpperCase(originalName);
+    const name = settingsUtils.changeToUpperCase(originalName);
     let value = dtoValue;
     const requiredFieldsArray =
-      this.settingsUtilsServie.formatRequiredFields(requiredFields);
+      settingsUtils.formatRequiredFields(requiredFields);
 
-    const dataType = this.settingsUtilsServie.getDataType(value);
+    const dataType = settingsUtils.getDataType(value);
 
     // Handle value if it's an Object
     if (dataType === SettingDataType.OBJECT) {
-      value = this.settingsUtilsServie.handleObjectValue(
+      value = settingsUtils.handleObjectValue(
         value,
         requiredFieldsArray,
       );
@@ -191,7 +204,7 @@ export class SettingsService {
       requiredFieldsArray.length = 0;
     }
 
-    await this.settingsUtilsServie.ensureSettingDoesNotExist(name, prisma);
+    await settingsUtils.ensureSettingDoesNotExist(name, prisma);
 
     const newSetting = await prisma.setting.create({
       data: {
@@ -223,7 +236,7 @@ export class SettingsService {
   //DO NOT EXPOSE THIS USING CONTROLLER
   async delete(name: string) {
     // Ensure that the name is stored in uppercase
-    const uppercaseName = this.settingsUtilsServie.changeToUpperCase(name);
+    const uppercaseName = settingsUtils.changeToUpperCase(name);
 
     // Check if the setting exists in the database
     const existingSetting = await this.prisma.setting.findUnique({

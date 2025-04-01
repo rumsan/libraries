@@ -1,6 +1,6 @@
 {
   "name": "@rumsan/extensions",
-  "version": "0.0.32",
+  "version": "0.0.34",
   "type": "commonjs",
   "dependencies": {
     "class-transformer": "^0.5.1",

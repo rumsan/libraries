@@ -1,16 +1,13 @@
-import { Injectable } from '@nestjs/common';
 import { SettingDataType } from '@prisma/client';
-import { PrismaService } from '@rumsan/prisma';
-@Injectable()
-export class SettingsUtilsService {
-  constructor(private readonly prismaService: PrismaService) {}
+
+export const settingsUtils = {
   changeToUpperCase(value: string) {
     return value.toUpperCase();
-  }
+  },
 
   formatRequiredFields(fields?: string[]): string[] {
     return fields ? fields.map((field) => this.changeToUpperCase(field)) : [];
-  }
+  },
 
   handleObjectValue(value: any, requiredFields: string[]): any {
     const formattedValue = this.capitalizeObjectKeys(value);
@@ -19,12 +16,9 @@ export class SettingsUtilsService {
       return this.filterObjectByRequiredFields(formattedValue, requiredFields);
     }
     return formattedValue;
-  }
+  },
 
-  private validateRequiredFields(
-    value: Record<string, any>,
-    requiredFields: string[],
-  ) {
+  validateRequiredFields(value: Record<string, any>, requiredFields: string[]) {
     const missingFields = requiredFields.filter(
       (field) => !Object.keys(value).includes(field),
     );
@@ -33,9 +27,9 @@ export class SettingsUtilsService {
         `Required fields missing in 'value' object: ${missingFields.join(', ')}`,
       );
     }
-  }
+  },
 
-  private filterObjectByRequiredFields(
+  filterObjectByRequiredFields(
     value: Record<string, any>,
     requiredFields: string[],
   ): Record<string, any> {
@@ -48,7 +42,7 @@ export class SettingsUtilsService {
         },
         {} as Record<string, any>,
       );
-  }
+  },
 
   capitalizeObjectKeys(obj: any): any {
     if (typeof obj !== 'object' || obj === null) {
@@ -70,7 +64,7 @@ export class SettingsUtilsService {
       }
     }
     return upperCaseObj;
-  }
+  },
 
   async ensureSettingDoesNotExist(name: string, prisma: any) {
     const existingSetting = await prisma.setting.findUnique({
@@ -80,21 +74,7 @@ export class SettingsUtilsService {
     if (existingSetting) {
       throw new Error('Setting with this name already exists.');
     }
-  }
-
-  async getSettingsByName(name: string) {
-    const setting = await this.prismaService.setting.findUnique({
-      where: {
-        name,
-      },
-    });
-
-    if (!setting) {
-      throw new Error('Setting not Found.');
-    }
-
-    return setting;
-  }
+  },
 
   validateReadOnly(setting: any) {
     if (setting.isReadOnly) {
@@ -102,7 +82,7 @@ export class SettingsUtilsService {
         `Setting ${setting.name} is read only and cannot be updated`,
       );
     }
-  }
+  },
 
   getDataType(value: string | number | boolean | object): SettingDataType {
     if (typeof value === 'string') {
@@ -119,5 +99,5 @@ export class SettingsUtilsService {
       return SettingDataType.OBJECT;
     }
     throw new Error(`Invalid data type for 'value': ${typeof value}`);
-  }
-}
+  },
+};
