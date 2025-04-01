@@ -4,14 +4,19 @@ import { AbilityModule } from '../ability/ability.module';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 
-@Module({})
+@Module({
+  imports: [PrismaModule, AbilityModule.forRoot()],
+  controllers: [UsersController],
+  providers: [UsersService],
+  exports: [UsersService],
+})
 export class UsersModule {
-  static register(usersServiceProvider?: Provider): DynamicModule {
+  static register(usersServiceProvider?: Provider[]): DynamicModule {
     return {
       module: UsersModule,
       imports: [PrismaModule, AbilityModule.forRoot()],
       controllers: [UsersController],
-      providers: [usersServiceProvider || UsersService],
+      providers: usersServiceProvider || [UsersService],
       exports: [UsersService],
     };
   }
