@@ -51,16 +51,15 @@ export const settingsUtils = {
     }
 
     if (Array.isArray(obj)) {
-      // Process each element in the array
-      return obj.map(settingsUtils.capitalizeObjectKeys);
+      // Return the array as is since we only capitalize the first level of keys
+      return obj;
     }
 
-    // Process each key-value pair in the object
+    // Process only the first level of key-value pairs in the object
     const upperCaseObj: any = {};
     for (const key in obj) {
-      //need for refactoring
       if (obj.hasOwnProperty(key)) {
-        upperCaseObj[key.toUpperCase()] = settingsUtils.capitalizeObjectKeys(obj[key]);
+        upperCaseObj[key.toUpperCase()] = obj[key];
       }
     }
     return upperCaseObj;
