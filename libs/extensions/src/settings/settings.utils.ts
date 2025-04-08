@@ -6,14 +6,14 @@ export const settingsUtils = {
   },
 
   formatRequiredFields(fields?: string[]): string[] {
-    return fields ? fields.map((field) => this.changeToUpperCase(field)) : [];
+    return fields ? fields.map((field) => settingsUtils.changeToUpperCase(field)) : [];
   },
 
   handleObjectValue(value: any, requiredFields: string[]): any {
-    const formattedValue = this.capitalizeObjectKeys(value);
+    const formattedValue = settingsUtils.capitalizeObjectKeys(value);
     if (requiredFields.length > 0) {
-      this.validateRequiredFields(formattedValue, requiredFields);
-      return this.filterObjectByRequiredFields(formattedValue, requiredFields);
+      settingsUtils.validateRequiredFields(formattedValue, requiredFields);
+      return settingsUtils.filterObjectByRequiredFields(formattedValue, requiredFields);
     }
     return formattedValue;
   },
@@ -52,7 +52,7 @@ export const settingsUtils = {
 
     if (Array.isArray(obj)) {
       // Process each element in the array
-      return obj.map(this.capitalizeObjectKeys);
+      return obj.map(settingsUtils.capitalizeObjectKeys);
     }
 
     // Process each key-value pair in the object
@@ -60,7 +60,7 @@ export const settingsUtils = {
     for (const key in obj) {
       //need for refactoring
       if (obj.hasOwnProperty(key)) {
-        upperCaseObj[key.toUpperCase()] = this.capitalizeObjectKeys(obj[key]);
+        upperCaseObj[key.toUpperCase()] = settingsUtils.capitalizeObjectKeys(obj[key]);
       }
     }
     return upperCaseObj;
