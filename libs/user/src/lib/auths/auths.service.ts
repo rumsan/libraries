@@ -81,8 +81,9 @@ export class AuthsService {
       challenge,
     });
     this.logger.log('OTP created: ' + otp);
+    const { ip, ...response } = challenge;
 
-    return challenge;
+    return response;
   }
 
   async loginByOtp(dto: OtpLoginDto, requestInfo: Request) {
