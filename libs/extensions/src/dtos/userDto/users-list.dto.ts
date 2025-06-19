@@ -8,10 +8,10 @@ export class ListUserDto extends PaginationDto {
   override order: 'asc' | 'desc' = 'desc';
 
   @ApiPropertyOptional({
-    example: 'admin',
-    description: 'Filter users by role',
+    example: 'admin,manager',
+    description: 'Filter users by roles (comma-separated)',
   })
   @IsString()
   @IsOptional()
-  role?: string;
+  roles?: string;
 }

@@ -97,14 +97,13 @@ export class UsersService {
 
     const where: Prisma.UserWhereInput = {
       deletedAt: null,
-    };
-
-    if (dto.role) {
+    }; if (dto.roles) {
+      const rolesArray = dto.roles.split(',').map(role => role.trim());
       where.UserRole = {
         some: {
           Role: {
             name: {
-              equals: dto.role,
+              in: rolesArray,
               mode: 'insensitive',
             },
           },
