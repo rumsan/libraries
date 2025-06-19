@@ -94,13 +94,36 @@ export class UsersService {
   async list(dto: ListUserDto): Promise<PaginatorTypes.PaginatedResult<User>> {
     const orderBy: Record<string, 'asc' | 'desc'> = {};
     orderBy[dto.sort] = dto.order;
+
+    const where: Prisma.UserWhereInput = {
+      deletedAt: null,
+    };
+
+    if (dto.role) {
+      where.UserRole = {
+        some: {
+          Role: {
+            name: {
+              equals: dto.role,
+              mode: 'insensitive',
+            },
+          },
+        },
+      };
+    }
+
     return paginate(
       this.prisma.user,
       {
-        where: {
-          deletedAt: null,
-        },
+        where,
         orderBy,
+        include: {
+          UserRole: {
+            include: {
+              Role: true,
+            },
+          },
+        },
       },
       {
         page: dto.page,
