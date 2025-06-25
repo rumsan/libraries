@@ -1,6 +1,6 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { UUID } from 'crypto';
-import { Pagination, User, UserRole } from '../types';
+import { ListUser, User, UserRole } from '../types';
 import { UserClient } from '../types/client.types';
 import { formatResponse } from '../utils/formatResponse.utils';
 
@@ -26,7 +26,7 @@ export const getUserClient = (client: AxiosInstance): UserClient => {
       const response = await client.delete(`/users/${uuid}`, config);
       return formatResponse<User>(response);
     },
-    listUsers: async (data?: Pagination, config?: AxiosRequestConfig) => {
+    listUsers: async (data?: ListUser, config?: AxiosRequestConfig) => {
       const response = await client.get('/users', {
         params: data,
         ...config,

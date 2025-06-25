@@ -1,4 +1,4 @@
-import { Pagination, User } from '@rumsan/sdk/types';
+import { ListUser, User } from '@rumsan/sdk/types';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { UUID } from 'crypto';
 import { useEffect } from 'react';
@@ -23,7 +23,7 @@ export const useUserCreate = () => {
   );
 };
 
-export const useUserList = (payload: Pagination) => {
+export const useUserList = (payload: ListUser) => {
   const { queryClient, rumsanService } = useRSQuery();
   const setUsers = useUserStore((state) => state.setUsers);
 

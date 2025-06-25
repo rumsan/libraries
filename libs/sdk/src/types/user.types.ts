@@ -1,5 +1,6 @@
 import { UUID } from 'crypto';
 import { Gender } from '../enums';
+import { Pagination } from './pagination.types';
 
 export type User = {
   id?: number;
@@ -29,3 +30,8 @@ export type UserRole = {
   createdBy: number | null;
   name: string;
 };
+
+export type ListUser = Pagination & {
+  roles?: string;
+}
+
