@@ -154,7 +154,7 @@ export class UsersService {
 
   async update(uuid: UUID, dto: UpdateUserDto) {
     return this.prisma.$transaction(async (tx) => {
-      const user = await this.prisma.user.findUnique({
+      const user = await tx.user.findUnique({
         where: { uuid, deletedAt: null },
       });
 
