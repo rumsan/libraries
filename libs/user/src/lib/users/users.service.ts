@@ -12,6 +12,8 @@ import { Request, UserRole } from '@rumsan/sdk/types';
 import { UUID } from 'crypto';
 import { CUI } from '../auths/interfaces/current-user.interface';
 import { ERRORS, EVENTS } from '../constants';
+import { RSE } from '../constants/errors';
+import { UserDataToValidate } from '../interfaces';
 import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
 import { getSecret } from '../utils/config.utils';
 import {
@@ -24,6 +26,7 @@ type PrismaClientType = Omit<
   PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
   '$on' | '$connect' | '$disconnect' | '$use' | '$transaction' | '$extends'
 >;
+
 
 @Injectable()
 export class UsersService {
@@ -46,6 +49,10 @@ export class UsersService {
     return this.prisma.$transaction(async (tx) => {
       try {
         const { roles, ...data } = dto;
+
+        // Validate user data and check for duplicates
+        await this._validateUserData(tx, data);
+
         const user = await tx.user.create({
           data,
         });
@@ -53,13 +60,9 @@ export class UsersService {
         if (roles?.length) {
           await this.addRoles(user.uuid as UUID, roles, tx);
         }
-        // await this.addRoles(user.uuid as UUID, dto.roles, tx);
 
-        await Promise.all([
-          this._createAuth(user.id, Service.EMAIL, user.email, tx),
-          this._createAuth(user.id, Service.PHONE, user.phone, tx),
-          this._createAuth(user.id, Service.WALLET, user.wallet, tx),
-        ]);
+        // Create authentication records
+        await this._createAuthRecords(tx, user.id, data);
 
         if (callback) {
           await callback(null, tx, user);
@@ -85,6 +88,15 @@ export class UsersService {
   ): Promise<void> {
     if (!prisma) prisma = this.prisma;
     if (serviceId) {
+      // Check if auth record already exists for this user and service
+      const existingUserAuth = await prisma.auth.findFirst({
+        where: { userId, service },
+      });
+
+      if (existingUserAuth) {
+        throw ERRORS.AUTH_SERVICE_EXISTS;
+      }
+
       await prisma.auth.create({
         data: { userId, service, serviceId },
       });
@@ -154,11 +166,10 @@ export class UsersService {
 
   async update(uuid: UUID, dto: UpdateUserDto) {
     return this.prisma.$transaction(async (tx) => {
-      const user = await this.prisma.user.findUnique({
-        where: { uuid, deletedAt: null },
-      });
+      const user = await this._findUserByUuid(uuid, tx);
 
-      if (!user) throw ERRORS.USER_NOT_FOUND;
+      // Validate user data and check for duplicates (excluding current user)
+      await this._validateUserData(tx, dto, user.id);
 
       // Update user details
       const updatedUser = await tx.user.update({
@@ -166,10 +177,8 @@ export class UsersService {
         data: { ...dto },
       });
 
-      // Update authentication details only if corresponding DTO field is provided
-      await this._updateAuth(tx, user, Service.EMAIL, dto.email);
-      await this._updateAuth(tx, user, Service.PHONE, dto.phone);
-      await this._updateAuth(tx, user, Service.WALLET, dto.wallet);
+      // Update authentication records
+      await this._updateAuthRecords(tx, user, dto);
 
       return updatedUser;
     });
@@ -206,13 +215,7 @@ export class UsersService {
 
   async updateMe(userId: number, dto: UpdateUserDto, rdetails: Request) {
     return this.prisma.$transaction(async (tx) => {
-      const user = await this.prisma.user.findUnique({
-        where: { id: userId, deletedAt: null },
-      });
-
-      if (!user) {
-        throw new Error('User not found.');
-      }
+      const user = await this._findUserById(userId, tx);
 
       const { email, phone, wallet, ...data } = dto;
 
@@ -252,33 +255,29 @@ export class UsersService {
     const payload = decryptChallenge(getSecret(), challenge, 1200);
 
     if (!payload.address) {
-      throw new Error('Invalid challenge');
+      throw ERRORS.INVALID_CHALLENGE;
     }
 
     if (payload.ip !== rdetails.ip) {
-      // IP in challenge doesn't match the incoming IP
-      throw new Error('IP mismatch');
+      throw ERRORS.IP_MISMATCH;
     }
 
-    const user = await this.prisma.user.findUnique({
-      where: { id: payload.data['userId'], deletedAt: null },
-    });
-
-    if (!user) {
-      throw new Error('User not found');
-    }
+    const user = await this._findUserById(payload.data['userId']);
 
     const service = getServiceTypeByAddress(payload.address);
     if (!service) {
-      throw new Error('Invalid service');
+      throw ERRORS.INVALID_SERVICE;
     }
 
-    const data: { email?: string; phone?: string; wallet?: string } = {};
+    const data: UserDataToValidate = {};
     if (service === Service.EMAIL) data.email = payload.address;
     if (service === Service.PHONE) data.phone = payload.address;
     if (service === Service.WALLET) data.wallet = payload.address;
 
     await this.prisma.$transaction(async (tx) => {
+      // Validate user data and check for duplicates (excluding current user)
+      await this._validateUserData(tx, data, user.id);
+
       await this._updateAuth(tx, user, service, payload.address);
       await tx.user.update({
         where: { id: user.id },
@@ -300,7 +299,7 @@ export class UsersService {
         return await this.rsprisma.user.softDelete({ uuid });
       }
     } catch (err) {
-      throw new Error('rs-user: User not found or deletion not permitted.');
+      throw ERRORS.USER_DELETE_FAILED;
     }
   }
 
@@ -351,7 +350,7 @@ export class UsersService {
     const getValidRoles = await prisma.role.findMany({
       where: { name: { in: roles, mode: 'insensitive' } },
     });
-    if (getValidRoles.length < 1) this.listRoles(uuid);
+    if (getValidRoles.length < 1) return this.listRoles(uuid);
     const user = await prisma.user.findUnique({
       where: { uuid },
     });
@@ -364,5 +363,163 @@ export class UsersService {
       },
     });
     return this.listRoles(uuid);
+  }
+
+  /**
+   * Check if a user with the given email, phone, or wallet already exists
+   * @param tx - Prisma transaction client
+   * @param data - User data to check
+   * @param excludeUserId - User ID to exclude from the check (for updates)
+   */
+  private async _checkExistingUser(
+    tx: PrismaClientType,
+    data: UserDataToValidate,
+    excludeUserId?: number,
+  ): Promise<void> {
+    const whereClause = { deletedAt: null } as any;
+    if (excludeUserId) {
+      whereClause.id = { not: excludeUserId };
+    }
+
+    if (data.email) {
+      const existingEmailUser = await tx.user.findFirst({
+        where: { ...whereClause, email: data.email },
+      });
+      if (existingEmailUser) {
+        throw ERRORS.USER_EMAIL_EXISTS;
+      }
+    }
+
+    if (data.phone) {
+      const existingPhoneUser = await tx.user.findFirst({
+        where: { ...whereClause, phone: data.phone },
+      });
+      if (existingPhoneUser) {
+        throw ERRORS.USER_PHONE_EXISTS;
+      }
+    }
+
+    if (data.wallet) {
+      const existingWalletUser = await tx.user.findFirst({
+        where: { ...whereClause, wallet: data.wallet },
+      });
+      if (existingWalletUser) {
+        throw ERRORS.USER_WALLET_EXISTS;
+      }
+    }
+  }
+
+  /**
+   * Check if a service ID is already used by another user
+   */
+  private async _checkExistingAuthService(
+    tx: PrismaClientType,
+    service: Service,
+    serviceId: string,
+    excludeUserId?: number,
+  ): Promise<void> {
+    const whereClause = { service, serviceId } as any;
+    if (excludeUserId) {
+      whereClause.userId = { not: excludeUserId };
+    }
+
+    const existingServiceAuth = await tx.auth.findFirst({
+      where: whereClause,
+    });
+
+    if (existingServiceAuth) {
+      switch (service) {
+        case Service.EMAIL:
+          throw ERRORS.AUTH_EMAIL_EXISTS;
+        case Service.PHONE:
+          throw ERRORS.AUTH_PHONE_EXISTS;
+        case Service.WALLET:
+          throw ERRORS.AUTH_WALLET_EXISTS;
+        default:
+          throw RSE('This service ID is already registered with another user.', 'AUTH_SERVICE_ID_EXISTS', 409);
+      }
+    }
+  }
+
+  /**
+   * Validate user data and authentication services before creating or updating
+   */
+  private async _validateUserData(
+    tx: PrismaClientType,
+    userData: UserDataToValidate,
+    excludeUserId?: number,
+  ): Promise<void> {
+    // Check for existing users
+    await this._checkExistingUser(tx, userData, excludeUserId);
+
+    // Check for existing auth services
+    if (userData.email) {
+      await this._checkExistingAuthService(tx, Service.EMAIL, userData.email, excludeUserId);
+    }
+    if (userData.phone) {
+      await this._checkExistingAuthService(tx, Service.PHONE, userData.phone, excludeUserId);
+    }
+    if (userData.wallet) {
+      await this._checkExistingAuthService(tx, Service.WALLET, userData.wallet, excludeUserId);
+    }
+  }
+
+  /**
+   * Create authentication records for a user
+   * @param tx - Prisma transaction client
+   * @param userId - User ID
+   * @param userData - User data containing email, phone, wallet
+   */
+  private async _createAuthRecords(
+    tx: PrismaClientType,
+    userId: number,
+    userData: UserDataToValidate,
+  ): Promise<void> {
+    await Promise.all([
+      this._createAuth(userId, Service.EMAIL, userData.email || null, tx),
+      this._createAuth(userId, Service.PHONE, userData.phone || null, tx),
+      this._createAuth(userId, Service.WALLET, userData.wallet || null, tx),
+    ]);
+  }
+
+  /**
+   * Update authentication records for a user
+   */
+  private async _updateAuthRecords(
+    tx: PrismaClientType,
+    user: User,
+    userData: UserDataToValidate,
+  ): Promise<void> {
+    await Promise.all([
+      this._updateAuth(tx, user, Service.EMAIL, userData.email),
+      this._updateAuth(tx, user, Service.PHONE, userData.phone),
+      this._updateAuth(tx, user, Service.WALLET, userData.wallet),
+    ]);
+  }
+
+  /**
+   * Find user by ID with deleted check
+   */
+  private async _findUserById(id: number, tx?: PrismaClientType): Promise<User> {
+    const client = tx || this.prisma;
+    const user = await client.user.findUnique({
+      where: { id, deletedAt: null },
+    });
+    if (!user) throw ERRORS.USER_NOT_FOUND;
+    return user;
+  }
+
+  /**
+   * Find user by UUID with deleted check
+   * @param uuid - User UUID
+   * @param tx - Optional transaction client
+   */
+  private async _findUserByUuid(uuid: UUID, tx?: PrismaClientType): Promise<User> {
+    const client = tx || this.prisma;
+    const user = await client.user.findUnique({
+      where: { uuid, deletedAt: null },
+    });
+    if (!user) throw ERRORS.USER_NOT_FOUND;
+    return user;
   }
 }
