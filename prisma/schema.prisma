@@ -20,7 +20,6 @@ model User {
   gender    Gender  @default(UNKNOWN)
   email     String?
   phone     String?
-  wallet    String?
   extras    Json?   @db.JsonB()
   notes     String? @db.Text()
   sessionId String?
@@ -28,6 +27,7 @@ model User {
   Auth     Auth[]
   UserRole UserRole[]
   Signup   Signup[]
+  Wallets  Wallet[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt()
@@ -43,6 +43,29 @@ enum Gender {
   FEMALE
   OTHER
   UNKNOWN
+}
+
+enum ChainType {
+  EVM // Ethereum, BSC, Polygon, etc.
+  SOLANA // Solana blockchain
+  STELLAR // Stellar blockchain
+  OTHER // For custom or unsupported chains
+}
+
+model Wallet {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  address   String
+  provider  String? // Wallet provider (e.g., Rumsan, MetaMask, TrustWallet) - Optional
+  chainId   String // Blockchain network identifier (e.g., "1" for Ethereum, "public" for Stellar)
+  chainType ChainType // Blockchain type (EVM, SOLANA, STELLAR)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt()
+
+  User User @relation(fields: [userId], references: [id])
+
+  @@index([userId, chainId, chainType], name: "user_wallet_chainType_index")
+  @@map("tbl_wallets")
 }
 
 // ++++++++++++++++++ END: @rumsan/user - User +++++++++++++++++++++++++++++++
