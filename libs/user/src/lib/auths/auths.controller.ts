@@ -16,6 +16,7 @@ import {
   ChangePasswordDto,
   OtpDto,
   OtpLoginDto,
+  PasswordLoginDto,
   ResetPasswordDto,
   SetPasswordDto,
   WalletLoginDto,
@@ -62,7 +63,11 @@ export class AuthsController {
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('login/password')
-  async loginPassword(@Request() req: any, @RequestDetails() rdetails: RequestType) {
+  async loginPassword(
+    @Body() dto: PasswordLoginDto,
+    @Request() req: any,
+    @RequestDetails() rdetails: RequestType,
+  ) {
     // req.user is populated by LocalStrategy after successful validation
     return this.authService.createAuthSessionAndToken(req.user, rdetails);
   }
