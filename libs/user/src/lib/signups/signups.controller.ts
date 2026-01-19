@@ -4,7 +4,7 @@ import { CheckAbilities } from '../ability/ability.decorator';
 import { AbilitiesGuard } from '../ability/ability.guard';
 import { JwtGuard } from '../auths/guard';
 import { ACTIONS, APP, SUBJECTS } from '../constants';
-import { SignupEmailDto, SignupListDto } from './dto';
+import { SignupEmailDto, SignupListDto, SignupPasswordDto } from './dto';
 import { SignupApproveDto } from './dto/signup-approve.dto';
 import { SignupPhoneDto } from './dto/signup-phone.dto';
 import { SignupWalletDto } from './dto/signup-wallet.dto';
@@ -28,6 +28,11 @@ export class SignupController {
 
   @Post('wallet')
   signupUsingWallet(@Body() dto: SignupWalletDto) {
+    return this.service.signup(dto);
+  }
+
+  @Post('password')
+  signupUsingPassword(@Body() dto: SignupPasswordDto) {
     return this.service.signup(dto);
   }
 

@@ -17,6 +17,7 @@ model User {
   id        Int     @id @default(autoincrement())
   uuid      String  @unique @default(uuid())
   name      String
+  username  String? @unique
   gender    Gender  @default(UNKNOWN)
   email     String?
   phone     String?
@@ -106,6 +107,7 @@ model Auth {
   serviceId     String
   details       Json?     @db.JsonB()
   challenge     String?
+  passwordHash  String?
   falseAttempts Int       @default(0)
   isLocked      Boolean   @default(false)
   lockedOnAt    DateTime?
@@ -149,6 +151,7 @@ enum Service {
   TWITTER
   GITHUB
   LINKEDIN
+  USERNAME
 }
 
 // ++++++++++++++++++ END: @rumsan/user - Role/Auth ++++++++++++++++++++++++
@@ -224,5 +227,5 @@ model Application {
 
   @@map("tbl_applications")
 }
-
 // ++++++++++++++++++ END: @rumsan/extensions/apps ++++++++++++++++++++++++++++++++
+

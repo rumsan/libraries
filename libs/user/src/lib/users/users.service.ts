@@ -407,6 +407,15 @@ export class UsersService {
         throw ERRORS.USER_WALLET_EXISTS;
       }
     }
+
+    if (data.username) {
+      const existingUsernameUser = await tx.user.findFirst({
+        where: { ...whereClause, username: data.username },
+      });
+      if (existingUsernameUser) {
+        throw ERRORS.USERNAME_EXISTS;
+      }
+    }
   }
 
   /**
@@ -435,6 +444,8 @@ export class UsersService {
           throw ERRORS.AUTH_PHONE_EXISTS;
         case Service.WALLET:
           throw ERRORS.AUTH_WALLET_EXISTS;
+        case Service.USERNAME:
+          throw ERRORS.AUTH_USERNAME_EXISTS;
         default:
           throw RSE('This service ID is already registered with another user.', 'AUTH_SERVICE_ID_EXISTS', 409);
       }
@@ -462,6 +473,9 @@ export class UsersService {
     if (userData.wallet) {
       await this._checkExistingAuthService(tx, Service.WALLET, userData.wallet, excludeUserId);
     }
+    if (userData.username) {
+      await this._checkExistingAuthService(tx, Service.USERNAME, userData.username, excludeUserId);
+    }
   }
 
   /**
@@ -479,6 +493,7 @@ export class UsersService {
       this._createAuth(userId, Service.EMAIL, userData.email || null, tx),
       this._createAuth(userId, Service.PHONE, userData.phone || null, tx),
       this._createAuth(userId, Service.WALLET, userData.wallet || null, tx),
+      this._createAuth(userId, Service.USERNAME, userData.username || null, tx),
     ]);
   }
 
@@ -494,6 +509,7 @@ export class UsersService {
       this._updateAuth(tx, user, Service.EMAIL, userData.email),
       this._updateAuth(tx, user, Service.PHONE, userData.phone),
       this._updateAuth(tx, user, Service.WALLET, userData.wallet),
+      this._updateAuth(tx, user, Service.USERNAME, userData.username),
     ]);
   }
 
