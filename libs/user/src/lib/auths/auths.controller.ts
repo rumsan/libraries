@@ -9,7 +9,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { RequestDetails } from '@rumsan/extensions/decorators';
 import {
   ChallengeDto,
@@ -106,6 +106,13 @@ export class AuthsController {
 
   @UseGuards(JwtGuard)
   @Get('password/status')
+  @ApiQuery({
+    name: 'service',
+    enum: Service,
+    required: true,
+    description: 'Service type to check password status for (EMAIL, PHONE, USERNAME)',
+    example: 'EMAIL',
+  })
   checkPasswordStatus(
     @CurrentUser() user: CurrentUserInterface,
     @Query('service') service: Service,
