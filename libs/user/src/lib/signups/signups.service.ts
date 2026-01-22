@@ -39,6 +39,26 @@ export class SignupsService {
       | SignupWalletDto
       | SignupPasswordDto,
   ) {
+    // Validate password signup
+    if (dto instanceof SignupPasswordDto) {
+      const { validatePasswordStrength } = await import(
+        '../utils/password.utils'
+      );
+
+      // Check password confirmation
+      if (dto.password !== dto.confirmPassword) {
+        throw new Error('Passwords do not match');
+      }
+
+      // Validate password strength
+      const validation = validatePasswordStrength(dto.password);
+      if (!validation.isValid) {
+        throw new Error(
+          `Password too weak: ${validation.errors.join(', ')}`,
+        );
+      }
+    }
+
     let authIdentifier: { service: Service; serviceId: string };
     if (dto instanceof SignupPhoneDto)
       authIdentifier = { service: Service.PHONE, serviceId: dto.phone };
