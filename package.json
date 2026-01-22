@@ -99,7 +99,7 @@
     "nx": "19.8.3",
     "pgtools": "^1.0.1",
     "prettier": "^3.3.3",
-    "prisma": "^5.20.0",
+    "prisma": "5.20.0",
     "react-refresh": "^0.14.2",
     "ts-jest": "^29.2.5",
     "ts-node": "10.9.2",
