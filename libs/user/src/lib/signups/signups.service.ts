@@ -175,11 +175,21 @@ export class SignupsService {
 
         // Hash and store password
         const passwordHash = await hashPassword(signupData.password);
+        
+        // Find auth record by service (handle case-insensitive USERNAME)
+        const whereClause = signupData.service === Service.USERNAME && (result as any).username
+          ? {
+              userId: result.id,
+              service: Service.USERNAME,
+              serviceIdLower: (result as any).username.toLowerCase()
+            }
+          : {
+              userId: result.id,
+              service: signupData.service,
+            };
+        
         const auth = await this.prisma.auth.findFirst({
-          where: {
-            userId: result.id,
-            service: signupData.service,
-          },
+          where: whereClause as any
         });
 
         if (auth) {

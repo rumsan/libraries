@@ -56,6 +56,15 @@ export class RsExceptionFilter implements PipeTransform<any>, ExceptionFilter {
     const response = ctx.getResponse();
     let exceptionResponse: any;
 
+    // Debug logging
+    console.log('Exception caught:', {
+      type: exception?.constructor?.name,
+      message: exception?.message,
+      httpCode: exception?.httpCode,
+      statusCode: exception?.statusCode,
+      exception: exception
+    });
+
     const responseData: {
       success: boolean;
       name: string;
