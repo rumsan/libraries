@@ -50,11 +50,17 @@ export class UsersService {
       try {
         const { roles, ...data } = dto;
 
+        // Set lowercase username for lookups
+        const userData: any = { ...data };
+        if (data.username) {
+          userData.usernameLower = data.username.toLowerCase();
+        }
+
         // Validate user data and check for duplicates
-        await this._validateUserData(tx, data);
+        await this._validateUserData(tx, userData);
 
         const user = await tx.user.create({
-          data,
+          data: userData,
         });
 
         if (roles?.length) {
@@ -97,8 +103,14 @@ export class UsersService {
         throw ERRORS.AUTH_SERVICE_EXISTS;
       }
 
+      // For USERNAME service, also set serviceIdLower for case-insensitive lookups
+      const authData: any = { userId, service, serviceId };
+      if (service === Service.USERNAME) {
+        authData.serviceIdLower = serviceId.toLowerCase();
+      }
+
       await prisma.auth.create({
-        data: { userId, service, serviceId },
+        data: authData,
       });
     }
   }
@@ -408,9 +420,12 @@ export class UsersService {
       }
     }
 
+    // Case-insensitive username check
     if (data.username) {
+      const usernameLower = data.username.toLowerCase();
+      
       const existingUsernameUser = await tx.user.findFirst({
-        where: { ...whereClause, username: data.username },
+        where: { ...whereClause, usernameLower },
       });
       if (existingUsernameUser) {
         throw ERRORS.USERNAME_EXISTS;

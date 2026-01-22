@@ -1,46 +1,52 @@
 import {
-    ForbiddenException,
-    Injectable,
-    Logger,
-    UnauthorizedException,
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
 import { AuthSession, User } from '@prisma/client';
 import {
-    ChallengeDto,
-    OtpDto,
-    OtpLoginDto,
-    ResetPasswordDto,
-    SetPasswordDto,
-    WalletLoginDto
+  ChallengeDto,
+  OtpDto,
+  OtpLoginDto,
+  ResetPasswordDto,
+  SetPasswordDto,
+  WalletLoginDto
 } from '@rumsan/extensions/dtos';
-import { ERRORS } from '@rumsan/extensions/exceptions';
+import { ERRORS as EXT_ERRORS } from '@rumsan/extensions/exceptions';
 import { PrismaService } from '@rumsan/prisma';
 import { CONSTANTS } from '@rumsan/sdk/constants';
 import { Service } from '@rumsan/sdk/enums';
 import { Request } from '@rumsan/sdk/types';
 import { hashMessage, recoverAddress } from 'viem';
-import { EVENTS } from '../constants';
+import { ERRORS, EVENTS } from '../constants';
 import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
 import { getSecret } from '../utils/config.utils';
 import {
-    hashPassword,
-    validatePasswordStrength,
-    verifyPassword,
+  hashPassword,
+  validatePasswordStrength,
+  verifyPassword,
 } from '../utils/password.utils';
 import { getServiceTypeByAddress } from '../utils/service.utils';
 import { TokenDataInterface } from './interfaces/auth.interface';
+import { RateLimitService } from './services/rate-limit.service';
 
 @Injectable()
 export class AuthsService {
   private readonly logger = new Logger(AuthsService.name);
+  public request?: any; // Request context injected by LocalStrategy
+  
   constructor(
     protected prisma: PrismaService,
     private jwt: JwtService,
     private config: ConfigService,
     private eventEmitter: EventEmitter2,
+    private rateLimitService: RateLimitService,
   ) {}
 
   getUserById(userId: number) {
@@ -152,7 +158,7 @@ export class AuthsService {
       dto.challenge,
       CONSTANTS.CLIENT_TOKEN_LIFETIME,
     );
-    if (requestInfo.ip !== challengeData.ip) throw ERRORS.NO_MATCH_IP;
+    if (requestInfo.ip !== challengeData.ip) throw EXT_ERRORS.NO_MATCH_IP;
 
     const hash = hashMessage(dto.challenge);
     const walletAddress = await recoverAddress({
@@ -308,113 +314,231 @@ export class AuthsService {
   // ================== Password Authentication Methods ==================
 
   /**
-   * Validate user credentials for password-based login
+   * Validate user credentials with constant-time response
+   * CRITICAL: Always takes ~100ms regardless of username validity
    * Used by LocalStrategy
    */
   async validateUser(
     identifier: string,
-    password: string,
+    passwordInput: string,
     service?: Service,
   ): Promise<any> {
-    // Determine service type if not provided
-    if (!service) {
-      try {
-        service = getServiceTypeByAddress(identifier) as Service;
-      } catch (error) {
-        this.logger.warn(`Invalid identifier format: ${identifier}`);
-        return null;
+    const startTime = Date.now();
+    let user = null;
+    let authId: number | undefined;
+    let failReason: string | undefined;
+    
+    // Extract IP and userAgent from request context
+    const ip = this.request?.ip || this.request?.connection?.remoteAddress || 'unknown';
+    const userAgent = this.request?.headers?.['user-agent'] || this.request?.get?.('user-agent');
+    
+    try {
+      // LAYER 1: Check IP rate limit (before any processing)
+      await this.rateLimitService.checkIpRateLimit(ip);
+      
+      // Auto-detect service type if not provided
+      if (!service) {
+        try {
+          service = getServiceTypeByAddress(identifier) as Service;
+        } catch (error) {
+          service = Service.USERNAME; // Default to USERNAME if detection fails
+        }
       }
+      
+      // Only EMAIL, PHONE, and USERNAME support password auth
+      if (
+        service !== Service.EMAIL &&
+        service !== Service.PHONE &&
+        service !== Service.USERNAME
+      ) {
+        this.logger.warn(`Password auth not supported for service: ${service}`);
+        throw new UnauthorizedException('Invalid credentials');
+      }
+      
+      // Normalize identifier for USERNAME service (case-insensitive)
+      const lookupIdentifier = service === Service.USERNAME
+        ? identifier.toLowerCase()
+        : identifier;
+      
+      // LAYER 2: Check identifier rate limit
+      await this.rateLimitService.checkIdentifierRateLimit(lookupIdentifier, service);
+      
+      // LAYER 3: Find auth record
+      const auth = await this.findAuthRecord(service, lookupIdentifier);
+      authId = auth?.id;
+      
+      // LAYER 4: Check account lockout
+      if (auth?.isLocked) {
+        const wasUnlocked = await this.checkAndUnlockAccount(auth);
+        if (!wasUnlocked) {
+          failReason = 'Account is locked';
+          throw ERRORS.ACCOUNT_LOCKED;
+        }
+      }
+      
+      // LAYER 5: Verify password (ALWAYS verify, even with dummy hash)
+      // This ensures constant timing regardless of username existence
+      const passwordHash = (auth as any)?.passwordHash;
+      const hashToCheck = passwordHash || 
+        '$2b$10$dummyHashToMaintainConstantTimingForSecurity1234567890';
+      
+      const isPasswordValid = await verifyPassword(passwordInput, hashToCheck);
+      
+      // LAYER 6: Validate all conditions
+      if (!auth || !passwordHash) {
+        failReason = 'Invalid credentials - no auth record';
+        user = null;
+      } else if (!isPasswordValid) {
+        failReason = 'Invalid credentials - wrong password';
+        user = null;
+      } else {
+        // Success!
+        user = await this.getUserById(auth.userId);
+        failReason = undefined;
+      }
+      
+    } catch (error) {
+      if (error instanceof HttpException && error.getStatus() === HttpStatus.TOO_MANY_REQUESTS) {
+        throw error; // Re-throw rate limit errors
+      }
+      if (error === ERRORS.ACCOUNT_LOCKED) {
+        failReason = 'Account is locked';
+        throw error;
+      }
+      failReason = error instanceof Error ? error.message : 'Unknown error';
+      user = null;
     }
-
-    // Only EMAIL, PHONE, and USERNAME support password auth
-    if (
-      service !== Service.EMAIL &&
-      service !== Service.PHONE &&
-      service !== Service.USERNAME
-    ) {
-      this.logger.warn(`Password auth not supported for service: ${service}`);
-      return null;
-    }
-
-    // Find auth record
-    const auth = await this.prisma.auth.findUnique({
-      where: {
-        authIdentifier: {
-          service,
-          serviceId: identifier,
-        },
-      },
-      include: {
-        User: true,
-      },
+    
+    // LAYER 7: Log attempt (for audit and rate limiting)
+    await this.rateLimitService.logAttempt({
+      authId,
+      identifier: service === Service.USERNAME ? identifier.toLowerCase() : identifier,
+      service: service || Service.USERNAME,
+      ip,
+      userAgent,
+      success: !!user,
+      failReason
+    }).catch(() => {
+      // Silent fail - don't block login if logging fails
     });
-
-    if (!auth) {
-      this.logger.warn(`Auth record not found for ${service}: ${identifier}`);
-      return null;
+    
+    // LAYER 8: Handle failed attempt
+    if (!user && authId) {
+      await this.incrementFailedAttempts(authId);
     }
-
-    // Check if account is locked
-    if (auth.isLocked) {
-      const lockDuration =
-        this.config.get<number>('ACCOUNT_LOCKOUT_DURATION_MINUTES') || 15;
-      const lockoutTime = new Date(
-        auth.lockedOnAt!.getTime() + lockDuration * 60000,
-      );
-
-      if (new Date() < lockoutTime) {
-        throw ERRORS.ACCOUNT_LOCKED;
-      } else {
-        // Unlock account if lockout period has passed
-        await this.prisma.auth.update({
-          where: { id: auth.id },
-          data: { isLocked: false, falseAttempts: 0, lockedOnAt: null },
-        });
-      }
+    
+    // LAYER 9: Handle successful login
+    if (user && authId) {
+      await this.resetFailedAttempts(authId);
     }
-
-    // Check if password is set
-    if (!auth.passwordHash) {
-      this.logger.warn(`No password set for ${service}: ${identifier}`);
-      return null;
+    
+    // LAYER 10: Ensure constant timing (100ms minimum)
+    const elapsed = Date.now() - startTime;
+    const minTime = this.config.get<number>('AUTH_MIN_RESPONSE_TIME_MS', 100);
+    if (elapsed < minTime) {
+      await new Promise(resolve => setTimeout(resolve, minTime - elapsed));
     }
-
-    // Verify password
-    const isPasswordValid = await verifyPassword(password, auth.passwordHash);
-
-    if (!isPasswordValid) {
-      // Increment false attempts
-      const newAttempts = auth.falseAttempts + 1;
-      const threshold =
-        this.config.get<number>('ACCOUNT_LOCKOUT_THRESHOLD') || 5;
-
-      if (newAttempts >= threshold) {
-        await this.prisma.auth.update({
-          where: { id: auth.id },
-          data: {
-            falseAttempts: newAttempts,
-            isLocked: true,
-            lockedOnAt: new Date(),
-          },
-        });
-        throw ERRORS.ACCOUNT_LOCKED;
-      } else {
-        await this.prisma.auth.update({
-          where: { id: auth.id },
-          data: { falseAttempts: newAttempts },
-        });
-      }
-
-      return null;
+    
+    // Always return same error message (no enumeration)
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
     }
+    
+    return user;
+  }
 
-    // Reset false attempts on successful login
+  /**
+   * Find auth record with case-insensitive lookup for USERNAME
+   */
+  private async findAuthRecord(service: Service, identifier: string) {
+    if (service === Service.USERNAME) {
+      // Case-insensitive lookup for USERNAME
+      return this.prisma.auth.findFirst({
+        where: {
+          service: Service.USERNAME,
+          serviceIdLower: identifier.toLowerCase()
+        } as any
+      });
+    } else {
+      // Normal lookup for EMAIL/PHONE
+      return this.prisma.auth.findUnique({
+        where: {
+          authIdentifier: { service, serviceId: identifier }
+        }
+      });
+    }
+  }
+
+  /**
+   * Check if account should be unlocked and unlock if time has passed
+   * Returns true if account was unlocked
+   */
+  private async checkAndUnlockAccount(auth: any): Promise<boolean> {
+    if (!auth.isLocked || !auth.lockedOnAt) {
+      return false;
+    }
+    
+    const lockoutDuration = this.config.get<number>('ACCOUNT_LOCKOUT_DURATION_MINUTES', 15);
+    const unlockTime = new Date(auth.lockedOnAt.getTime() + lockoutDuration * 60 * 1000);
+    
+    if (new Date() >= unlockTime) {
+      // Time has passed, unlock account
+      await this.prisma.auth.update({
+        where: { id: auth.id },
+        data: { isLocked: false, falseAttempts: 0, lockedOnAt: null }
+      });
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Increment failed attempts and lock if threshold reached
+   */ 
+  private async incrementFailedAttempts(authId: number): Promise<void> {
+    const threshold = this.config.get<number>('ACCOUNT_LOCKOUT_THRESHOLD', 5);
+    
+    // Update and get the new falseAttempts count
     await this.prisma.auth.update({
-      where: { id: auth.id },
-      data: { falseAttempts: 0 },
+      where: { id: authId },
+      data: {
+        falseAttempts: { increment: 1 },
+        lastFailedAt: new Date()
+      } as any
     });
+    
+    // Fetch the updated auth to check falseAttempts
+    const auth = await this.prisma.auth.findUnique({
+      where: { id: authId },
+      select: { falseAttempts: true }
+    });
+    
+    if (auth && auth.falseAttempts >= threshold) {
+      await this.prisma.auth.update({
+        where: { id: authId },
+        data: {
+          isLocked: true,
+          lockedOnAt: new Date(),
+          lockCount: { increment: 1 },
+          falseAttempts: 0
+        } as any
+      });
+    }
+  }
 
-    return auth.User;
+  /**
+   * Reset failed attempts on successful login
+   */
+  private async resetFailedAttempts(authId: number): Promise<void> {
+    await this.prisma.auth.update({
+      where: { id: authId },
+      data: {
+        falseAttempts: 0,
+        isLocked: false,
+        lastFailedAt: null
+      } as any
+    });
   }
 
   /**
