@@ -16,6 +16,7 @@ export enum Service {
   TWITTER = 'TWITTER',
   GITHUB = 'GITHUB',
   LINKEDIN = 'LINKEDIN',
+  USERNAME = 'USERNAME',
 }
 
 export enum SettingDataType {

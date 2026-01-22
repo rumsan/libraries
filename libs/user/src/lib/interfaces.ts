@@ -6,4 +6,5 @@ export type UserDataToValidate = {
   email?: string;
   phone?: string;
   wallet?: string;
+  username?: string;
 };

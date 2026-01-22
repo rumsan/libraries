@@ -5,12 +5,12 @@ import { PassportModule } from '@nestjs/passport';
 import { PrismaModule } from '@rumsan/prisma';
 import { AuthsController } from './auths.controller';
 import { AuthsService } from './auths.service';
-import { JwtStrategy } from './strategy';
+import { JwtStrategy, LocalStrategy } from './strategy';
 
 @Module({
   imports: [JwtModule.register({}), PrismaModule, PassportModule, ConfigModule],
   controllers: [AuthsController],
-  providers: [AuthsService, JwtStrategy],
+  providers: [AuthsService, JwtStrategy, LocalStrategy],
   exports: [AuthsService],
 })
 export class AuthsModule {}

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsUsername } from '@rumsan/extensions/decorators';
 import { Gender } from '@rumsan/sdk/enums';
 import { User } from '@rumsan/sdk/types';
 import { listGenders } from '@rumsan/sdk/utils';
@@ -13,6 +14,15 @@ export class CreateUserDto implements User {
   @IsOptional()
   @IsString()
   name: string;
+
+  @ApiProperty({
+    example: 'jane_doe',
+    description: 'Unique username',
+    required: false,
+  })
+  @IsUsername()
+  @IsOptional()
+  username?: string;
 
   @ApiProperty({
     example: 'FEMALE',

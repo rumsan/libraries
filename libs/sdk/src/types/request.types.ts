@@ -5,5 +5,6 @@ export interface Request {
   currentUser?: string;
   sessionId?: string;
   appId?: string;
+  clientId?: string;
   meta?: Record<string, any>;
 }
