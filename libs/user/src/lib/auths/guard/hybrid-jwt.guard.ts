@@ -24,6 +24,10 @@ import { getSecret } from '../../utils/config.utils';
  */
 @Injectable()
 export class HybridJwtGuard implements CanActivate {
+  /**
+   * Logger for audit logging of service impersonation events.
+   * Tracks both successful and failed impersonation attempts for security monitoring.
+   */
   private readonly logger = new Logger(HybridJwtGuard.name);
 
   constructor(
@@ -133,7 +137,6 @@ export class HybridJwtGuard implements CanActivate {
       this.logger.log(
         `Service impersonation granted: service="${payload.serviceName}" ` +
           `clientId="${payload.clientId}" impersonatedUser="${user.uuid}" ` +
-          `userId="${user.id}" userName="${user.name}" userEmail="${user.email || 'none'}" ` +
           `userRoles="${userRoleNames.join(',')}" ip="${request.ip || 'unknown'}" ` +
           `userAgent="${request.headers['user-agent'] || 'unknown'}"`,
       );
