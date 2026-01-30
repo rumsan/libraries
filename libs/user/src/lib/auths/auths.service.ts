@@ -12,17 +12,20 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthSession, User } from '@prisma/client';
 import {
   ChallengeDto,
+  CreateServiceClientDto,
   OtpDto,
   OtpLoginDto,
   ResetPasswordDto,
+  ServiceAuthDto,
   SetPasswordDto,
-  WalletLoginDto
+  WalletLoginDto,
 } from '@rumsan/extensions/dtos';
 import { ERRORS as EXT_ERRORS } from '@rumsan/extensions/exceptions';
 import { PrismaService } from '@rumsan/prisma';
 import { CONSTANTS } from '@rumsan/sdk/constants';
 import { Service } from '@rumsan/sdk/enums';
 import { Request } from '@rumsan/sdk/types';
+import { randomBytes } from 'crypto';
 import { hashMessage, recoverAddress } from 'viem';
 import { ERRORS, EVENTS } from '../constants';
 import { createChallenge, decryptChallenge } from '../utils/challenge.utils';
@@ -34,13 +37,14 @@ import {
 } from '../utils/password.utils';
 import { getServiceTypeByAddress } from '../utils/service.utils';
 import { TokenDataInterface } from './interfaces/auth.interface';
+import { ServiceTokenPayload } from './interfaces/service-auth.interface';
 import { RateLimitService } from './services/rate-limit.service';
 
 @Injectable()
 export class AuthsService {
   private readonly logger = new Logger(AuthsService.name);
   public request?: any; // Request context injected by LocalStrategy
-  
+
   constructor(
     protected prisma: PrismaService,
     private jwt: JwtService,
@@ -327,15 +331,18 @@ export class AuthsService {
     let user = null;
     let authId: number | undefined;
     let failReason: string | undefined;
-    
+
     // Extract IP and userAgent from request context
-    const ip = this.request?.ip || this.request?.connection?.remoteAddress || 'unknown';
-    const userAgent = this.request?.headers?.['user-agent'] || this.request?.get?.('user-agent');
-    
+    const ip =
+      this.request?.ip || this.request?.connection?.remoteAddress || 'unknown';
+    const userAgent =
+      this.request?.headers?.['user-agent'] ||
+      this.request?.get?.('user-agent');
+
     try {
       // LAYER 1: Check IP rate limit (before any processing)
       await this.rateLimitService.checkIpRateLimit(ip);
-      
+
       // Auto-detect service type if not provided
       if (!service) {
         try {
@@ -344,7 +351,7 @@ export class AuthsService {
           service = Service.USERNAME; // Default to USERNAME if detection fails
         }
       }
-      
+
       // Only EMAIL, PHONE, and USERNAME support password auth
       if (
         service !== Service.EMAIL &&
@@ -354,19 +361,21 @@ export class AuthsService {
         this.logger.warn(`Password auth not supported for service: ${service}`);
         throw new UnauthorizedException('Invalid credentials');
       }
-      
+
       // Normalize identifier for USERNAME service (case-insensitive)
-      const lookupIdentifier = service === Service.USERNAME
-        ? identifier.toLowerCase()
-        : identifier;
-      
+      const lookupIdentifier =
+        service === Service.USERNAME ? identifier.toLowerCase() : identifier;
+
       // LAYER 2: Check identifier rate limit
-      await this.rateLimitService.checkIdentifierRateLimit(lookupIdentifier, service);
-      
+      await this.rateLimitService.checkIdentifierRateLimit(
+        lookupIdentifier,
+        service,
+      );
+
       // LAYER 3: Find auth record
       const auth = await this.findAuthRecord(service, lookupIdentifier);
       authId = auth?.id;
-      
+
       // LAYER 4: Check account lockout
       if (auth?.isLocked) {
         const wasUnlocked = await this.checkAndUnlockAccount(auth);
@@ -375,15 +384,16 @@ export class AuthsService {
           throw ERRORS.ACCOUNT_LOCKED;
         }
       }
-      
+
       // LAYER 5: Verify password (ALWAYS verify, even with dummy hash)
       // This ensures constant timing regardless of username existence
       const passwordHash = (auth as any)?.passwordHash;
-      const hashToCheck = passwordHash || 
+      const hashToCheck =
+        passwordHash ||
         '$2b$10$dummyHashToMaintainConstantTimingForSecurity1234567890';
-      
+
       const isPasswordValid = await verifyPassword(passwordInput, hashToCheck);
-      
+
       // LAYER 6: Validate all conditions
       if (!auth || !passwordHash) {
         failReason = 'Invalid credentials - no auth record';
@@ -396,9 +406,11 @@ export class AuthsService {
         user = await this.getUserById(auth.userId);
         failReason = undefined;
       }
-      
     } catch (error) {
-      if (error instanceof HttpException && error.getStatus() === HttpStatus.TOO_MANY_REQUESTS) {
+      if (
+        error instanceof HttpException &&
+        error.getStatus() === HttpStatus.TOO_MANY_REQUESTS
+      ) {
         throw error; // Re-throw rate limit errors
       }
       if (error === ERRORS.ACCOUNT_LOCKED) {
@@ -408,42 +420,45 @@ export class AuthsService {
       failReason = error instanceof Error ? error.message : 'Unknown error';
       user = null;
     }
-    
+
     // LAYER 7: Log attempt (for audit and rate limiting)
-    await this.rateLimitService.logAttempt({
-      authId,
-      identifier: service === Service.USERNAME ? identifier.toLowerCase() : identifier,
-      service: service || Service.USERNAME,
-      ip,
-      userAgent,
-      success: !!user,
-      failReason
-    }).catch(() => {
-      // Silent fail - don't block login if logging fails
-    });
-    
+    await this.rateLimitService
+      .logAttempt({
+        authId,
+        identifier:
+          service === Service.USERNAME ? identifier.toLowerCase() : identifier,
+        service: service || Service.USERNAME,
+        ip,
+        userAgent,
+        success: !!user,
+        failReason,
+      })
+      .catch(() => {
+        // Silent fail - don't block login if logging fails
+      });
+
     // LAYER 8: Handle failed attempt
     if (!user && authId) {
       await this.incrementFailedAttempts(authId);
     }
-    
+
     // LAYER 9: Handle successful login
     if (user && authId) {
       await this.resetFailedAttempts(authId);
     }
-    
+
     // LAYER 10: Ensure constant timing (100ms minimum)
     const elapsed = Date.now() - startTime;
     const minTime = this.config.get<number>('AUTH_MIN_RESPONSE_TIME_MS', 100);
     if (elapsed < minTime) {
-      await new Promise(resolve => setTimeout(resolve, minTime - elapsed));
+      await new Promise((resolve) => setTimeout(resolve, minTime - elapsed));
     }
-    
+
     // Always return same error message (no enumeration)
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    
+
     return user;
   }
 
@@ -456,15 +471,15 @@ export class AuthsService {
       return this.prisma.auth.findFirst({
         where: {
           service: Service.USERNAME,
-          serviceIdLower: identifier.toLowerCase()
-        } as any
+          serviceIdLower: identifier.toLowerCase(),
+        } as any,
       });
     } else {
       // Normal lookup for EMAIL/PHONE
       return this.prisma.auth.findUnique({
         where: {
-          authIdentifier: { service, serviceId: identifier }
-        }
+          authIdentifier: { service, serviceId: identifier },
+        },
       });
     }
   }
@@ -477,43 +492,48 @@ export class AuthsService {
     if (!auth.isLocked || !auth.lockedOnAt) {
       return false;
     }
-    
-    const lockoutDuration = this.config.get<number>('ACCOUNT_LOCKOUT_DURATION_MINUTES', 15);
-    const unlockTime = new Date(auth.lockedOnAt.getTime() + lockoutDuration * 60 * 1000);
-    
+
+    const lockoutDuration = this.config.get<number>(
+      'ACCOUNT_LOCKOUT_DURATION_MINUTES',
+      15,
+    );
+    const unlockTime = new Date(
+      auth.lockedOnAt.getTime() + lockoutDuration * 60 * 1000,
+    );
+
     if (new Date() >= unlockTime) {
       // Time has passed, unlock account
       await this.prisma.auth.update({
         where: { id: auth.id },
-        data: { isLocked: false, falseAttempts: 0, lockedOnAt: null }
+        data: { isLocked: false, falseAttempts: 0, lockedOnAt: null },
       });
       return true;
     }
-    
+
     return false;
   }
 
   /**
    * Increment failed attempts and lock if threshold reached
-   */ 
+   */
   private async incrementFailedAttempts(authId: number): Promise<void> {
     const threshold = this.config.get<number>('ACCOUNT_LOCKOUT_THRESHOLD', 5);
-    
+
     // Update and get the new falseAttempts count
     await this.prisma.auth.update({
       where: { id: authId },
       data: {
         falseAttempts: { increment: 1 },
-        lastFailedAt: new Date()
-      } as any
+        lastFailedAt: new Date(),
+      } as any,
     });
-    
+
     // Fetch the updated auth to check falseAttempts
     const auth = await this.prisma.auth.findUnique({
       where: { id: authId },
-      select: { falseAttempts: true }
+      select: { falseAttempts: true },
     });
-    
+
     if (auth && auth.falseAttempts >= threshold) {
       await this.prisma.auth.update({
         where: { id: authId },
@@ -521,8 +541,8 @@ export class AuthsService {
           isLocked: true,
           lockedOnAt: new Date(),
           lockCount: { increment: 1 },
-          falseAttempts: 0
-        } as any
+          falseAttempts: 0,
+        } as any,
       });
     }
   }
@@ -536,8 +556,8 @@ export class AuthsService {
       data: {
         falseAttempts: 0,
         isLocked: false,
-        lastFailedAt: null
-      } as any
+        lastFailedAt: null,
+      } as any,
     });
   }
 
@@ -559,7 +579,9 @@ export class AuthsService {
     await this.updateLastLogin(auth.id);
 
     // Generate clientId if not provided
-    const clientId = requestInfo.clientId || `client_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    const clientId =
+      requestInfo.clientId ||
+      `client_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
     // Create auth session
     const session = await this.prisma.authSession.create({
@@ -585,8 +607,7 @@ export class AuthsService {
         this.config.get<boolean>('PASSWORD_REQUIRE_UPPERCASE') ?? true,
       requireLowercase:
         this.config.get<boolean>('PASSWORD_REQUIRE_LOWERCASE') ?? true,
-      requireDigit:
-        this.config.get<boolean>('PASSWORD_REQUIRE_DIGIT') ?? true,
+      requireDigit: this.config.get<boolean>('PASSWORD_REQUIRE_DIGIT') ?? true,
       requireSpecial:
         this.config.get<boolean>('PASSWORD_REQUIRE_SPECIAL') ?? true,
     });
@@ -618,7 +639,9 @@ export class AuthsService {
 
     // Check if password already exists
     if (auth.passwordHash) {
-      throw new ForbiddenException('Password already set. Use change password instead.');
+      throw new ForbiddenException(
+        'Password already set. Use change password instead.',
+      );
     }
 
     // Hash and store password
@@ -671,8 +694,7 @@ export class AuthsService {
         this.config.get<boolean>('PASSWORD_REQUIRE_UPPERCASE') ?? true,
       requireLowercase:
         this.config.get<boolean>('PASSWORD_REQUIRE_LOWERCASE') ?? true,
-      requireDigit:
-        this.config.get<boolean>('PASSWORD_REQUIRE_DIGIT') ?? true,
+      requireDigit: this.config.get<boolean>('PASSWORD_REQUIRE_DIGIT') ?? true,
       requireSpecial:
         this.config.get<boolean>('PASSWORD_REQUIRE_SPECIAL') ?? true,
     });
@@ -735,8 +757,7 @@ export class AuthsService {
         this.config.get<boolean>('PASSWORD_REQUIRE_UPPERCASE') ?? true,
       requireLowercase:
         this.config.get<boolean>('PASSWORD_REQUIRE_LOWERCASE') ?? true,
-      requireDigit:
-        this.config.get<boolean>('PASSWORD_REQUIRE_DIGIT') ?? true,
+      requireDigit: this.config.get<boolean>('PASSWORD_REQUIRE_DIGIT') ?? true,
       requireSpecial:
         this.config.get<boolean>('PASSWORD_REQUIRE_SPECIAL') ?? true,
     });
@@ -787,5 +808,201 @@ export class AuthsService {
       hasPassword: !!auth?.passwordHash,
       service,
     };
+  }
+
+  // ================== Service Authentication (OAuth2 Client Credentials) ==================
+
+  /**
+   * Authenticate a service using client_id and client_secret (OAuth2 Client Credentials Flow)
+   * Returns a Service JWT with role: "INTERNAL_SERVICE"
+   */
+  async authenticateService(
+    dto: ServiceAuthDto,
+  ): Promise<{ accessToken: string }> {
+    const { clientId, clientSecret } = dto;
+
+    const serviceClient = await this.prisma.serviceClient.findUnique({
+      where: { clientId },
+    });
+
+    if (!serviceClient || serviceClient.deletedAt) {
+      this.logger.warn(`Service auth failed: client not found - ${clientId}`);
+      throw new UnauthorizedException('Invalid client credentials');
+    }
+
+    if (!serviceClient.isActive) {
+      this.logger.warn(`Service auth failed: client inactive - ${clientId}`);
+      throw new UnauthorizedException('Service client is inactive');
+    }
+
+    // Verify client secret
+    const isSecretValid = await verifyPassword(
+      clientSecret,
+      serviceClient.clientSecret,
+    );
+    if (!isSecretValid) {
+      this.logger.warn(`Service auth failed: invalid secret - ${clientId}`);
+      throw new UnauthorizedException('Invalid client credentials');
+    }
+
+    // Update last used timestamp
+    await this.prisma.serviceClient.update({
+      where: { id: serviceClient.id },
+      data: { lastUsedAt: new Date() },
+    });
+
+    // Generate service JWT
+    const payload: ServiceTokenPayload = {
+      clientId: serviceClient.clientId,
+      serviceName: serviceClient.name,
+      role: 'INTERNAL_SERVICE',
+    };
+
+    const expiryTime = this.config.get('SERVICE_JWT_EXPIRATION_TIME') || '1h';
+
+    const token = await this.jwt.signAsync(payload, {
+      expiresIn: expiryTime,
+      secret: getSecret(),
+    });
+
+    this.logger.log(`Service authenticated: ${serviceClient.name}`);
+
+    return { accessToken: token };
+  }
+
+  /**
+   * Create a new service client
+   * Returns the clientId and plaintext clientSecret (only shown once)
+   */
+  async createServiceClient(
+    dto: CreateServiceClientDto,
+    createdBy?: number,
+  ): Promise<{ clientId: string; clientSecret: string; name: string }> {
+    // Generate a secure random secret
+    const plainSecret = randomBytes(32).toString('hex');
+    const hashedSecret = await hashPassword(plainSecret);
+
+    const serviceClient = await this.prisma.serviceClient.create({
+      data: {
+        name: dto.name,
+        description: dto.description,
+        clientSecret: hashedSecret,
+        createdBy,
+      },
+    });
+
+    this.logger.log(
+      `Service client created: ${dto.name} (${serviceClient.clientId})`,
+    );
+
+    return {
+      clientId: serviceClient.clientId,
+      clientSecret: plainSecret, // Only returned once during creation
+      name: serviceClient.name,
+    };
+  }
+
+  /**
+   * Regenerate client secret for a service client
+   * Returns the new plaintext clientSecret (only shown once)
+   */
+  async regenerateServiceClientSecret(
+    clientId: string,
+  ): Promise<{ clientId: string; clientSecret: string }> {
+    const serviceClient = await this.prisma.serviceClient.findUnique({
+      where: { clientId },
+    });
+
+    if (!serviceClient || serviceClient.deletedAt) {
+      throw new ForbiddenException('Service client not found');
+    }
+
+    const plainSecret = randomBytes(32).toString('hex');
+    const hashedSecret = await hashPassword(plainSecret);
+
+    await this.prisma.serviceClient.update({
+      where: { id: serviceClient.id },
+      data: { clientSecret: hashedSecret },
+    });
+
+    this.logger.log(`Service client secret regenerated: ${serviceClient.name}`);
+
+    return {
+      clientId,
+      clientSecret: plainSecret,
+    };
+  }
+
+  /**
+   * Update service client permissions
+   */
+  async updateServiceClientPermissions(
+    clientId: string,
+    permissions: {
+      canImpersonate?: boolean;
+      allowedRoles?: string[];
+      rateLimit?: number;
+      isActive?: boolean;
+    },
+  ) {
+    const serviceClient = await this.prisma.serviceClient.findUnique({
+      where: { clientId },
+    });
+
+    if (!serviceClient || serviceClient.deletedAt) {
+      throw new ForbiddenException('Service client not found');
+    }
+
+    await this.prisma.serviceClient.update({
+      where: { id: serviceClient.id },
+      data: permissions,
+    });
+
+    this.logger.log(`Service client updated: ${serviceClient.name}`);
+
+    return { success: true };
+  }
+
+  /**
+   * List all service clients (without secrets)
+   */
+  async listServiceClients() {
+    return this.prisma.serviceClient.findMany({
+      where: { deletedAt: null },
+      select: {
+        id: true,
+        clientId: true,
+        name: true,
+        description: true,
+        isActive: true,
+        canImpersonate: true,
+        allowedRoles: true,
+        rateLimit: true,
+        lastUsedAt: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  /**
+   * Delete (soft) a service client
+   */
+  async deleteServiceClient(clientId: string) {
+    const serviceClient = await this.prisma.serviceClient.findUnique({
+      where: { clientId },
+    });
+
+    if (!serviceClient || serviceClient.deletedAt) {
+      throw new ForbiddenException('Service client not found');
+    }
+
+    await this.prisma.serviceClient.update({
+      where: { id: serviceClient.id },
+      data: { deletedAt: new Date(), isActive: false },
+    });
+
+    this.logger.log(`Service client deleted: ${serviceClient.name}`);
+
+    return { success: true };
   }
 }
