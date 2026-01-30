@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -23,6 +24,12 @@ import { getSecret } from '../../utils/config.utils';
  */
 @Injectable()
 export class HybridJwtGuard implements CanActivate {
+  /**
+   * Logger for audit logging of service impersonation events.
+   * Tracks both successful and failed impersonation attempts for security monitoring.
+   */
+  private readonly logger = new Logger(HybridJwtGuard.name);
+
   constructor(
     private jwtService: JwtService,
     private prisma: PrismaService,
@@ -78,6 +85,10 @@ export class HybridJwtGuard implements CanActivate {
 
     if (impersonateId) {
       if (!serviceClient.canImpersonate) {
+        // Log failed impersonation attempt
+        this.logger.warn(
+          `Service impersonation denied - ${payload.serviceName}: service not allowed to impersonate`,
+        );
         throw new UnauthorizedException(
           'This service is not allowed to impersonate users',
         );
@@ -85,6 +96,10 @@ export class HybridJwtGuard implements CanActivate {
 
       const user = await this.loadUserById(impersonateId);
       if (!user) {
+        // Log failed impersonation attempt
+        this.logger.warn(
+          `Service impersonation denied - ${payload.serviceName}: user not found`,
+        );
         throw new UnauthorizedException('Impersonated user not found');
       }
 
@@ -101,11 +116,20 @@ export class HybridJwtGuard implements CanActivate {
         );
 
         if (!canImpersonate) {
+          // Log failed impersonation attempt
+          this.logger.warn(
+            `Service impersonation denied - ${payload.serviceName}: user ${user.uuid} roles not allowed`,
+          );
           throw new UnauthorizedException(
             'Service not allowed to impersonate users with these roles',
           );
         }
       }
+
+      // Log successful impersonation
+      this.logger.log(
+        `Service impersonation granted - ${payload.serviceName}: user ${user.uuid} with roles ${userRoleNames.join(',')}`,
+      );
 
       request.user = {
         id: user.id,
