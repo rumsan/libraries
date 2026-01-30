@@ -87,9 +87,7 @@ export class HybridJwtGuard implements CanActivate {
       if (!serviceClient.canImpersonate) {
         // Log failed impersonation attempt
         this.logger.warn(
-          `Service impersonation denied: service="${payload.serviceName}" ` +
-            `clientId="${payload.clientId}" impersonateId="${impersonateId}" ` +
-            `reason="Service not allowed to impersonate" ip="${request.ip || 'unknown'}"`,
+          `Service impersonation denied - ${payload.serviceName}: service not allowed to impersonate`,
         );
         throw new UnauthorizedException(
           'This service is not allowed to impersonate users',
@@ -100,9 +98,7 @@ export class HybridJwtGuard implements CanActivate {
       if (!user) {
         // Log failed impersonation attempt
         this.logger.warn(
-          `Service impersonation denied: service="${payload.serviceName}" ` +
-            `clientId="${payload.clientId}" impersonateId="${impersonateId}" ` +
-            `reason="User not found" ip="${request.ip || 'unknown'}"`,
+          `Service impersonation denied - ${payload.serviceName}: user not found`,
         );
         throw new UnauthorizedException('Impersonated user not found');
       }
@@ -122,10 +118,7 @@ export class HybridJwtGuard implements CanActivate {
         if (!canImpersonate) {
           // Log failed impersonation attempt
           this.logger.warn(
-            `Service impersonation denied: service="${payload.serviceName}" ` +
-              `clientId="${payload.clientId}" impersonateId="${impersonateId}" ` +
-              `userId="${user.id}" userRoles="${userRoleNames.join(',')}" ` +
-              `reason="User roles not allowed" ip="${request.ip || 'unknown'}"`,
+            `Service impersonation denied - ${payload.serviceName}: user ${user.uuid} roles not allowed`,
           );
           throw new UnauthorizedException(
             'Service not allowed to impersonate users with these roles',
@@ -135,10 +128,7 @@ export class HybridJwtGuard implements CanActivate {
 
       // Log successful impersonation
       this.logger.log(
-        `Service impersonation granted: service="${payload.serviceName}" ` +
-          `clientId="${payload.clientId}" impersonatedUser="${user.uuid}" ` +
-          `userRoles="${userRoleNames.join(',')}" ip="${request.ip || 'unknown'}" ` +
-          `userAgent="${request.headers['user-agent'] || 'unknown'}"`,
+        `Service impersonation granted - ${payload.serviceName}: user ${user.uuid} with roles ${userRoleNames.join(',')}`,
       );
 
       request.user = {
