@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -23,6 +24,8 @@ import { getSecret } from '../../utils/config.utils';
  */
 @Injectable()
 export class HybridJwtGuard implements CanActivate {
+  private readonly logger = new Logger(HybridJwtGuard.name);
+
   constructor(
     private jwtService: JwtService,
     private prisma: PrismaService,
@@ -78,6 +81,12 @@ export class HybridJwtGuard implements CanActivate {
 
     if (impersonateId) {
       if (!serviceClient.canImpersonate) {
+        // Log failed impersonation attempt
+        this.logger.warn(
+          `Service impersonation denied: service="${payload.serviceName}" ` +
+            `clientId="${payload.clientId}" impersonateId="${impersonateId}" ` +
+            `reason="Service not allowed to impersonate" ip="${request.ip || 'unknown'}"`,
+        );
         throw new UnauthorizedException(
           'This service is not allowed to impersonate users',
         );
@@ -85,6 +94,12 @@ export class HybridJwtGuard implements CanActivate {
 
       const user = await this.loadUserById(impersonateId);
       if (!user) {
+        // Log failed impersonation attempt
+        this.logger.warn(
+          `Service impersonation denied: service="${payload.serviceName}" ` +
+            `clientId="${payload.clientId}" impersonateId="${impersonateId}" ` +
+            `reason="User not found" ip="${request.ip || 'unknown'}"`,
+        );
         throw new UnauthorizedException('Impersonated user not found');
       }
 
@@ -101,11 +116,27 @@ export class HybridJwtGuard implements CanActivate {
         );
 
         if (!canImpersonate) {
+          // Log failed impersonation attempt
+          this.logger.warn(
+            `Service impersonation denied: service="${payload.serviceName}" ` +
+              `clientId="${payload.clientId}" impersonateId="${impersonateId}" ` +
+              `userId="${user.id}" userRoles="${userRoleNames.join(',')}" ` +
+              `reason="User roles not allowed" ip="${request.ip || 'unknown'}"`,
+          );
           throw new UnauthorizedException(
             'Service not allowed to impersonate users with these roles',
           );
         }
       }
+
+      // Log successful impersonation
+      this.logger.log(
+        `Service impersonation granted: service="${payload.serviceName}" ` +
+          `clientId="${payload.clientId}" impersonatedUser="${user.uuid}" ` +
+          `userId="${user.id}" userName="${user.name}" userEmail="${user.email || 'none'}" ` +
+          `userRoles="${userRoleNames.join(',')}" ip="${request.ip || 'unknown'}" ` +
+          `userAgent="${request.headers['user-agent'] || 'unknown'}"`,
+      );
 
       request.user = {
         id: user.id,
