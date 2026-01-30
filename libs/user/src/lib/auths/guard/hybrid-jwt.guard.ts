@@ -149,9 +149,18 @@ export class HybridJwtGuard implements CanActivate {
    * Load user by ID or UUID
    */
   private async loadUserById(id: string) {
+    const orConditions: { id?: number; uuid?: string }[] = [];
+
+    const numericId = Number(id);
+    if (!Number.isNaN(numericId)) {
+      orConditions.push({ id: numericId });
+    }
+
+    orConditions.push({ uuid: id });
+
     return this.prisma.user.findFirst({
       where: {
-        OR: [{ id: isNaN(Number(id)) ? undefined : Number(id) }, { uuid: id }],
+        OR: orConditions,
         deletedAt: null,
       },
     });
