@@ -83,69 +83,7 @@ export class HybridJwtGuard implements CanActivate {
 
     const impersonateId = request.headers['x-impersonate-id'];
 
-    if (impersonateId) {
-      if (!serviceClient.canImpersonate) {
-        // Log failed impersonation attempt
-        this.logger.warn(
-          `Service impersonation denied - ${payload.serviceName}: service not allowed to impersonate`,
-        );
-        throw new UnauthorizedException(
-          'This service is not allowed to impersonate users',
-        );
-      }
-
-      const user = await this.loadUserById(impersonateId);
-      if (!user) {
-        // Log failed impersonation attempt
-        this.logger.warn(
-          `Service impersonation denied - ${payload.serviceName}: user not found`,
-        );
-        throw new UnauthorizedException('Impersonated user not found');
-      }
-
-      const userRoles = await this.prisma.userRole.findMany({
-        where: { userId: user.id },
-        include: { Role: true },
-      });
-
-      const userRoleNames = userRoles.map((ur: any) => ur.Role.name);
-      // Check allowed roles restriction
-      if (serviceClient.allowedRoles && serviceClient.allowedRoles.length > 0) {
-        const canImpersonate = userRoleNames.some((role: string) =>
-          serviceClient.allowedRoles.includes(role),
-        );
-
-        if (!canImpersonate) {
-          // Log failed impersonation attempt
-          this.logger.warn(
-            `Service impersonation denied - ${payload.serviceName}: user ${user.uuid} roles not allowed`,
-          );
-          throw new UnauthorizedException(
-            'Service not allowed to impersonate users with these roles',
-          );
-        }
-      }
-
-      // Log successful impersonation
-      this.logger.log(
-        `Service impersonation granted - ${payload.serviceName}: user ${user.uuid} with roles ${userRoleNames.join(',')}`,
-      );
-
-      request.user = {
-        id: user.id,
-        userId: user.id,
-        uuid: user.uuid,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        wallet: user.wallet,
-        roles: userRoleNames,
-        isServiceRequest: true,
-        serviceClientId: payload.clientId,
-        serviceName: payload.serviceName,
-        impersonatedBy: payload.serviceName,
-      };
-    } else {
+    if (!impersonateId) {
       request.user = {
         isServiceRequest: true,
         role: 'INTERNAL_SERVICE',
@@ -153,7 +91,77 @@ export class HybridJwtGuard implements CanActivate {
         serviceName: payload.serviceName,
         permissions: [],
       };
+      return true;
     }
+
+    if (!serviceClient.canImpersonate) {
+      this.logger.warn(
+        `Service impersonation denied - ${payload.serviceName}: service not allowed to impersonate`,
+      );
+      throw new UnauthorizedException(
+        'This service is not allowed to impersonate users',
+      );
+    }
+
+    const user = await this.loadUserById(impersonateId);
+    if (!user) {
+      this.logger.warn(
+        `Service impersonation denied - ${payload.serviceName}: user not found`,
+      );
+      throw new UnauthorizedException('Impersonated user not found');
+    }
+
+    const userRoles = await this.prisma.userRole.findMany({
+      where: { userId: user.id },
+      include: { Role: true },
+    });
+
+    const userPermissions = await this.prisma.permission.findMany({
+      where: {
+        roleId: {
+          in: userRoles.map((ur) => ur.roleId),
+        },
+      },
+    });
+
+    const userRoleNames = userRoles.map((ur: any) => ur.Role.name);
+    // Check allowed roles restriction
+    if (serviceClient.allowedRoles && serviceClient.allowedRoles.length > 0) {
+      const canImpersonate = userRoleNames.some((role: string) =>
+        serviceClient.allowedRoles.includes(role),
+      );
+
+      if (!canImpersonate) {
+        // Log failed impersonation attempt
+        this.logger.warn(
+          `Service impersonation denied - ${payload.serviceName}: user ${user.uuid} roles not allowed`,
+        );
+        throw new UnauthorizedException(
+          'Service not allowed to impersonate users with these roles',
+        );
+      }
+    }
+
+    // Log successful impersonation
+    this.logger.log(
+      `Service impersonation granted - ${payload.serviceName}: user ${user.uuid} with roles ${userRoleNames.join(',')}`,
+    );
+
+    request.user = {
+      id: user.id,
+      userId: user.id,
+      uuid: user.uuid,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      wallet: user.wallet,
+      roles: userRoleNames,
+      permissions: userPermissions,
+      isServiceRequest: true,
+      serviceClientId: payload.clientId,
+      serviceName: payload.serviceName,
+      impersonatedBy: payload.serviceName,
+    };
 
     return true;
   }
