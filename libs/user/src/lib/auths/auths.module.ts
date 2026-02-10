@@ -19,6 +19,6 @@ import { JwtStrategy, LocalStrategy } from './strategy';
     HybridJwtGuard,
     RateLimitService,
   ],
-  exports: [AuthsService, HybridJwtGuard],
+  exports: [AuthsService, HybridJwtGuard, JwtModule, PrismaModule],
 })
 export class AuthsModule {}
