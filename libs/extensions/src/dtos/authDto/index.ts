@@ -4,6 +4,6 @@ export * from './otp.dto';
 export * from './otpLogin.dto';
 export * from './password-login.dto';
 export * from './reset-password.dto';
+export * from './service-auth.dto';
 export * from './set-password.dto';
 export * from './walletLogin.dto';
-
