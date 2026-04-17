@@ -1,23 +1,33 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
+  Param,
+  Patch,
   Post,
   Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { RequestDetails } from '@rumsan/extensions/decorators';
 import {
   ChallengeDto,
   ChangePasswordDto,
+  CreateServiceClientDto,
   OtpDto,
   OtpLoginDto,
   PasswordLoginDto,
   ResetPasswordDto,
+  ServiceAuthDto,
   SetPasswordDto,
   WalletLoginDto,
 } from '@rumsan/extensions/dtos';
@@ -55,7 +65,10 @@ export class AuthsController {
   }
 
   @Post('challenge')
-  getChallenge(@Body() dto: ChallengeDto, @RequestDetails() rdetails: RequestType) {
+  getChallenge(
+    @Body() dto: ChallengeDto,
+    @RequestDetails() rdetails: RequestType,
+  ) {
     return this.authService.getChallengeForWallet(dto, rdetails);
   }
 
@@ -110,7 +123,8 @@ export class AuthsController {
     name: 'service',
     enum: Service,
     required: true,
-    description: 'Service type to check password status for (EMAIL, PHONE, USERNAME)',
+    description:
+      'Service type to check password status for (EMAIL, PHONE, USERNAME)',
     example: 'EMAIL',
   })
   checkPasswordStatus(
@@ -118,5 +132,81 @@ export class AuthsController {
     @Query('service') service: Service,
   ) {
     return this.authService.hasPassword(user.id, service);
+  }
+
+  // ================== Service Authentication (OAuth2 Client Credentials) ==================
+
+  @HttpCode(HttpStatus.OK)
+  @Post('service/token')
+  @ApiOperation({
+    summary: 'Service Authentication',
+    description:
+      'OAuth2 Client Credentials Flow - Exchange client_id/client_secret for a Service JWT',
+  })
+  authenticateService(@Body() dto: ServiceAuthDto) {
+    return this.authService.authenticateService(dto);
+  }
+
+  @UseGuards(JwtGuard)
+  @Post('service/clients')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Create Service Client',
+    description:
+      'Create a new service client. Returns clientId and secret (shown only once)',
+  })
+  createServiceClient(
+    @CurrentUser() user: CurrentUserInterface,
+    @Body() dto: CreateServiceClientDto,
+  ) {
+    return this.authService.createServiceClient(dto, user.id);
+  }
+
+  @UseGuards(JwtGuard)
+  @Get('service/clients')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List all service clients' })
+  listServiceClients() {
+    return this.authService.listServiceClients();
+  }
+
+  @UseGuards(JwtGuard)
+  @Post('service/clients/:clientId/regenerate')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Regenerate Service Client Secret',
+    description:
+      'Generate a new secret for a service client. Old secret will be invalidated',
+  })
+  regenerateServiceClientSecret(@Param('clientId') clientId: string) {
+    return this.authService.regenerateServiceClientSecret(clientId);
+  }
+
+  @UseGuards(JwtGuard)
+  @Patch('service/clients/:clientId')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update Service Client Permissions' })
+  updateServiceClientPermissions(
+    @Param('clientId') clientId: string,
+    @Body()
+    permissions: {
+      canImpersonate?: boolean;
+      allowedRoles?: string[];
+      rateLimit?: number;
+      isActive?: boolean;
+    },
+  ) {
+    return this.authService.updateServiceClientPermissions(
+      clientId,
+      permissions,
+    );
+  }
+
+  @UseGuards(JwtGuard)
+  @Delete('service/clients/:clientId')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete Service Client' })
+  deleteServiceClient(@Param('clientId') clientId: string) {
+    return this.authService.deleteServiceClient(clientId);
   }
 }

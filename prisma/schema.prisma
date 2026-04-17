@@ -18,7 +18,7 @@ model User {
   uuid          String  @unique @default(uuid())
   name          String
   username      String? @unique
-  usernameLower String? @unique  // NEW: For case-insensitive username lookups
+  usernameLower String? @unique // NEW: For case-insensitive username lookups
   gender        Gender  @default(UNKNOWN)
   email         String?
   phone         String?
@@ -102,22 +102,22 @@ model UserRole {
 }
 
 model Auth {
-  id            Int       @id @default(autoincrement())
-  userId        Int
-  service       Service
-  serviceId     String
-  serviceIdLower String?  // NEW: For case-insensitive USERNAME lookups
-  details       Json?     @db.JsonB()
-  challenge     String?
-  passwordHash  String?
-  falseAttempts Int       @default(0)
-  isLocked      Boolean   @default(false)
-  lockedOnAt    DateTime?
-  lockCount     Int       @default(0)  // NEW: Track how many times locked
-  lastFailedAt  DateTime? // NEW: Track last failed attempt timestamp
-  lastLoginAt   DateTime?
+  id             Int       @id @default(autoincrement())
+  userId         Int
+  service        Service
+  serviceId      String
+  serviceIdLower String? // NEW: For case-insensitive USERNAME lookups
+  details        Json?     @db.JsonB()
+  challenge      String?
+  passwordHash   String?
+  falseAttempts  Int       @default(0)
+  isLocked       Boolean   @default(false)
+  lockedOnAt     DateTime?
+  lockCount      Int       @default(0) // NEW: Track how many times locked
+  lastFailedAt   DateTime? // NEW: Track last failed attempt timestamp
+  lastLoginAt    DateTime?
 
-  User         User          @relation(fields: [userId], references: [id])
+  User         User           @relation(fields: [userId], references: [id])
   AuthLog      AuthSession[]
   LoginAttempt LoginAttempt[] // NEW: Relationship to login attempts
 
@@ -126,7 +126,7 @@ model Auth {
   deletedAt DateTime?
 
   @@unique([service, serviceId], name: "authIdentifier")
-  @@index([service, serviceIdLower])  // NEW: Index for performance
+  @@index([service, serviceIdLower]) // NEW: Index for performance
   @@map("tbl_auth")
 }
 
@@ -163,20 +163,20 @@ enum Service {
 // NEW TABLE: Track all login attempts for rate limiting
 model LoginAttempt {
   id         Int      @id @default(autoincrement())
-  authId     Int?     // Nullable: might not exist for invalid usernames
-  identifier String   // Username/email/phone attempted
+  authId     Int? // Nullable: might not exist for invalid usernames
+  identifier String // Username/email/phone attempted
   service    Service
   ip         String
   userAgent  String?
   success    Boolean
-  failReason String?  // Why it failed (locked, invalid, etc.)
+  failReason String? // Why it failed (locked, invalid, etc.)
   createdAt  DateTime @default(now())
-  
+
   Auth Auth? @relation(fields: [authId], references: [id])
-  
-  @@index([ip, createdAt])          // For IP-based rate limiting
-  @@index([identifier, createdAt])  // For username-based rate limiting
-  @@index([authId, createdAt])      // For per-account tracking
+
+  @@index([ip, createdAt]) // For IP-based rate limiting
+  @@index([identifier, createdAt]) // For username-based rate limiting
+  @@index([authId, createdAt]) // For per-account tracking
   @@map("tbl_login_attempts")
 }
 
@@ -253,5 +253,34 @@ model Application {
 
   @@map("tbl_applications")
 }
+
 // ++++++++++++++++++ END: @rumsan/extensions/apps ++++++++++++++++++++++++++++++++
 
+// ++++++++++++++++++ START: Service Authentication (OAuth2 Client Credentials) +++
+// Stores external service clients that can authenticate via client_id/client_secret
+model ServiceClient {
+  id           Int     @id @default(autoincrement())
+  clientId     String  @unique @default(cuid())
+  clientSecret String // Hashed secret
+  name         String // e.g., "SMS Bridge", "Payment Gateway"
+  description  String?
+  isActive     Boolean @default(true)
+
+  // Permissions: what this service can do
+  canImpersonate Boolean  @default(false) // Can use X-Impersonate-Id header
+  allowedRoles   String[] // Roles this service can impersonate (empty = all)
+
+  // Rate limiting
+  rateLimit Int @default(1000) // Requests per minute
+
+  // Audit
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+  createdBy  Int?
+
+  @@map("tbl_service_clients")
+}
+
+// ++++++++++++++++++ END: Service Authentication ++++++++++++++++++++++++++++++++

@@ -4,6 +4,7 @@ export * from './authDto/otp.dto';
 export * from './authDto/otpLogin.dto';
 export * from './authDto/password-login.dto';
 export * from './authDto/reset-password.dto';
+export * from './authDto/service-auth.dto';
 export * from './authDto/set-password.dto';
 export * from './authDto/walletChallenge.dto';
 export * from './authDto/walletLogin.dto';
@@ -22,4 +23,3 @@ export * from './userDto/create-user.dto';
 export * from './userDto/update-user.dto';
 export * from './userDto/users-get.dto';
 export * from './userDto/users-list.dto';
-
