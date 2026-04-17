@@ -33,17 +33,13 @@ export class SignupsService {
   ) {}
 
   async signup(
-    dto:
-      | SignupEmailDto
-      | SignupPhoneDto
-      | SignupWalletDto
-      | SignupPasswordDto,
+    dto: SignupEmailDto | SignupPhoneDto | SignupWalletDto | SignupPasswordDto,
   ) {
     // Validate password signup
     if (dto instanceof SignupPasswordDto) {
-      const { validatePasswordStrength } = await import(
-        '../utils/password.utils'
-      );
+      // const { validatePasswordStrength } = await import(
+      //   '../utils/password.utils'
+      // );
 
       // Check password confirmation
       if (dto.password !== dto.confirmPassword) {
@@ -51,12 +47,14 @@ export class SignupsService {
       }
 
       // Validate password strength
-      const validation = validatePasswordStrength(dto.password);
-      if (!validation.isValid) {
-        throw new Error(
-          `Password too weak: ${validation.errors.join(', ')}`,
-        );
-      }
+      // const validation = validatePasswordStrength(dto.password);
+      // if (!validation.isValid) {
+      //   console.log(validation, 'password validation result');
+      //   console.log(validation.isValid, 'is valid');
+      //   throw new Error(`Password too weak: ${validation.errors.join(', ')}`);
+      // }
+
+      // console.log(validation, 'password validation result');
     }
 
     let authIdentifier: { service: Service; serviceId: string };
@@ -68,10 +66,16 @@ export class SignupsService {
       // Check for username first, then email/phone
       if (dto.username) {
         authIdentifier = { service: Service.USERNAME, serviceId: dto.username };
+        console.log(
+          authIdentifier,
+          'auth identifier for password signup with username',
+        );
       } else {
         // Validate that at least one identifier is provided
         if (!dto.email && !dto.phone) {
-          throw new Error('At least one of username, email, or phone is required');
+          throw new Error(
+            'At least one of username, email, or phone is required',
+          );
         }
         authIdentifier = {
           service: dto.service,
@@ -79,6 +83,29 @@ export class SignupsService {
         };
       }
     } else authIdentifier = { service: Service.EMAIL, serviceId: dto.email };
+
+    // Safely extract possible identifiers from the DTO
+    const username = (dto as any).username;
+    const phone = (dto as any).phone;
+    const email = (dto as any).email;
+
+    const userWhere: Prisma.UserWhereInput = {
+      OR: [
+        username ? { username } : undefined,
+        phone ? { phone } : undefined,
+        email ? { email } : undefined,
+      ].filter(Boolean) as Prisma.UserWhereInput[],
+    };
+    const existingUser = await this.prisma.user.findFirst({ where: userWhere });
+    if (existingUser) {
+      let reason = 'User with this ';
+      if (username && existingUser.username === username) reason += 'username';
+      else if (phone && existingUser.phone === phone) reason += 'phone number';
+      else if (email && existingUser.email === email) reason += 'email';
+      else reason += 'identifier';
+      reason += ' already exists.';
+      throw new Error(reason);
+    }
 
     if (await this.prisma.rsclient.auth.exists(authIdentifier))
       throw new Error('Already registered');
@@ -120,30 +147,27 @@ export class SignupsService {
 
   async approve(dto: SignupApproveDto) {
     const signup = await this.prisma.signup.findUnique({
-      where: {
-        uuid: dto.uuid,
-      },
+      where: { uuid: dto.uuid },
     });
+
     if (!signup) throw new Error('Signup not found');
+
     if (
       signup.status === SignupStatus.APPROVED ||
       signup.status === SignupStatus.REJECTED
-    )
+    ) {
       throw new Error('Signup is already processed.');
+    }
 
     try {
       const signupData: any = signup.data;
-      
-      // Extract user data, excluding password-specific fields
       const { password, confirmPassword, service, ...userDataRaw } = signupData;
-      const userData: CreateUserDto = <CreateUserDto>userDataRaw;
+      const userData: CreateUserDto = userDataRaw;
 
-      const callback = async (err: any, tx: PrismaClientType) => {
-        if (err) throw err;
+      //Reusable callback (single definition)
+      const approveSignupTx = async (tx: PrismaClientType) => {
         await tx.signup.update({
-          where: {
-            uuid: dto.uuid,
-          },
+          where: { uuid: dto.uuid },
           data: {
             status: SignupStatus.APPROVED,
             rejectedReason: null,
@@ -152,44 +176,51 @@ export class SignupsService {
         });
       };
 
-      const result = await this.userService.create(userData, callback);
+      //Create user inside transaction
+      const result = await this.userService.create(
+        userData,
+        async (err: any, tx: PrismaClientType) => {
+          if (err) throw err;
+          await approveSignupTx(tx);
+        },
+      );
 
-      // Handle password signup - set password after user is created
-      if (signupData.password && signupData.service) {
+      //PASSWORD HANDLING
+      if (password) {
         const { hashPassword, validatePasswordStrength } = await import(
           '../utils/password.utils'
         );
 
-        // Validate password
-        const validation = validatePasswordStrength(signupData.password);
-        if (!validation.isValid) {
-          throw new Error(
-            `Password too weak: ${validation.errors.join(', ')}`,
-          );
+        // Skip validation for USERNAME
+        if (service !== Service.USERNAME) {
+          const validation = validatePasswordStrength(password);
+          if (!validation.isValid) {
+            throw new Error(
+              `Password too weak: ${validation.errors.join(', ')}`,
+            );
+          }
+
+          if (password !== confirmPassword) {
+            throw new Error('Passwords do not match');
+          }
         }
 
-        // Check password confirmation
-        if (signupData.password !== signupData.confirmPassword) {
-          throw new Error('Passwords do not match');
-        }
+        const passwordHash = await hashPassword(password);
 
-        // Hash and store password
-        const passwordHash = await hashPassword(signupData.password);
-        
-        // Find auth record by service (handle case-insensitive USERNAME)
-        const whereClause = signupData.service === Service.USERNAME && (result as any).username
-          ? {
-              userId: result.id,
-              service: Service.USERNAME,
-              serviceIdLower: (result as any).username.toLowerCase()
-            }
-          : {
-              userId: result.id,
-              service: signupData.service,
-            };
-        
+        const whereClause =
+          service === Service.USERNAME && (result as any).username
+            ? {
+                userId: result.id,
+                service: Service.USERNAME,
+                serviceIdLower: (result as any).username.toLowerCase(),
+              }
+            : {
+                userId: result.id,
+                service,
+              };
+
         const auth = await this.prisma.auth.findFirst({
-          where: whereClause as any
+          where: whereClause as any,
         });
 
         if (auth) {
@@ -203,16 +234,11 @@ export class SignupsService {
       return result;
     } catch (err) {
       let rejectedReason = 'Unknown';
+
       if (err instanceof Error) rejectedReason = err.message;
-      if (err instanceof PrismaClientKnownRequestError) {
-        rejectedReason = err.message;
-        console.log(err.message);
-      }
 
       return this.prisma.signup.update({
-        where: {
-          uuid: dto.uuid,
-        },
+        where: { uuid: dto.uuid },
         data: {
           status: SignupStatus.FAILED,
           rejectedReason,
