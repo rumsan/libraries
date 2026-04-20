@@ -22,6 +22,7 @@ import {
 } from '../utils/service.utils';
 
 const paginate: PaginatorTypes.PaginateFunction = paginator({ perPage: 20 });
+const EXCLUDED_LIST_ROLE = 'Vendor';
 type PrismaClientType = Omit<
   PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
   '$on' | '$connect' | '$disconnect' | '$use' | '$transaction' | '$extends'
@@ -120,6 +121,16 @@ export class UsersService {
 
     const where: Prisma.UserWhereInput = {
       deletedAt: null,
+      UserRole: {
+        some: {
+          Role: {
+            name: {
+              not: EXCLUDED_LIST_ROLE,
+              mode: 'insensitive',
+            },
+          },
+        },
+      },
     };
     if (dto.roles) {
       const rolesArray = dto.roles.split(',').map((role) => role.trim());
