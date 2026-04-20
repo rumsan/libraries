@@ -27,7 +27,6 @@ type PrismaClientType = Omit<
   '$on' | '$connect' | '$disconnect' | '$use' | '$transaction' | '$extends'
 >;
 
-
 @Injectable()
 export class UsersService {
   private rsprisma;
@@ -121,8 +120,9 @@ export class UsersService {
 
     const where: Prisma.UserWhereInput = {
       deletedAt: null,
-    }; if (dto.roles) {
-      const rolesArray = dto.roles.split(',').map(role => role.trim());
+    };
+    if (dto.roles) {
+      const rolesArray = dto.roles.split(',').map((role) => role.trim());
       where.UserRole = {
         some: {
           Role: {
@@ -423,7 +423,7 @@ export class UsersService {
     // Case-insensitive username check
     if (data.username) {
       const usernameLower = data.username.toLowerCase();
-      
+
       const existingUsernameUser = await tx.user.findFirst({
         where: { ...whereClause, usernameLower },
       });
@@ -462,7 +462,11 @@ export class UsersService {
         case Service.USERNAME:
           throw ERRORS.AUTH_USERNAME_EXISTS;
         default:
-          throw RSE('This service ID is already registered with another user.', 'AUTH_SERVICE_ID_EXISTS', 409);
+          throw RSE(
+            'This service ID is already registered with another user.',
+            'AUTH_SERVICE_ID_EXISTS',
+            409,
+          );
       }
     }
   }
@@ -480,16 +484,36 @@ export class UsersService {
 
     // Check for existing auth services
     if (userData.email) {
-      await this._checkExistingAuthService(tx, Service.EMAIL, userData.email, excludeUserId);
+      await this._checkExistingAuthService(
+        tx,
+        Service.EMAIL,
+        userData.email,
+        excludeUserId,
+      );
     }
     if (userData.phone) {
-      await this._checkExistingAuthService(tx, Service.PHONE, userData.phone, excludeUserId);
+      await this._checkExistingAuthService(
+        tx,
+        Service.PHONE,
+        userData.phone,
+        excludeUserId,
+      );
     }
     if (userData.wallet) {
-      await this._checkExistingAuthService(tx, Service.WALLET, userData.wallet, excludeUserId);
+      await this._checkExistingAuthService(
+        tx,
+        Service.WALLET,
+        userData.wallet,
+        excludeUserId,
+      );
     }
     if (userData.username) {
-      await this._checkExistingAuthService(tx, Service.USERNAME, userData.username, excludeUserId);
+      await this._checkExistingAuthService(
+        tx,
+        Service.USERNAME,
+        userData.username,
+        excludeUserId,
+      );
     }
   }
 
@@ -531,7 +555,10 @@ export class UsersService {
   /**
    * Find user by ID with deleted check
    */
-  private async _findUserById(id: number, tx?: PrismaClientType): Promise<User> {
+  private async _findUserById(
+    id: number,
+    tx?: PrismaClientType,
+  ): Promise<User> {
     const client = tx || this.prisma;
     const user = await client.user.findUnique({
       where: { id, deletedAt: null },
@@ -545,7 +572,10 @@ export class UsersService {
    * @param uuid - User UUID
    * @param tx - Optional transaction client
    */
-  private async _findUserByUuid(uuid: UUID, tx?: PrismaClientType): Promise<User> {
+  private async _findUserByUuid(
+    uuid: UUID,
+    tx?: PrismaClientType,
+  ): Promise<User> {
     const client = tx || this.prisma;
     const user = await client.user.findUnique({
       where: { uuid, deletedAt: null },
