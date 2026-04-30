@@ -50,11 +50,17 @@ export class UsersService {
       try {
         const { roles, ...data } = dto;
 
+        // Set lowercase username for lookups
+        const userData: any = { ...data };
+        if (data.username) {
+          userData.usernameLower = data.username.toLowerCase();
+        }
+
         // Validate user data and check for duplicates
-        await this._validateUserData(tx, data);
+        await this._validateUserData(tx, userData);
 
         const user = await tx.user.create({
-          data,
+          data: userData,
         });
 
         if (roles?.length) {
@@ -97,8 +103,14 @@ export class UsersService {
         throw ERRORS.AUTH_SERVICE_EXISTS;
       }
 
+      // For USERNAME service, also set serviceIdLower for case-insensitive lookups
+      const authData: any = { userId, service, serviceId };
+      if (service === Service.USERNAME) {
+        authData.serviceIdLower = serviceId.toLowerCase();
+      }
+
       await prisma.auth.create({
-        data: { userId, service, serviceId },
+        data: authData,
       });
     }
   }
@@ -407,6 +419,18 @@ export class UsersService {
         throw ERRORS.USER_WALLET_EXISTS;
       }
     }
+
+    // Case-insensitive username check
+    if (data.username) {
+      const usernameLower = data.username.toLowerCase();
+      
+      const existingUsernameUser = await tx.user.findFirst({
+        where: { ...whereClause, usernameLower },
+      });
+      if (existingUsernameUser) {
+        throw ERRORS.USERNAME_EXISTS;
+      }
+    }
   }
 
   /**
@@ -435,6 +459,8 @@ export class UsersService {
           throw ERRORS.AUTH_PHONE_EXISTS;
         case Service.WALLET:
           throw ERRORS.AUTH_WALLET_EXISTS;
+        case Service.USERNAME:
+          throw ERRORS.AUTH_USERNAME_EXISTS;
         default:
           throw RSE('This service ID is already registered with another user.', 'AUTH_SERVICE_ID_EXISTS', 409);
       }
@@ -462,6 +488,9 @@ export class UsersService {
     if (userData.wallet) {
       await this._checkExistingAuthService(tx, Service.WALLET, userData.wallet, excludeUserId);
     }
+    if (userData.username) {
+      await this._checkExistingAuthService(tx, Service.USERNAME, userData.username, excludeUserId);
+    }
   }
 
   /**
@@ -479,6 +508,7 @@ export class UsersService {
       this._createAuth(userId, Service.EMAIL, userData.email || null, tx),
       this._createAuth(userId, Service.PHONE, userData.phone || null, tx),
       this._createAuth(userId, Service.WALLET, userData.wallet || null, tx),
+      this._createAuth(userId, Service.USERNAME, userData.username || null, tx),
     ]);
   }
 
@@ -494,6 +524,7 @@ export class UsersService {
       this._updateAuth(tx, user, Service.EMAIL, userData.email),
       this._updateAuth(tx, user, Service.PHONE, userData.phone),
       this._updateAuth(tx, user, Service.WALLET, userData.wallet),
+      this._updateAuth(tx, user, Service.USERNAME, userData.username),
     ]);
   }
 
