@@ -12,7 +12,7 @@ dist/
 config/
 play/
 
-.env*
+.env
 .npmrc
 .nx
 rs.private*
