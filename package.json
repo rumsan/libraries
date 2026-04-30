@@ -18,7 +18,8 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "scripts": {
-    "format": "prettier --write \"libs/**/*.ts\" \"apps/**/*.ts\""
+    "format": "prettier --write \"libs/**/*.ts\" \"apps/**/*.ts\"",
+    "build:all": "nx run-many --target=build --all"
   },
   "private": true,
   "dependencies": {
