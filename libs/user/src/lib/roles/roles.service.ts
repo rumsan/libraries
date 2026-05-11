@@ -2,7 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { Permission, Prisma, PrismaClient, Role } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 import {
+  AddPermissionDto,
+  BulkAddPermissionsDto,
+  BulkDeletePermissionsDto,
   CreateRoleDto,
+  EditPermissionDto,
   EditRoleDto,
   ListRoleDto,
 } from '@rumsan/extensions/dtos';
@@ -202,6 +206,69 @@ export class RolesService {
   ) {
     return prisma.permission.create({
       data: permission,
+    });
+  }
+
+  // ===================== Permission Management APIs =====================
+
+  async addPermissionToRole(name: string, dto: AddPermissionDto) {
+    const role = await this.prisma.role.findUnique({ where: { name } });
+    if (!role) throw RSE('Role does not exist!', 'ROLE_NOEXIST', 404);
+    return this.prisma.permission.create({ data: { roleId: role.id, ...dto } });
+  }
+
+  async updatePermission(permissionId: number, dto: EditPermissionDto) {
+    const existing = await this.prisma.permission.findUnique({
+      where: { id: permissionId },
+    });
+    if (!existing)
+      throw RSE('Permission does not exist!', 'PERMISSION_NOEXIST', 404);
+    return this.prisma.permission.update({
+      where: { id: permissionId },
+      data: dto,
+    });
+  }
+
+  async deletePermission(permissionId: number) {
+    const existing = await this.prisma.permission.findUnique({
+      where: { id: permissionId },
+    });
+    if (!existing)
+      throw RSE('Permission does not exist!', 'PERMISSION_NOEXIST', 404);
+    await this.prisma.permission.delete({ where: { id: permissionId } });
+    return { success: true };
+  }
+
+  async bulkAddPermissions(name: string, dto: BulkAddPermissionsDto) {
+    const role = await this.prisma.role.findUnique({ where: { name } });
+    if (!role) throw RSE('Role does not exist!', 'ROLE_NOEXIST', 404);
+    await this.prisma.permission.createMany({
+      data: dto.permissions.map((p) => ({ roleId: role.id, ...p })),
+    });
+    return this.prisma.permission.findMany({ where: { roleId: role.id } });
+  }
+
+  async bulkDeletePermissions(name: string, dto: BulkDeletePermissionsDto) {
+    const role = await this.prisma.role.findUnique({ where: { name } });
+    if (!role) throw RSE('Role does not exist!', 'ROLE_NOEXIST', 404);
+    const result = await this.prisma.permission.deleteMany({
+      where: { id: { in: dto.permissionIds }, roleId: role.id },
+    });
+    return { deleted: result.count };
+  }
+
+  async listRolesInProject(xrefId: string) {
+    return this.prisma.userRole.findMany({
+      where: { xrefId },
+      select: {
+        Role: {
+          select: {
+            name: true,
+            isSystem: true,
+          },
+        },
+      },
+      distinct: ['roleId'],
     });
   }
 }

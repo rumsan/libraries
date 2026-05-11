@@ -24,5 +24,5 @@ export class CreateRoleDto {
     }),
   })
   @IsOptional()
-  permissions: PermissionSet;
+  permissions?: PermissionSet;
 }
