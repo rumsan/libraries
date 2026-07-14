@@ -16,7 +16,7 @@ export class PasswordLoginDto {
   })
   @IsString()
   @IsNotEmpty()
-  @MinLength(3, { message: 'Identifier must be at least 3 characters' })
+  @MinLength(2, { message: 'Identifier must be at least 2 characters long' })
   identifier: string; // Can be username, email, or phone
 
   @ApiProperty({
