@@ -686,24 +686,26 @@ export class AuthsService {
     if (!isOldPasswordValid) {
       throw new UnauthorizedException('Current password is incorrect');
     }
+    
+    //Password strength validation is not required for now as per the client's requirement.
 
     // Validate new password strength
-    const validation = validatePasswordStrength(newPassword, {
-      minLength: this.config.get<number>('PASSWORD_MIN_LENGTH') || 8,
-      requireUppercase:
-        this.config.get<boolean>('PASSWORD_REQUIRE_UPPERCASE') ?? true,
-      requireLowercase:
-        this.config.get<boolean>('PASSWORD_REQUIRE_LOWERCASE') ?? true,
-      requireDigit: this.config.get<boolean>('PASSWORD_REQUIRE_DIGIT') ?? true,
-      requireSpecial:
-        this.config.get<boolean>('PASSWORD_REQUIRE_SPECIAL') ?? true,
-    });
+    // const validation = validatePasswordStrength(newPassword, {
+    //   minLength: this.config.get<number>('PASSWORD_MIN_LENGTH') || 8,
+    //   requireUppercase:
+    //     this.config.get<boolean>('PASSWORD_REQUIRE_UPPERCASE') ?? true,
+    //   requireLowercase:
+    //     this.config.get<boolean>('PASSWORD_REQUIRE_LOWERCASE') ?? true,
+    //   requireDigit: this.config.get<boolean>('PASSWORD_REQUIRE_DIGIT') ?? true,
+    //   requireSpecial:
+    //     this.config.get<boolean>('PASSWORD_REQUIRE_SPECIAL') ?? true,
+    // });
 
-    if (!validation.isValid) {
-      throw new ForbiddenException(
-        `Password too weak: ${validation.errors.join(', ')}`,
-      );
-    }
+    // if (!validation.isValid) {
+    //   throw new ForbiddenException(
+    //     `Password too weak: ${validation.errors.join(', ')}`,
+    //   );
+    // }
 
     // Check confirmation
     if (newPassword !== confirmPassword) {
