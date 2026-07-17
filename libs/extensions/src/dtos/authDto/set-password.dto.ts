@@ -1,6 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Service } from '@rumsan/sdk/enums';
-import { IsEnum, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class SetPasswordDto {
   @ApiProperty({
@@ -32,4 +39,15 @@ export class SetPasswordDto {
   @IsEnum(Service)
   @IsNotEmpty()
   service: Service;
+
+  @ApiProperty({
+    example: false,
+    description:
+      'If true, skips password strength validation (min length, uppercase, lowercase, digit, special character checks). Password confirmation matching is still enforced. Defaults to false.',
+    required: false,
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  bypassPasswordValidation?: boolean;
 }

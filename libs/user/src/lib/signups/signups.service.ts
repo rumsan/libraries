@@ -37,24 +37,10 @@ export class SignupsService {
   ) {
     // Validate password signup
     if (dto instanceof SignupPasswordDto) {
-      // const { validatePasswordStrength } = await import(
-      //   '../utils/password.utils'
-      // );
-
       // Check password confirmation
       if (dto.password !== dto.confirmPassword) {
         throw new Error('Passwords do not match');
       }
-
-      // Validate password strength
-      // const validation = validatePasswordStrength(dto.password);
-      // if (!validation.isValid) {
-      //   console.log(validation, 'password validation result');
-      //   console.log(validation.isValid, 'is valid');
-      //   throw new Error(`Password too weak: ${validation.errors.join(', ')}`);
-      // }
-
-      // console.log(validation, 'password validation result');
     }
 
     let authIdentifier: { service: Service; serviceId: string };
@@ -161,7 +147,13 @@ export class SignupsService {
 
     try {
       const signupData: any = signup.data;
-      const { password, confirmPassword, service, ...userDataRaw } = signupData;
+      const {
+        password,
+        confirmPassword,
+        service,
+        bypassPasswordValidation,
+        ...userDataRaw
+      } = signupData;
       const userData: CreateUserDto = userDataRaw;
 
       //Reusable callback (single definition)
@@ -187,22 +179,14 @@ export class SignupsService {
 
       //PASSWORD HANDLING
       if (password) {
-        const { hashPassword, validatePasswordStrength } = await import(
-          '../utils/password.utils'
-        );
+        const { hashPassword } = await import('../utils/password.utils');
 
-        // Skip validation for USERNAME
-        if (service !== Service.USERNAME) {
-          const validation = validatePasswordStrength(password);
-          if (!validation.isValid) {
-            throw new Error(
-              `Password too weak: ${validation.errors.join(', ')}`,
-            );
-          }
+        if (!bypassPasswordValidation) {
+          await this.assertPasswordStrength(password);
+        }
 
-          if (password !== confirmPassword) {
-            throw new Error('Passwords do not match');
-          }
+        if (password !== confirmPassword) {
+          throw new Error('Passwords do not match');
         }
 
         const passwordHash = await hashPassword(password);
@@ -244,6 +228,20 @@ export class SignupsService {
           rejectedReason,
         },
       });
+    }
+  }
+
+  /**
+   * Validate password strength using default requirements.
+   * Throws when the password does not meet the policy.
+   */
+  private async assertPasswordStrength(password: string): Promise<void> {
+    const { validatePasswordStrength } = await import(
+      '../utils/password.utils'
+    );
+    const validation = validatePasswordStrength(password);
+    if (!validation.isValid) {
+      throw new Error(`Password too weak: ${validation.errors.join(', ')}`);
     }
   }
 }

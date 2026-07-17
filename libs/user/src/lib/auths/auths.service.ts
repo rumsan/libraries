@@ -12,6 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthSession, User } from '@prisma/client';
 import {
   ChallengeDto,
+  ChangePasswordDto,
   CreateServiceClientDto,
   OtpDto,
   OtpLoginDto,
@@ -597,11 +598,11 @@ export class AuthsService {
   }
 
   /**
-   * Set password for a user (first time)
+   * Validate password strength using configurable requirements.
+   * Throws ForbiddenException when the password does not meet the policy.
    */
-  async setPassword(userId: number, dto: SetPasswordDto) {
-    // Validate password strength
-    const validation = validatePasswordStrength(dto.password, {
+  private assertPasswordStrength(password: string): void {
+    const validation = validatePasswordStrength(password, {
       minLength: this.config.get<number>('PASSWORD_MIN_LENGTH') || 8,
       requireUppercase:
         this.config.get<boolean>('PASSWORD_REQUIRE_UPPERCASE') ?? true,
@@ -616,6 +617,15 @@ export class AuthsService {
       throw new ForbiddenException(
         `Password too weak: ${validation.errors.join(', ')}`,
       );
+    }
+  }
+
+  /**
+   * Set password for a user (first time)
+   */
+  async setPassword(userId: number, dto: SetPasswordDto) {
+    if (!dto.bypassPasswordValidation) {
+      this.assertPasswordStrength(dto.password);
     }
 
     // Check password confirmation
@@ -658,13 +668,9 @@ export class AuthsService {
   /**
    * Update existing password
    */
-  async updatePassword(
-    userId: number,
-    oldPassword: string,
-    newPassword: string,
-    confirmPassword: string,
-    service: Service,
-  ) {
+  async updatePassword(userId: number, dto: ChangePasswordDto) {
+    const { oldPassword, newPassword, confirmPassword, service } = dto;
+
     // Find auth record
     const auth = await this.prisma.auth.findFirst({
       where: {
@@ -686,26 +692,10 @@ export class AuthsService {
     if (!isOldPasswordValid) {
       throw new UnauthorizedException('Current password is incorrect');
     }
-    
-    //Password strength validation is not required for now as per the client's requirement.
 
-    // Validate new password strength
-    // const validation = validatePasswordStrength(newPassword, {
-    //   minLength: this.config.get<number>('PASSWORD_MIN_LENGTH') || 8,
-    //   requireUppercase:
-    //     this.config.get<boolean>('PASSWORD_REQUIRE_UPPERCASE') ?? true,
-    //   requireLowercase:
-    //     this.config.get<boolean>('PASSWORD_REQUIRE_LOWERCASE') ?? true,
-    //   requireDigit: this.config.get<boolean>('PASSWORD_REQUIRE_DIGIT') ?? true,
-    //   requireSpecial:
-    //     this.config.get<boolean>('PASSWORD_REQUIRE_SPECIAL') ?? true,
-    // });
-
-    // if (!validation.isValid) {
-    //   throw new ForbiddenException(
-    //     `Password too weak: ${validation.errors.join(', ')}`,
-    //   );
-    // }
+    if (!dto.bypassPasswordValidation) {
+      this.assertPasswordStrength(newPassword);
+    }
 
     // Check confirmation
     if (newPassword !== confirmPassword) {
@@ -753,21 +743,8 @@ export class AuthsService {
     }
 
     // Validate new password
-    const validation = validatePasswordStrength(dto.newPassword, {
-      minLength: this.config.get<number>('PASSWORD_MIN_LENGTH') || 8,
-      requireUppercase:
-        this.config.get<boolean>('PASSWORD_REQUIRE_UPPERCASE') ?? true,
-      requireLowercase:
-        this.config.get<boolean>('PASSWORD_REQUIRE_LOWERCASE') ?? true,
-      requireDigit: this.config.get<boolean>('PASSWORD_REQUIRE_DIGIT') ?? true,
-      requireSpecial:
-        this.config.get<boolean>('PASSWORD_REQUIRE_SPECIAL') ?? true,
-    });
-
-    if (!validation.isValid) {
-      throw new ForbiddenException(
-        `Password too weak: ${validation.errors.join(', ')}`,
-      );
+    if (!dto.bypassPasswordValidation) {
+      this.assertPasswordStrength(dto.newPassword);
     }
 
     // Check confirmation
