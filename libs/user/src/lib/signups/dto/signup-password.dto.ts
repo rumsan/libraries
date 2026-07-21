@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsFlexiblePhone, IsUsername } from '@rumsan/extensions/decorators';
 import { Service } from '@rumsan/sdk/enums';
 import {
+  IsBoolean,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -76,4 +77,15 @@ export class SignupPasswordDto {
   @IsEnum(Service)
   @IsNotEmpty()
   service: Service;
+
+  @ApiProperty({
+    example: false,
+    description:
+      'If true, skips password strength validation (min length, uppercase, lowercase, digit, special character checks). Password confirmation matching is still enforced. Defaults to false.',
+    required: false,
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  bypassPasswordValidation?: boolean;
 }
