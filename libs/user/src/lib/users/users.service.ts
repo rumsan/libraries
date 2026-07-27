@@ -3,11 +3,18 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma, PrismaClient, Service, User } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 import {
+  AssignRoleDto,
   CreateUserDto,
   ListUserDto,
+  UpdateRoleAssignmentDto,
   UpdateUserDto,
 } from '@rumsan/extensions/dtos';
-import { paginator, PaginatorTypes, PrismaService } from '@rumsan/prisma';
+import {
+  getPaginatedResult,
+  paginator,
+  PaginatorTypes,
+  PrismaService,
+} from '@rumsan/prisma';
 import { Request, UserRole } from '@rumsan/sdk/types';
 import { UUID } from 'crypto';
 import { CUI } from '../auths/interfaces/current-user.interface';
@@ -26,7 +33,6 @@ type PrismaClientType = Omit<
   PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
   '$on' | '$connect' | '$disconnect' | '$use' | '$transaction' | '$extends'
 >;
-
 
 @Injectable()
 export class UsersService {
@@ -121,8 +127,9 @@ export class UsersService {
 
     const where: Prisma.UserWhereInput = {
       deletedAt: null,
-    }; if (dto.roles) {
-      const rolesArray = dto.roles.split(',').map(role => role.trim());
+    };
+    if (dto.roles) {
+      const rolesArray = dto.roles.split(',').map((role) => role.trim());
       where.UserRole = {
         some: {
           Role: {
@@ -423,7 +430,7 @@ export class UsersService {
     // Case-insensitive username check
     if (data.username) {
       const usernameLower = data.username.toLowerCase();
-      
+
       const existingUsernameUser = await tx.user.findFirst({
         where: { ...whereClause, usernameLower },
       });
@@ -462,7 +469,11 @@ export class UsersService {
         case Service.USERNAME:
           throw ERRORS.AUTH_USERNAME_EXISTS;
         default:
-          throw RSE('This service ID is already registered with another user.', 'AUTH_SERVICE_ID_EXISTS', 409);
+          throw RSE(
+            'This service ID is already registered with another user.',
+            'AUTH_SERVICE_ID_EXISTS',
+            409,
+          );
       }
     }
   }
@@ -480,16 +491,36 @@ export class UsersService {
 
     // Check for existing auth services
     if (userData.email) {
-      await this._checkExistingAuthService(tx, Service.EMAIL, userData.email, excludeUserId);
+      await this._checkExistingAuthService(
+        tx,
+        Service.EMAIL,
+        userData.email,
+        excludeUserId,
+      );
     }
     if (userData.phone) {
-      await this._checkExistingAuthService(tx, Service.PHONE, userData.phone, excludeUserId);
+      await this._checkExistingAuthService(
+        tx,
+        Service.PHONE,
+        userData.phone,
+        excludeUserId,
+      );
     }
     if (userData.wallet) {
-      await this._checkExistingAuthService(tx, Service.WALLET, userData.wallet, excludeUserId);
+      await this._checkExistingAuthService(
+        tx,
+        Service.WALLET,
+        userData.wallet,
+        excludeUserId,
+      );
     }
     if (userData.username) {
-      await this._checkExistingAuthService(tx, Service.USERNAME, userData.username, excludeUserId);
+      await this._checkExistingAuthService(
+        tx,
+        Service.USERNAME,
+        userData.username,
+        excludeUserId,
+      );
     }
   }
 
@@ -531,7 +562,10 @@ export class UsersService {
   /**
    * Find user by ID with deleted check
    */
-  private async _findUserById(id: number, tx?: PrismaClientType): Promise<User> {
+  private async _findUserById(
+    id: number,
+    tx?: PrismaClientType,
+  ): Promise<User> {
     const client = tx || this.prisma;
     const user = await client.user.findUnique({
       where: { id, deletedAt: null },
@@ -545,12 +579,305 @@ export class UsersService {
    * @param uuid - User UUID
    * @param tx - Optional transaction client
    */
-  private async _findUserByUuid(uuid: UUID, tx?: PrismaClientType): Promise<User> {
+  private async _findUserByUuid(
+    uuid: UUID,
+    tx?: PrismaClientType,
+  ): Promise<User> {
     const client = tx || this.prisma;
     const user = await client.user.findUnique({
       where: { uuid, deletedAt: null },
     });
     if (!user) throw ERRORS.USER_NOT_FOUND;
     return user;
+  }
+
+  // ===================== Project-Scoped Role Assignment APIs =====================
+
+  async assignRoleInProject(uuid: string, xrefId: string, dto: AssignRoleDto) {
+    const user = await this.prisma.user.findUnique({ where: { uuid } });
+    if (!user) throw ERRORS.USER_NOT_FOUND;
+
+    const role = await this.prisma.role.findUnique({
+      where: { name: dto.name },
+    });
+    if (!role) throw RSE('Role does not exist!', 'ROLE_NOEXIST', 404);
+
+    return this.prisma.userRole.create({
+      data: {
+        userId: user.id,
+        roleId: role.id,
+        xrefId,
+        expiry: dto.expiry ? new Date(dto.expiry) : null,
+      },
+      include: { Role: true },
+    });
+  }
+
+  async listRolesInProject(uuid: string, xrefId: string) {
+    const user = await this.prisma.user.findUnique({ where: { uuid } });
+    if (!user) throw ERRORS.USER_NOT_FOUND;
+
+    return this.prisma.userRole.findMany({
+      where: { userId: user.id, xrefId },
+      include: { Role: true },
+    });
+  }
+
+  async removeRoleInProject(uuid: string, xrefId: string, name: string) {
+    const user = await this.prisma.user.findUnique({ where: { uuid } });
+    if (!user) throw ERRORS.USER_NOT_FOUND;
+
+    const role = await this.prisma.role.findUnique({
+      where: { name },
+    });
+    if (!role) throw RSE('Role does not exist!', 'ROLE_NOEXIST', 404);
+
+    const assignment = await this.prisma.userRole.findFirst({
+      where: { userId: user.id, roleId: role.id, xrefId },
+    });
+    if (!assignment)
+      throw RSE('Role assignment does not exist!', 'USERROLE_NOEXIST', 404);
+
+    await this.prisma.userRole.delete({ where: { id: assignment.id } });
+    return { success: true };
+  }
+
+  async updateRoleAssignmentInProject(
+    uuid: string,
+    xrefId: string,
+    name: string,
+    dto: UpdateRoleAssignmentDto,
+  ) {
+    const user = await this.prisma.user.findUnique({ where: { uuid } });
+    if (!user) throw ERRORS.USER_NOT_FOUND;
+
+    const role = await this.prisma.role.findUnique({
+      where: { name },
+    });
+    if (!role) throw RSE('Role does not exist!', 'ROLE_NOEXIST', 404);
+
+    const assignment = await this.prisma.userRole.findFirst({
+      where: { userId: user.id, roleId: role.id, xrefId },
+    });
+    if (!assignment)
+      throw RSE('Role assignment does not exist!', 'USERROLE_NOEXIST', 404);
+
+    const newRole = await this.prisma.role.findUnique({
+      where: { name: dto.name },
+    });
+    if (!newRole) throw RSE('New role does not exist!', 'ROLE_NOEXIST', 404);
+
+    return this.prisma.userRole.update({
+      where: { id: assignment.id },
+      data: {
+        expiry: dto.expiry ? new Date(dto.expiry) : null,
+        roleId: newRole.id,
+      },
+      include: { Role: true },
+    });
+  }
+
+  // ===================== User Role Query APIs =====================
+
+  async listActiveRoles(uuid: string) {
+    const user = await this.prisma.user.findUnique({ where: { uuid } });
+    if (!user) throw ERRORS.USER_NOT_FOUND;
+
+    return this.prisma.userRole.findMany({
+      where: {
+        userId: user.id,
+        OR: [{ expiry: null }, { expiry: { gt: new Date() } }],
+      },
+      include: { Role: { include: { Permission: true } } },
+    });
+  }
+
+  async listAllPermissions(uuid: string) {
+    const user = await this.prisma.user.findUnique({ where: { uuid } });
+    if (!user) throw ERRORS.USER_NOT_FOUND;
+
+    const assignments = await this.prisma.userRole.findMany({
+      where: {
+        userId: user.id,
+        OR: [{ expiry: null }, { expiry: { gt: new Date() } }],
+      },
+      select: {
+        xrefId: true,
+        Role: { include: { Permission: true } },
+      },
+    });
+
+    const rolesByProject: Record<string, string[]> = {};
+    for (const assignment of assignments) {
+      const project = assignment.xrefId ?? '__global__';
+      if (!rolesByProject[project]) rolesByProject[project] = [];
+      rolesByProject[project].push(assignment.Role.name);
+    }
+
+    const permissions = this._dedupePermissions(
+      assignments.flatMap((a) => a.Role.Permission),
+    );
+
+    return { permissions, rolesByProject };
+  }
+
+  async listPermissionsInProject(uuid: string, xrefId: string) {
+    const user = await this.prisma.user.findUnique({ where: { uuid } });
+    if (!user) throw ERRORS.USER_NOT_FOUND;
+
+    const assignments = await this.prisma.userRole.findMany({
+      where: {
+        userId: user.id,
+        xrefId,
+        OR: [{ expiry: null }, { expiry: { gt: new Date() } }],
+      },
+      include: { Role: { include: { Permission: true } } },
+    });
+
+    const permissions = assignments.flatMap((a) => a.Role.Permission);
+    return this._dedupePermissions(permissions);
+  }
+
+  // ===================== Project-Centric Query APIs =====================
+  async listUsersInProject(
+    xrefId: string,
+    name?: string,
+    includeExpired?: boolean,
+  ) {
+    const where: Prisma.UserRoleWhereInput = {
+      xrefId,
+      ...(name
+        ? { Role: { name: { contains: name, mode: 'insensitive' } } }
+        : {}),
+      ...(!includeExpired
+        ? { OR: [{ expiry: null }, { expiry: { gt: new Date() } }] }
+        : {}),
+    };
+
+    const assignments = await this.prisma.userRole.findMany({
+      where,
+      include: {
+        User: true,
+        Role: true,
+      },
+    });
+
+    const usersMap = new Map<string, { user: User; roles: string[] }>();
+    for (const assignment of assignments) {
+      const uuid = assignment.User.uuid;
+      if (!usersMap.has(uuid)) {
+        usersMap.set(uuid, { user: assignment.User, roles: [] });
+      }
+      usersMap.get(uuid)?.roles.push(assignment.Role.name);
+    }
+
+    return Array.from(usersMap.values()).map(({ user, roles }) => ({
+      ...user,
+      roles,
+    }));
+  }
+
+  async listUsersByRoleInProject(
+    xrefId: string,
+    name: string,
+    includeExpired?: boolean,
+  ) {
+    const where: Prisma.UserRoleWhereInput = {
+      xrefId,
+      Role: { name },
+      ...(!includeExpired
+        ? { OR: [{ expiry: null }, { expiry: { gt: new Date() } }] }
+        : {}),
+    };
+
+    const assignments = await this.prisma.userRole.findMany({
+      where,
+      include: { User: true },
+    });
+
+    return assignments.map((a) => a.User);
+  }
+
+  private _dedupePermissions(perms: { action: string; subject: string; inverted: boolean; conditions: any; reason: string | null }[]) {
+    const map = new Map<string, object>();
+    for (const perm of perms) {
+      const key = `${perm.action}:${perm.subject}:${perm.inverted}`;
+      if (!map.has(key)) {
+        const rule: any = { action: perm.action, subject: perm.subject };
+        if (perm.inverted) rule.inverted = true;
+        if (perm.conditions) rule.conditions = perm.conditions;
+        if (perm.reason) rule.reason = perm.reason;
+        map.set(key, rule);
+      }
+    }
+    return Array.from(map.values());
+  }
+
+  async getUserAbilitiesInProject(uuid: string, xrefId: string) {
+    const user = await this.prisma.user.findUnique({ where: { uuid } });
+    if (!user) throw ERRORS.USER_NOT_FOUND;
+
+    const assignments = await this.prisma.userRole.findMany({
+      where: {
+        userId: user.id,
+        xrefId,
+        OR: [{ expiry: null }, { expiry: { gt: new Date() } }],
+      },
+      include: { Role: { include: { Permission: true } } },
+    });
+
+    const rules = this._dedupePermissions(
+      assignments.flatMap((a) => a.Role.Permission),
+    );
+
+    return { rules };
+  }
+
+  async getTeamRoster(xrefId: string, page = 1, perPage = 20) {
+    const assignments = await this.prisma.userRole.findMany({
+      where: {
+        xrefId,
+        OR: [{ expiry: null }, { expiry: { gt: new Date() } }],
+      },
+      include: {
+        User: true,
+        Role: { include: { Permission: true } },
+      },
+    });
+
+    const usersMap = new Map<
+      string,
+      {
+        user: User;
+        rawPerms: any[];
+        assignments: object[];
+      }
+    >();
+
+    for (const assignment of assignments) {
+      const uuid = assignment.User.uuid;
+      if (!usersMap.has(uuid)) {
+        usersMap.set(uuid, { user: assignment.User, rawPerms: [], assignments: [] });
+      }
+      const entry = usersMap.get(uuid)!;
+      entry.assignments.push({
+        roleId: assignment.roleId,
+        roleName: assignment.Role.name,
+        expiry: assignment.expiry,
+        assignedAt: assignment.createdAt,
+      });
+      entry.rawPerms.push(...assignment.Role.Permission);
+    }
+
+    const allEntries = Array.from(usersMap.values()).map(({ user, rawPerms, assignments }) => ({
+      ...user,
+      permissions: this._dedupePermissions(rawPerms),
+      assignments,
+    }));
+
+    return getPaginatedResult({
+      data: allEntries,
+      pagination: { page, perPage },
+    });
   }
 }
