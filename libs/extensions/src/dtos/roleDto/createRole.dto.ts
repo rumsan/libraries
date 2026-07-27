@@ -23,6 +23,6 @@ export class CreateRoleDto {
       user: ['manage', 'read'],
     }),
   })
-  @IsOptional()
-  permissions?: PermissionSet;
+  @IsNotEmpty()
+  permissions: PermissionSet;
 }
