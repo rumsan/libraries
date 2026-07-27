@@ -100,13 +100,7 @@ export class AuthsController {
     @CurrentUser() user: CurrentUserInterface,
     @Body() dto: ChangePasswordDto,
   ) {
-    return this.authService.updatePassword(
-      user.id,
-      dto.oldPassword,
-      dto.newPassword,
-      dto.confirmPassword,
-      dto.service,
-    );
+    return this.authService.updatePassword(user.id, dto);
   }
 
   @Post('password/reset')
