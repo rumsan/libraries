@@ -33,5 +33,16 @@ export type UserRole = {
 
 export type ListUser = Pagination & {
   roles?: string;
-}
+};
+
+export type AssignRole = {
+  name: string;
+  expiry?: string;
+  xrefId?: string;
+};
+
+export type UpdateRoleAssignment = {
+  name: string;
+  expiry?: string;
+};
 

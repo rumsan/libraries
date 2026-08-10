@@ -152,40 +152,36 @@ export class UsersController {
 
   // ===================== Project-Scoped Role Assignment APIs =====================
 
-  @Post(':uuid/xrefId/:xrefId/roles')
+  @Post(':uuid/roles/assign')
   @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.USER })
-  assignRoleInProject(
-    @Param('uuid') uuid: string,
-    @Param('xrefId') xrefId: string,
-    @Body() dto: AssignRoleDto,
-  ) {
-    return this.userService.assignRoleInProject(uuid, xrefId, dto);
+  assignRoleInProject(@Param('uuid') uuid: string, @Body() dto: AssignRoleDto) {
+    return this.userService.assignRoleInProject(uuid, dto);
   }
 
-  @Get(':uuid/xrefId/:xrefId/roles')
+  @Get(':uuid/xref-id/:xref-id/roles')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
   listRolesInProject(
     @Param('uuid') uuid: string,
-    @Param('xrefId') xrefId: string,
+    @Param('xref-id') xrefId: string,
   ) {
     return this.userService.listRolesInProject(uuid, xrefId);
   }
 
-  @Delete(':uuid/xrefId/:xrefId/roles/:name')
+  @Delete(':uuid/xref-id/:xref-id/roles/:name')
   @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.USER })
   removeRoleInProject(
     @Param('uuid') uuid: string,
-    @Param('xrefId') xrefId: string,
+    @Param('xref-id') xrefId: string,
     @Param('name') name: string,
   ) {
     return this.userService.removeRoleInProject(uuid, xrefId, name);
   }
 
-  @Put(':uuid/xrefId/:xrefId/roles/:name')
+  @Put(':uuid/xref-id/:xref-id/roles/:name')
   @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.USER })
   updateRoleAssignmentInProject(
     @Param('uuid') uuid: string,
-    @Param('xrefId') xrefId: string,
+    @Param('xref-id') xrefId: string,
     @Param('name') name: string,
     @Body() dto: UpdateRoleAssignmentDto,
   ) {
@@ -211,32 +207,32 @@ export class UsersController {
     return this.userService.listAllPermissions(uuid);
   }
 
-  @Get(':uuid/xrefId/:xrefId/permissions')
+  @Get(':uuid/xref-id/:xref-id/permissions')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
   listPermissionsInProject(
     @Param('uuid') uuid: string,
-    @Param('xrefId') xrefId: string,
+    @Param('xref-id') xrefId: string,
   ) {
     return this.userService.listPermissionsInProject(uuid, xrefId);
   }
   // ===================== Project-Centric Query APIs =====================
-  @Get('xrefId/:xrefId')
+  @Get('xref-id/:xref-id')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
   @ApiQuery({ name: 'name', required: false, type: String })
   @ApiQuery({ name: 'includeExpired', required: false, type: Boolean })
   listUsersInProject(
-    @Param('xrefId') xrefId: string,
+    @Param('xref-id') xrefId: string,
     @Query('name') name?: string,
     @Query('includeExpired') includeExpired?: boolean,
   ) {
     return this.userService.listUsersInProject(xrefId, name, includeExpired);
   }
 
-  @Get('xrefId/:xrefId/roles/:name')
+  @Get('xref-id/:xref-id/roles/:name')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
   @ApiQuery({ name: 'includeExpired', required: false, type: Boolean })
   listUsersByRoleInProject(
-    @Param('xrefId') xrefId: string,
+    @Param('xref-id') xrefId: string,
     @Param('name') name: string,
     @Query('includeExpired') includeExpired?: boolean,
   ) {
@@ -247,29 +243,13 @@ export class UsersController {
     );
   }
 
-  @Get(':uuid/xrefId/:xrefId/abilities')
-  @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
+  @Get(':uuid/xref-id/:xref-id/abilities')
+  @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.PUBLIC })
   getUserAbilitiesInProject(
     @Param('uuid') uuid: string,
-    @Param('xrefId') xrefId: string,
+    @Param('xref-id') xrefId: string,
   ) {
     return this.userService.getUserAbilitiesInProject(uuid, xrefId);
-  }
-
-  @Get('xrefId/:xrefId/team')
-  @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'perPage', required: false, type: Number })
-  getTeamRoster(
-    @Param('xrefId') xrefId: string,
-    @Query('page') page?: string,
-    @Query('perPage') perPage?: string,
-  ) {
-    return this.userService.getTeamRoster(
-      xrefId,
-      page ? Number(page) : 1,
-      perPage ? Number(perPage) : 20,
-    );
   }
 }
 

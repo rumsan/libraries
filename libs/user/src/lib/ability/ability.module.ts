@@ -1,6 +1,7 @@
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { SUBJECTS } from '../constants';
+import { AbilityAction } from './ability.actions';
 import { AbilitiesGuard } from './ability.guard';
 import { AbilitySubject } from './ability.subjects';
 
@@ -11,9 +12,11 @@ import { AbilitySubject } from './ability.subjects';
 export class AbilityModule {
   static forRoot(options?: {
     subjects?: { [key: string]: string };
+    actions?: { [key: string]: string };
   }): DynamicModule {
-    const { subjects } = options || {};
+    const { subjects, actions } = options || {};
     AbilitySubject.add(subjects || {});
+    AbilityAction.add(actions || {});
 
     return {
       global: true,
