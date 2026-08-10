@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ClientProxy } from '@nestjs/microservices';
 import { Prisma, PrismaClient, Service, User } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 import {
@@ -9,14 +10,10 @@ import {
   UpdateRoleAssignmentDto,
   UpdateUserDto,
 } from '@rumsan/extensions/dtos';
-import {
-  getPaginatedResult,
-  paginator,
-  PaginatorTypes,
-  PrismaService,
-} from '@rumsan/prisma';
+import { paginator, PaginatorTypes, PrismaService } from '@rumsan/prisma';
 import { Request, UserRole } from '@rumsan/sdk/types';
 import { UUID } from 'crypto';
+import { AUTH_SERVICE_CLIENT } from '../ability/ms-rpc-auth';
 import { CUI } from '../auths/interfaces/current-user.interface';
 import { ERRORS, EVENTS } from '../constants';
 import { RSE } from '../constants/errors';
@@ -40,6 +37,8 @@ export class UsersService {
   constructor(
     protected prisma: PrismaService,
     protected eventEmitter: EventEmitter2,
+    @Inject(AUTH_SERVICE_CLIENT)
+    private readonly authClient: ClientProxy,
   ) {
     this.rsprisma = this.prisma.rsclient;
   }
@@ -337,6 +336,7 @@ export class UsersService {
       roleId: role.roleId,
       expiry: role.expiry,
       name: role.Role.name,
+      xrefId: role.xrefId,
       createdAt: role.createdAt,
       createdBy: role.createdBy,
     }));
@@ -361,6 +361,12 @@ export class UsersService {
       })),
       skipDuplicates: true,
     });
+
+    await this.authClient.emit(EVENTS.INVALIDATE_ABILITY_CACHE, {
+      userId: user.uuid,
+      xrefId: null,
+    });
+
     return this.listRoles(uuid, prisma);
   }
 
@@ -375,12 +381,28 @@ export class UsersService {
     });
     if (!user) throw ERRORS.USER_NOT_FOUND;
 
+    const roleIds = getValidRoles.map((role) => role.id);
+    const userRoles = await prisma.userRole.findMany({
+      where: { userId: user.id, roleId: { in: roleIds } },
+    });
+
     await prisma.userRole.deleteMany({
       where: {
         userId: user.id,
-        roleId: { in: getValidRoles.map((role) => role.id) },
+        roleId: { in: roleIds },
       },
     });
+
+    const xrefIds = [...new Set(userRoles.map((userRole) => userRole.xrefId))];
+    await Promise.all(
+      xrefIds.map((xrefId) =>
+        this.authClient.emit(EVENTS.INVALIDATE_ABILITY_CACHE, {
+          userId: user.uuid,
+          xrefId,
+        }),
+      ),
+    );
+
     return this.listRoles(uuid);
   }
 
@@ -593,24 +615,29 @@ export class UsersService {
 
   // ===================== Project-Scoped Role Assignment APIs =====================
 
-  async assignRoleInProject(uuid: string, xrefId: string, dto: AssignRoleDto) {
+  async assignRoleInProject(uuid: string, dto: AssignRoleDto) {
     const user = await this.prisma.user.findUnique({ where: { uuid } });
     if (!user) throw ERRORS.USER_NOT_FOUND;
-
+    const { name, xrefId, expiry } = dto;
     const role = await this.prisma.role.findUnique({
-      where: { name: dto.name },
+      where: { name },
     });
     if (!role) throw RSE('Role does not exist!', 'ROLE_NOEXIST', 404);
 
-    return this.prisma.userRole.create({
+    const data = this.prisma.userRole.create({
       data: {
         userId: user.id,
         roleId: role.id,
         xrefId,
-        expiry: dto.expiry ? new Date(dto.expiry) : null,
+        expiry: expiry ? new Date(expiry) : null,
       },
       include: { Role: true },
     });
+    await this.authClient.emit(EVENTS.INVALIDATE_ABILITY_CACHE, {
+      userId: user.uuid,
+      xrefId,
+    });
+    return data;
   }
 
   async listRolesInProject(uuid: string, xrefId: string) {
@@ -639,6 +666,12 @@ export class UsersService {
       throw RSE('Role assignment does not exist!', 'USERROLE_NOEXIST', 404);
 
     await this.prisma.userRole.delete({ where: { id: assignment.id } });
+
+    await this.authClient.emit(EVENTS.INVALIDATE_ABILITY_CACHE, {
+      userId: user.uuid,
+      xrefId,
+    });
+
     return { success: true };
   }
 
@@ -667,7 +700,7 @@ export class UsersService {
     });
     if (!newRole) throw RSE('New role does not exist!', 'ROLE_NOEXIST', 404);
 
-    return this.prisma.userRole.update({
+    const updated = await this.prisma.userRole.update({
       where: { id: assignment.id },
       data: {
         expiry: dto.expiry ? new Date(dto.expiry) : null,
@@ -675,6 +708,13 @@ export class UsersService {
       },
       include: { Role: true },
     });
+
+    await this.authClient.emit(EVENTS.INVALIDATE_ABILITY_CACHE, {
+      userId: user.uuid,
+      xrefId,
+    });
+
+    return updated;
   }
 
   // ===================== User Role Query APIs =====================
@@ -798,7 +838,15 @@ export class UsersService {
     return assignments.map((a) => a.User);
   }
 
-  private _dedupePermissions(perms: { action: string; subject: string; inverted: boolean; conditions: any; reason: string | null }[]) {
+  private _dedupePermissions(
+    perms: {
+      action: string;
+      subject: string;
+      inverted: boolean;
+      conditions: any;
+      reason: string | null;
+    }[],
+  ) {
     const map = new Map<string, object>();
     for (const perm of perms) {
       const key = `${perm.action}:${perm.subject}:${perm.inverted}`;
@@ -820,8 +868,8 @@ export class UsersService {
     const assignments = await this.prisma.userRole.findMany({
       where: {
         userId: user.id,
-        xrefId,
-        OR: [{ expiry: null }, { expiry: { gt: new Date() } }],
+        OR: [{ xrefId }, { xrefId: null }],
+        AND: { OR: [{ expiry: null }, { expiry: { gt: new Date() } }] },
       },
       include: { Role: { include: { Permission: true } } },
     });
@@ -831,53 +879,5 @@ export class UsersService {
     );
 
     return { rules };
-  }
-
-  async getTeamRoster(xrefId: string, page = 1, perPage = 20) {
-    const assignments = await this.prisma.userRole.findMany({
-      where: {
-        xrefId,
-        OR: [{ expiry: null }, { expiry: { gt: new Date() } }],
-      },
-      include: {
-        User: true,
-        Role: { include: { Permission: true } },
-      },
-    });
-
-    const usersMap = new Map<
-      string,
-      {
-        user: User;
-        rawPerms: any[];
-        assignments: object[];
-      }
-    >();
-
-    for (const assignment of assignments) {
-      const uuid = assignment.User.uuid;
-      if (!usersMap.has(uuid)) {
-        usersMap.set(uuid, { user: assignment.User, rawPerms: [], assignments: [] });
-      }
-      const entry = usersMap.get(uuid)!;
-      entry.assignments.push({
-        roleId: assignment.roleId,
-        roleName: assignment.Role.name,
-        expiry: assignment.expiry,
-        assignedAt: assignment.createdAt,
-      });
-      entry.rawPerms.push(...assignment.Role.Permission);
-    }
-
-    const allEntries = Array.from(usersMap.values()).map(({ user, rawPerms, assignments }) => ({
-      ...user,
-      permissions: this._dedupePermissions(rawPerms),
-      assignments,
-    }));
-
-    return getPaginatedResult({
-      data: allEntries,
-      pagination: { page, perPage },
-    });
   }
 }

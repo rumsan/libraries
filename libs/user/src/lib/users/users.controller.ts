@@ -152,14 +152,10 @@ export class UsersController {
 
   // ===================== Project-Scoped Role Assignment APIs =====================
 
-  @Post(':uuid/xrefId/:xrefId/roles')
+  @Post(':uuid/roles/assign')
   @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.USER })
-  assignRoleInProject(
-    @Param('uuid') uuid: string,
-    @Param('xrefId') xrefId: string,
-    @Body() dto: AssignRoleDto,
-  ) {
-    return this.userService.assignRoleInProject(uuid, xrefId, dto);
+  assignRoleInProject(@Param('uuid') uuid: string, @Body() dto: AssignRoleDto) {
+    return this.userService.assignRoleInProject(uuid, dto);
   }
 
   @Get(':uuid/xrefId/:xrefId/roles')
@@ -248,28 +244,12 @@ export class UsersController {
   }
 
   @Get(':uuid/xrefId/:xrefId/abilities')
-  @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
+  @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.PUBLIC })
   getUserAbilitiesInProject(
     @Param('uuid') uuid: string,
     @Param('xrefId') xrefId: string,
   ) {
     return this.userService.getUserAbilitiesInProject(uuid, xrefId);
-  }
-
-  @Get('xrefId/:xrefId/team')
-  @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'perPage', required: false, type: Number })
-  getTeamRoster(
-    @Param('xrefId') xrefId: string,
-    @Query('page') page?: string,
-    @Query('perPage') perPage?: string,
-  ) {
-    return this.userService.getTeamRoster(
-      xrefId,
-      page ? Number(page) : 1,
-      perPage ? Number(perPage) : 20,
-    );
   }
 }
 
