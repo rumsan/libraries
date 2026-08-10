@@ -10,4 +10,9 @@ export class AssignRoleDto {
   @IsOptional()
   @IsDateString()
   expiry?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  xrefId?: string;
 }

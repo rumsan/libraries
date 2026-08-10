@@ -13,11 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
-  AddPermissionDto,
-  BulkAddPermissionsDto,
-  BulkDeletePermissionsDto,
   CreateRoleDto,
-  EditPermissionDto,
   EditRoleDto,
   ListRoleDto,
   SearchPermissionDto,
@@ -61,6 +57,13 @@ export class RolesController {
     );
   }
 
+  // ===================== Project-Centric Query APIs =====================
+  @Get('xref-id/:xref-id')
+  @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
+  listRolesInProject(@Param('xref-id') xrefId: string) {
+    return this.roleService.listRolesInProject(xrefId);
+  }
+
   @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.ROLE })
   @Patch(':name')
   async updateRole(@Param('name') name: string, @Body() dto: EditRoleDto) {
@@ -83,60 +86,5 @@ export class RolesController {
   @Get(':name/permissions')
   async listPermsByRole(@Param('name') name: string) {
     return this.roleService.listPermissionsByRole(name);
-  }
-
-  // ===================== Permission Management APIs =====================
-
-  @CheckAbilities({ actions: ACTIONS.CREATE, subject: SUBJECTS.ROLE })
-  @Post(':name/permissions')
-  @ApiOperation({
-    description:
-      'Add a single permission to a role by providing the role ID and permission details.',
-  })
-  async addPermission(
-    @Param('name') name: string,
-    @Body() dto: AddPermissionDto,
-  ) {
-    return this.roleService.addPermissionToRole(name, dto);
-  }
-
-  @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.ROLE })
-  @Put('permissions/:permissionId')
-  async updatePermission(
-    @Param('permissionId') permissionId: string,
-    @Body() dto: EditPermissionDto,
-  ) {
-    return this.roleService.updatePermission(Number(permissionId), dto);
-  }
-
-  @CheckAbilities({ actions: ACTIONS.DELETE, subject: SUBJECTS.ROLE })
-  @Delete('permissions/:permissionId')
-  async deletePermission(@Param('permissionId') permissionId: string) {
-    return this.roleService.deletePermission(Number(permissionId));
-  }
-
-  @CheckAbilities({ actions: ACTIONS.CREATE, subject: SUBJECTS.ROLE })
-  @Post(':name/permissions/bulk')
-  async bulkAddPermissions(
-    @Param('name') name: string,
-    @Body() dto: BulkAddPermissionsDto,
-  ) {
-    return this.roleService.bulkAddPermissions(name, dto);
-  }
-
-  @CheckAbilities({ actions: ACTIONS.DELETE, subject: SUBJECTS.ROLE })
-  @Delete(':name/permissions/bulk')
-  async bulkDeletePermissions(
-    @Param('name') name: string,
-    @Body() dto: BulkDeletePermissionsDto,
-  ) {
-    return this.roleService.bulkDeletePermissions(name, dto);
-  }
-
-  // ===================== Project-Centric Query APIs =====================
-  @Get('xrefId/:xrefId')
-  @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
-  listRolesInProject(@Param('xrefId') xrefId: string) {
-    return this.roleService.listRolesInProject(xrefId);
   }
 }
