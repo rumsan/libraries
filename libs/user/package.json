@@ -1,6 +1,6 @@
 {
   "name": "@rumsan/user",
-  "version": "3.0.170-rc.11",
+  "version": "3.0.170-rc.12",
   "description": "Rumsan user management library",
   "author": "rumsan.com",
   "license": "AGPL-3.0",
@@ -33,8 +33,12 @@
   },
   "typesVersions": {
     "*": {
-      "ability/ms-rpc-auth": ["./lib/ability/ms-rpc-auth/index.d.ts"],
-      "*": ["./*"]
+      "ability/ms-rpc-auth": [
+        "./lib/ability/ms-rpc-auth/index.d.ts"
+      ],
+      "*": [
+        "./*"
+      ]
     }
   }
 }
