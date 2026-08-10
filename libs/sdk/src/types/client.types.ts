@@ -16,7 +16,7 @@ import {
   SearchPermission,
 } from './role.types';
 import { Setting, SettingList } from './setting.types';
-import { User, UserRole } from './user.types';
+import { AssignRole, ListUser, UpdateRoleAssignment, User, UserRole } from './user.types';
 import { WalletLogin } from './walletLogin.types';
 
 export type AppClient = {
@@ -72,6 +72,10 @@ export type RoleClient = {
     name: string,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<Permission[]>>;
+  listRolesInProject: (
+    xrefId: string,
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<any>>;
 };
 
 export type SettingClient = {
@@ -112,7 +116,7 @@ export type UserClient = {
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<User>>;
   listUsers: (
-    data?: Pagination,
+    data?: ListUser,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<User[]>>;
   getMe: (config?: AxiosRequestConfig) => Promise<FormattedResponse<User>>;
@@ -134,4 +138,57 @@ export type UserClient = {
     roles: string[],
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<UserRole[]>>;
+  assignRoleInProject: (
+    uuid: string,
+    data: AssignRole,
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<any>>;
+  listRolesInProject: (
+    uuid: string,
+    xrefId: string,
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<any>>;
+  removeRoleInProject: (
+    uuid: string,
+    xrefId: string,
+    name: string,
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<any>>;
+  updateRoleAssignmentInProject: (
+    uuid: string,
+    xrefId: string,
+    name: string,
+    data: UpdateRoleAssignment,
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<any>>;
+  listActiveRoles: (
+    uuid: string,
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<any>>;
+  listAllPermissions: (
+    uuid: string,
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<any>>;
+  listPermissionsInProject: (
+    uuid: string,
+    xrefId: string,
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<any>>;
+  listUsersInProject: (
+    xrefId: string,
+    name?: string,
+    includeExpired?: boolean,
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<any>>;
+  listUsersByRoleInProject: (
+    xrefId: string,
+    name: string,
+    includeExpired?: boolean,
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<any>>;
+  getUserAbilitiesInProject: (
+    uuid: string,
+    xrefId: string,
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<any>>;
 };

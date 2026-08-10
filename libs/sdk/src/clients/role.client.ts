@@ -58,5 +58,12 @@ export const getRoleClient = (client: AxiosInstance): RoleClient => {
       const response = await client.get(`/roles/${name}/permissions`, config);
       return formatResponse<Permission[]>(response);
     },
+    listRolesInProject: async (
+      xrefId: string,
+      config?: AxiosRequestConfig,
+    ) => {
+      const response = await client.get(`/roles/xref-id/${xrefId}`, config);
+      return formatResponse(response);
+    },
   };
 };
