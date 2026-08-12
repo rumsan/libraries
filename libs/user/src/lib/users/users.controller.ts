@@ -207,32 +207,32 @@ export class UsersController {
     return this.userService.listAllPermissions(uuid);
   }
 
-  @Get(':uuid/xref-id/:xref-id/permissions')
+  @Get(':uuid/xref-id/:xrefId/permissions')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
   listPermissionsInProject(
     @Param('uuid') uuid: string,
-    @Param('xref-id') xrefId: string,
+    @Param('xrefId') xrefId: string,
   ) {
     return this.userService.listPermissionsInProject(uuid, xrefId);
   }
   // ===================== Project-Centric Query APIs =====================
-  @Get('xref-id/:xref-id')
+  @Get('xref-id/:xrefId')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
   @ApiQuery({ name: 'name', required: false, type: String })
   @ApiQuery({ name: 'includeExpired', required: false, type: Boolean })
   listUsersInProject(
-    @Param('xref-id') xrefId: string,
+    @Param('xrefId') xrefId: string,
     @Query('name') name?: string,
     @Query('includeExpired') includeExpired?: boolean,
   ) {
     return this.userService.listUsersInProject(xrefId, name, includeExpired);
   }
 
-  @Get('xref-id/:xref-id/roles/:name')
+  @Get('xref-id/:xrefId/roles/:name')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
   @ApiQuery({ name: 'includeExpired', required: false, type: Boolean })
   listUsersByRoleInProject(
-    @Param('xref-id') xrefId: string,
+    @Param('xrefId') xrefId: string,
     @Param('name') name: string,
     @Query('includeExpired') includeExpired?: boolean,
   ) {
@@ -243,11 +243,11 @@ export class UsersController {
     );
   }
 
-  @Get(':uuid/xref-id/:xref-id/abilities')
+  @Get(':uuid/xref-id/:xrefId/abilities')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.PUBLIC })
   getUserAbilitiesInProject(
     @Param('uuid') uuid: string,
-    @Param('xref-id') xrefId: string,
+    @Param('xrefId') xrefId: string,
   ) {
     return this.userService.getUserAbilitiesInProject(uuid, xrefId);
   }

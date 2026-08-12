@@ -58,9 +58,9 @@ export class RolesController {
   }
 
   // ===================== Project-Centric Query APIs =====================
-  @Get('xref-id/:xref-id')
+  @Get('xref-id/:xrefId')
   @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
-  listRolesInProject(@Param('xref-id') xrefId: string) {
+  listRolesInProject(@Param('xrefId') xrefId: string) {
     return this.roleService.listRolesInProject(xrefId);
   }
 
