@@ -1,6 +1,8 @@
 import { Permission } from '@prisma/client';
+import { AbilityAction } from '../ability/ability.actions';
 import { AbilitySubject } from '../ability/ability.subjects';
 import { ERRORS } from '../constants';
+import { RSE } from '../constants/errors';
 import { PermissionSet } from '../interfaces';
 
 export function isPermissionSet(variable: any): variable is PermissionSet {
@@ -11,8 +13,8 @@ export function isPermissionSet(variable: any): variable is PermissionSet {
   for (const key in variable) {
     if (
       !Array.isArray(variable[key]) ||
-      !variable[key].every((value: any) =>
-        ['manage', 'create', 'read', 'update', 'delete'].includes(value),
+      !variable[key].every(
+        (value: any) => AbilityAction.checkForValidActions(value).isValid,
       )
     ) {
       return false;
@@ -33,10 +35,20 @@ export function checkPermissionSet(permissions: PermissionSet) {
   return AbilitySubject.checkForValidSubjects(Object.keys(permissions));
 }
 
+export function assertValidPermissionSet(permissions: PermissionSet) {
+  const { isValid, validSubjects } = checkPermissionSet(permissions);
+  if (!isValid)
+    throw RSE(
+      `Invalid permission set. Valid subjects are {{validSubjects}}.`,
+      'PERMISSION_SET_INVALID',
+      400,
+      { validSubjects: validSubjects.join(', ') },
+    );
+}
+
 export function convertToPermissionSet(permissions: Permission[]): {
   [subject: string]: string[];
 } {
-  console.log(permissions);
   const result: { [subject: string]: string[] } = {};
 
   permissions.forEach((permission) => {

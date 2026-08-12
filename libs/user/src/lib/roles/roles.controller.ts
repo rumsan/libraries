@@ -6,11 +6,12 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   CreateRoleDto,
   EditRoleDto,
@@ -54,6 +55,13 @@ export class RolesController {
       permissionQuery.action,
       permissionQuery.subject,
     );
+  }
+
+  // ===================== Project-Centric Query APIs =====================
+  @Get('xref-id/:xrefId')
+  @CheckAbilities({ actions: ACTIONS.READ, subject: SUBJECTS.USER })
+  listRolesInProject(@Param('xrefId') xrefId: string) {
+    return this.roleService.listRolesInProject(xrefId);
   }
 
   @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.ROLE })

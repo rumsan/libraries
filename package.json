@@ -19,7 +19,10 @@
   },
   "scripts": {
     "format": "prettier --write \"libs/**/*.ts\" \"apps/**/*.ts\"",
-    "build:all": "nx run-many --target=build --all"
+    "build:all": "nx run-many --target=build --all",
+    "dev:sample": "nx serve sample",
+    "migrate:dev": "prisma migrate dev",
+    "seed:dev": "prisma db seed"
   },
   "private": true,
   "dependencies": {
