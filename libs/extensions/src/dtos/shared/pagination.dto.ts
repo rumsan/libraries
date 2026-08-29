@@ -5,18 +5,20 @@ import { IsIn, IsNumber, IsOptional, IsString } from 'class-validator';
 export class PaginationDto {
   @ApiProperty({
     example: 1,
-    description: 'page number',
+    description: 'Page number',
     required: false,
   })
+  @IsOptional()
   @Type(() => Number)
   @IsNumber()
   page?: number = 1;
 
   @ApiProperty({
     example: 10,
-    description: 'number of items per page',
+    description: 'Number of items per page',
     required: false,
   })
+  @IsOptional()
   @Type(() => Number)
   @IsNumber()
   perPage?: number = 20;
