@@ -15,6 +15,7 @@ import { ApiBearerAuth, ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ApiUuidParam, RequestDetails } from '@rumsan/extensions/decorators';
 import {
   AssignRoleDto,
+  BulkAssignRoleDto,
   CreateUserDto,
   ListUserDto,
   UpdateRoleAssignmentDto,
@@ -153,9 +154,20 @@ export class UsersController {
   // ===================== Project-Scoped Role Assignment APIs =====================
 
   @Post(':uuid/roles/assign')
+  @ApiBody({ type: AssignRoleDto })
   @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.USER })
   assignRoleInProject(@Param('uuid') uuid: string, @Body() dto: AssignRoleDto) {
     return this.userService.assignRoleInProject(uuid, dto);
+  }
+
+  @Post(':uuid/roles/bulk-assign')
+  @ApiBody({ type: BulkAssignRoleDto })
+  @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.USER })
+  bulkAssignRolesToUser(
+    @Param('uuid') uuid: string,
+    @Body() dto: BulkAssignRoleDto,
+  ) {
+    return this.userService.bulkAssignRolesToUser(uuid, dto.roles);
   }
 
   @Get(':uuid/xref-id/:xref-id/roles')

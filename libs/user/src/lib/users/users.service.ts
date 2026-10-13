@@ -640,6 +640,82 @@ export class UsersService {
     return data;
   }
 
+  async bulkAssignRolesToUser(uuid: string, dtos: AssignRoleDto[]) {
+    const user = await this.prisma.user.findUnique({ where: { uuid } });
+    if (!user) throw ERRORS.USER_NOT_FOUND;
+
+    const roleNames = dtos.map((dto) => dto.name);
+    const roles = await this.prisma.role.findMany({
+      where: { name: { in: roleNames } },
+    });
+    const roleByName = new Map(roles.map((role) => [role.name, role]));
+
+    const missingRole = roleNames.find((name) => !roleByName.has(name));
+    if (missingRole) throw RSE('Role does not exist!', 'ROLE_NOEXIST', 404);
+
+    const seen = new Set<string>();
+    for (const dto of dtos) {
+      const key = `${dto.name}@${dto.xrefId ?? ''}`;
+      if (seen.has(key)) {
+        throw RSE(
+          `Duplicate role assignment in request: ${dto.name}${
+            dto.xrefId ? `@${dto.xrefId}` : ''
+          }`,
+          'USERROLE_DUPLICATE_IN_REQUEST',
+          400,
+        );
+      }
+      seen.add(key);
+    }
+
+    const existing = await this.prisma.userRole.findMany({
+      where: {
+        userId: user.id,
+        OR: dtos.map((dto) => ({
+          roleId: roleByName.get(dto.name)!.id,
+          xrefId: dto.xrefId ?? null,
+        })),
+      },
+      include: { Role: true },
+    });
+    if (existing.length) {
+      const duplicates = existing
+        .map((e) => `${e.Role.name}${e.xrefId ? `@${e.xrefId}` : ''}`)
+        .join(', ');
+      throw RSE(
+        `Role(s) already assigned: ${duplicates}`,
+        'USERROLE_EXISTS',
+        409,
+      );
+    }
+
+    const created = await this.prisma.$transaction(
+      dtos.map((dto) =>
+        this.prisma.userRole.create({
+          data: {
+            userId: user.id,
+            roleId: roleByName.get(dto.name)!.id,
+            xrefId: dto.xrefId,
+            expiry: dto.expiry ? new Date(dto.expiry) : null,
+          },
+          include: { Role: true },
+        }),
+      ),
+    );
+
+    const xrefIds = [...new Set(dtos.map((dto) => dto.xrefId))];
+    await Promise.all(
+      xrefIds.map((xrefId) =>
+        this.authClient.emit(EVENTS.INVALIDATE_ABILITY_CACHE, {
+          userId: user.uuid,
+          xrefId,
+        }),
+      ),
+    );
+
+    return created;
+  }
+
   async listRolesInProject(uuid: string, xrefId: string) {
     const user = await this.prisma.user.findUnique({ where: { uuid } });
     if (!user) throw ERRORS.USER_NOT_FOUND;
