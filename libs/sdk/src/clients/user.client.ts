@@ -1,6 +1,6 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { UUID } from 'crypto';
-import { AssignRole, ListUser, UpdateRoleAssignment, User, UserRole } from '../types';
+import { AssignRole, BulkAssignRole, ListUser, UpdateRoleAssignment, User, UserRole } from '../types';
 import { UserClient } from '../types/client.types';
 import { formatResponse } from '../utils/formatResponse.utils';
 
@@ -73,6 +73,18 @@ export const getUserClient = (client: AxiosInstance): UserClient => {
     ) => {
       const response = await client.post(
         `/users/${uuid}/roles/assign`,
+        data,
+        config,
+      );
+      return formatResponse(response);
+    },
+    bulkAssignRolesToUser: async (
+      uuid: string,
+      data: BulkAssignRole,
+      config?: AxiosRequestConfig,
+    ) => {
+      const response = await client.post(
+        `/users/${uuid}/roles/bulk-assign`,
         data,
         config,
       );
