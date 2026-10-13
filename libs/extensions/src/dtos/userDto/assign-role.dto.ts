@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  ArrayMinSize,
+  IsArray,
+  IsDateString,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 export class AssignRoleDto {
   @ApiProperty({ example: 'admin' })
@@ -15,4 +23,13 @@ export class AssignRoleDto {
   @IsOptional()
   @IsString()
   xrefId?: string;
+}
+
+export class BulkAssignRoleDto {
+  @ApiProperty({ type: [AssignRoleDto] })
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => AssignRoleDto)
+  roles: AssignRoleDto[];
 }

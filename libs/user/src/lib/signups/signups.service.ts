@@ -35,40 +35,69 @@ export class SignupsService {
   async signup(
     dto: SignupEmailDto | SignupPhoneDto | SignupWalletDto | SignupPasswordDto,
   ) {
+    // Determine the signup kind by shape rather than `instanceof`, since callers
+    // (e.g. downstream services invoking this method directly) may pass plain
+    // objects instead of real DTO class instances, which would fail `instanceof`
+    // and silently fall through to the wrong branch below.
+    const isPasswordSignup =
+      dto instanceof SignupPasswordDto ||
+      'password' in dto ||
+      'confirmPassword' in dto;
+    const isPhoneSignup =
+      !isPasswordSignup &&
+      (dto instanceof SignupPhoneDto ||
+        ('phone' in dto && !('email' in dto) && !('wallet' in dto)));
+    const isWalletSignup =
+      !isPasswordSignup &&
+      (dto instanceof SignupWalletDto || 'wallet' in dto);
+
     // Validate password signup
-    if (dto instanceof SignupPasswordDto) {
+    if (isPasswordSignup) {
+      const passwordDto = dto as SignupPasswordDto;
       // Check password confirmation
-      if (dto.password !== dto.confirmPassword) {
+      if (passwordDto.password !== passwordDto.confirmPassword) {
         throw new Error('Passwords do not match');
       }
     }
 
     let authIdentifier: { service: Service; serviceId: string };
-    if (dto instanceof SignupPhoneDto)
-      authIdentifier = { service: Service.PHONE, serviceId: dto.phone };
-    else if (dto instanceof SignupWalletDto)
-      authIdentifier = { service: Service.WALLET, serviceId: dto.wallet };
-    else if (dto instanceof SignupPasswordDto) {
+    if (isPhoneSignup) {
+      const phoneDto = dto as SignupPhoneDto;
+      authIdentifier = { service: Service.PHONE, serviceId: phoneDto.phone };
+    } else if (isWalletSignup) {
+      const walletDto = dto as SignupWalletDto;
+      authIdentifier = { service: Service.WALLET, serviceId: walletDto.wallet };
+    } else if (isPasswordSignup) {
+      const passwordDto = dto as SignupPasswordDto;
       // Check for username first, then email/phone
-      if (dto.username) {
-        authIdentifier = { service: Service.USERNAME, serviceId: dto.username };
-        console.log(
-          authIdentifier,
-          'auth identifier for password signup with username',
-        );
+      if (passwordDto.username) {
+        authIdentifier = {
+          service: Service.USERNAME,
+          serviceId: passwordDto.username,
+        };
       } else {
         // Validate that at least one identifier is provided
-        if (!dto.email && !dto.phone) {
+        if (!passwordDto.email && !passwordDto.phone) {
           throw new Error(
             'At least one of username, email, or phone is required',
           );
         }
         authIdentifier = {
-          service: dto.service,
-          serviceId: dto.service === Service.EMAIL ? dto.email! : dto.phone!,
+          service: passwordDto.service,
+          serviceId:
+            passwordDto.service === Service.EMAIL
+              ? passwordDto.email!
+              : passwordDto.phone!,
         };
       }
-    } else authIdentifier = { service: Service.EMAIL, serviceId: dto.email };
+    } else {
+      const emailDto = dto as SignupEmailDto;
+      authIdentifier = { service: Service.EMAIL, serviceId: emailDto.email };
+    }
+
+    if (!authIdentifier.serviceId) {
+      throw new Error('A valid username, email, phone, or wallet is required');
+    }
 
     // Safely extract possible identifiers from the DTO
     const username = (dto as any).username;
