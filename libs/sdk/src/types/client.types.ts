@@ -16,7 +16,7 @@ import {
   SearchPermission,
 } from './role.types';
 import { Setting, SettingList } from './setting.types';
-import { AssignRole, ListUser, UpdateRoleAssignment, User, UserRole } from './user.types';
+import { AssignRole, BulkAssignRole, ListUser, UpdateRoleAssignment, User, UserRole } from './user.types';
 import { WalletLogin } from './walletLogin.types';
 
 export type AppClient = {
@@ -141,6 +141,11 @@ export type UserClient = {
   assignRoleInProject: (
     uuid: string,
     data: AssignRole,
+    config?: AxiosRequestConfig,
+  ) => Promise<FormattedResponse<any>>;
+  bulkAssignRolesToUser: (
+    uuid: string,
+    data: BulkAssignRole,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<any>>;
   listRolesInProject: (

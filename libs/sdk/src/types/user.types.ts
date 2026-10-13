@@ -41,6 +41,10 @@ export type AssignRole = {
   xrefId?: string;
 };
 
+export type BulkAssignRole = {
+  roles: AssignRole[];
+};
+
 export type UpdateRoleAssignment = {
   name: string;
   expiry?: string;
