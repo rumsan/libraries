@@ -15,5 +15,26 @@
     }
   ],
   "main": "./index.js",
-  "types": "./index.d.ts"
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./ability/ms-rpc-auth": {
+      "types": "./lib/ability/ms-rpc-auth/index.d.ts",
+      "default": "./lib/ability/ms-rpc-auth/index.js"
+    },
+    "./package.json": "./package.json",
+    "./*": {
+      "types": "./*.d.ts",
+      "default": "./*.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "ability/ms-rpc-auth": ["./lib/ability/ms-rpc-auth/index.d.ts"],
+      "*": ["./*"]
+    }
+  }
 }

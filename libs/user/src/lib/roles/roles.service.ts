@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { Permission, Prisma, PrismaClient, Role } from '@prisma/client';
+import { Inject, Injectable } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
+import { Prisma, PrismaClient, Role } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 import {
   CreateRoleDto,
@@ -8,11 +9,12 @@ import {
 } from '@rumsan/extensions/dtos';
 import { PaginatorTypes, PrismaService, paginator } from '@rumsan/prisma';
 import { StringUtils } from '@rumsan/sdk/utils';
-import { ERRORS } from '../constants';
+import { AUTH_SERVICE_CLIENT } from '../ability/ms-rpc-auth';
+import { ERRORS, EVENTS } from '../constants';
 import { RSE } from '../constants/errors';
 import { PermissionSet } from '../interfaces';
 import {
-  checkPermissionSet,
+  assertValidPermissionSet,
   convertToPermissionSet,
 } from '../utils/permission.utils';
 
@@ -24,23 +26,19 @@ type PrismaClientType = Omit<
 
 @Injectable()
 export class RolesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(AUTH_SERVICE_CLIENT)
+    private readonly authClient: ClientProxy,
+  ) {}
 
   async create(dto: CreateRoleDto) {
     if (!StringUtils.isValidString(dto.name)) throw ERRORS.ROLE_NAME_INVALID;
     const { permissions, ...data } = dto;
-    const { isValid, validSubjects } = checkPermissionSet(permissions);
-    if (!isValid)
-      throw RSE(
-        `Invalid permission set. Valid subjects are {{validSubjects}}.`,
-        'PERMISSION_SET_INVALID',
-        400,
-        { validSubjects: validSubjects.join(', ') },
-      );
+    assertValidPermissionSet(permissions);
 
     return this.prisma.$transaction(async (prisma) => {
       const role = await prisma.role.create({ data });
-      console.log(role);
       await this._addPermissionsToRole(role.id, permissions, prisma);
 
       return role;
@@ -48,7 +46,7 @@ export class RolesService {
   }
 
   async update(roleName: string, dto: EditRoleDto) {
-    return this.prisma.$transaction(async (prisma) => {
+    const result = await this.prisma.$transaction(async (prisma) => {
       const { role: existingRole } = await this.getRoleByName(roleName);
       const { permissions, ...data } = dto;
 
@@ -60,6 +58,8 @@ export class RolesService {
 
       // If permissions are provided, update them
       if (permissions) {
+        assertValidPermissionSet(permissions);
+
         // Delete existing permissions
         await prisma.permission.deleteMany({
           where: { roleId: existingRole.id },
@@ -71,15 +71,30 @@ export class RolesService {
       return {
         role: updatedRole,
         permissions: await this._getPermissionsByRoleId(updatedRole.id, prisma),
+        permissionsChanged: !!permissions,
       };
     });
+
+    if (result.permissionsChanged) {
+      await this.authClient.emit(EVENTS.INVALIDATE_ABILITY_CACHE_BY_ROLE, {
+        roleName: result.role.name,
+      });
+    }
+
+    return { role: result.role, permissions: result.permissions };
   }
 
   async delete(name: string) {
-    return this.prisma.$transaction(async (prisma) => {
+    const role = await this.prisma.$transaction(async (prisma) => {
       const { role } = await this.getRoleByName(name);
       if (role.isSystem)
         throw RSE('System roles cannot be deleted.', 'ROLE_SYS_NODELETE', 401);
+
+      if (role.UserRole.length) {
+        throw RSE(
+          'Cannot delete this role because it is assigned to users. Please remove the role assignment first',
+        );
+      }
 
       // Delete existing permissions
       await prisma.permission.deleteMany({
@@ -88,6 +103,7 @@ export class RolesService {
 
       return prisma.role.delete({ where: { id: role.id, isSystem: false } });
     });
+    return role;
   }
 
   async list(dto: ListRoleDto): Promise<PaginatorTypes.PaginatedResult<Role>> {
@@ -111,8 +127,12 @@ export class RolesService {
   }
 
   async getRoleByName(name: string, includePermissions = false) {
-    const role = await this.prisma.role.findUnique({ where: { name } });
+    const role = await this.prisma.role.findUnique({
+      where: { name },
+      include: { UserRole: true },
+    });
     if (!role) throw RSE('Roles does not exist!', 'ROLE_NOEXIST', 404);
+
     if (includePermissions) {
       const permissions = await this._getPermissionsByRoleId(role.id);
       return { role, permissions };
@@ -196,12 +216,18 @@ export class RolesService {
     });
   }
 
-  _addPermissionToRole(
-    permission: Pick<Permission, 'roleId' | 'action' | 'subject'>,
-    prisma: PrismaClientType = this.prisma,
-  ) {
-    return prisma.permission.create({
-      data: permission,
+  async listRolesInProject(xrefId: string) {
+    return this.prisma.userRole.findMany({
+      where: { xrefId },
+      select: {
+        Role: {
+          select: {
+            name: true,
+            isSystem: true,
+          },
+        },
+      },
+      distinct: ['roleId'],
     });
   }
 }

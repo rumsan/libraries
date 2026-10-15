@@ -17,6 +17,7 @@ import {
 } from '@rumsan/user';
 import { APP_SUBJECTS } from '../constants';
 import { ERRORS } from '../constants/errors';
+import { AuthClientModule } from '../auth-client/auth-client.module';
 import { ListenerModule } from '../listener/listener.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -31,6 +32,7 @@ import { AppService } from './app.service';
     ListenerModule,
     PrismaModule,
     AppUsersModule,
+    AuthClientModule,
     RSUserModule.forRoot([
       UsersModule,
       AuthsModule,

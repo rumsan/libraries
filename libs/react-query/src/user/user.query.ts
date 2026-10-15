@@ -132,8 +132,15 @@ export const useUserRolesRemove = () => {
 
   return useMutation(
     {
-      mutationFn: ({ roles, uuid }: { uuid: UUID; roles: string[] }) =>
-        rumsanService.user.removeRoles(uuid, roles),
+      mutationFn: ({
+        roles,
+        uuid,
+        xrefId,
+      }: {
+        uuid: UUID;
+        roles: string[];
+        xrefId?: string;
+      }) => rumsanService.user.removeRoles(uuid, roles, xrefId),
       onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: [TAGS.GET_USER_ROLES],
