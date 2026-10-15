@@ -370,7 +370,12 @@ export class UsersService {
     return this.listRoles(uuid, prisma);
   }
 
-  async removeRoles(uuid: UUID, roles: string[], prisma?: PrismaClientType) {
+  async removeRoles(
+    uuid: UUID,
+    roles: string[],
+    xrefId?: string,
+    prisma?: PrismaClientType,
+  ) {
     if (!prisma) prisma = this.prisma;
     const getValidRoles = await prisma.role.findMany({
       where: { name: { in: roles, mode: 'insensitive' } },
@@ -382,23 +387,20 @@ export class UsersService {
     if (!user) throw ERRORS.USER_NOT_FOUND;
 
     const roleIds = getValidRoles.map((role) => role.id);
-    const userRoles = await prisma.userRole.findMany({
-      where: { userId: user.id, roleId: { in: roleIds } },
-    });
+    const where = xrefId
+      ? { userId: user.id, roleId: { in: roleIds }, xrefId }
+      : { userId: user.id, roleId: { in: roleIds }, xrefId: null };
 
-    await prisma.userRole.deleteMany({
-      where: {
-        userId: user.id,
-        roleId: { in: roleIds },
-      },
-    });
+    const userRoles = await prisma.userRole.findMany({ where });
+
+    await prisma.userRole.deleteMany({ where });
 
     const xrefIds = [...new Set(userRoles.map((userRole) => userRole.xrefId))];
     await Promise.all(
-      xrefIds.map((xrefId) =>
+      xrefIds.map((xref) =>
         this.authClient.emit(EVENTS.INVALIDATE_ABILITY_CACHE, {
           userId: user.uuid,
-          xrefId,
+          xrefId: xref,
         }),
       ),
     );
@@ -724,31 +726,6 @@ export class UsersService {
       where: { userId: user.id, xrefId },
       include: { Role: true },
     });
-  }
-
-  async removeRoleInProject(uuid: string, xrefId: string, name: string) {
-    const user = await this.prisma.user.findUnique({ where: { uuid } });
-    if (!user) throw ERRORS.USER_NOT_FOUND;
-
-    const role = await this.prisma.role.findUnique({
-      where: { name },
-    });
-    if (!role) throw RSE('Role does not exist!', 'ROLE_NOEXIST', 404);
-
-    const assignment = await this.prisma.userRole.findFirst({
-      where: { userId: user.id, roleId: role.id, xrefId },
-    });
-    if (!assignment)
-      throw RSE('Role assignment does not exist!', 'USERROLE_NOEXIST', 404);
-
-    await this.prisma.userRole.delete({ where: { id: assignment.id } });
-
-    await this.authClient.emit(EVENTS.INVALIDATE_ABILITY_CACHE, {
-      userId: user.uuid,
-      xrefId,
-    });
-
-    return { success: true };
   }
 
   async updateRoleAssignmentInProject(

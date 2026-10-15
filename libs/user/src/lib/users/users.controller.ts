@@ -18,6 +18,7 @@ import {
   BulkAssignRoleDto,
   CreateUserDto,
   ListUserDto,
+  RemoveRolesDto,
   UpdateRoleAssignmentDto,
   UpdateUserDto,
 } from '@rumsan/extensions/dtos';
@@ -136,19 +137,11 @@ export class UsersController {
   }
 
   @ApiUuidParam()
-  @ApiBody({
-    schema: {
-      type: 'array',
-      example: ['admin', 'user'],
-      items: {
-        type: 'string',
-      },
-    },
-  })
+  @ApiBody({ type: RemoveRolesDto })
   @Delete(':uuid/roles')
   @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.USER })
-  removeRoles(@Param('uuid') uuid: UUID, @Body() roles: string[]) {
-    return this.userService.removeRoles(uuid, roles);
+  removeRoles(@Param('uuid') uuid: UUID, @Body() dto: RemoveRolesDto) {
+    return this.userService.removeRoles(uuid, dto.roles, dto.xrefId);
   }
 
   // ===================== Project-Scoped Role Assignment APIs =====================
@@ -177,16 +170,6 @@ export class UsersController {
     @Param('xref-id') xrefId: string,
   ) {
     return this.userService.listRolesInProject(uuid, xrefId);
-  }
-
-  @Delete(':uuid/xref-id/:xref-id/roles/:name')
-  @CheckAbilities({ actions: ACTIONS.UPDATE, subject: SUBJECTS.USER })
-  removeRoleInProject(
-    @Param('uuid') uuid: string,
-    @Param('xref-id') xrefId: string,
-    @Param('name') name: string,
-  ) {
-    return this.userService.removeRoleInProject(uuid, xrefId, name);
   }
 
   @Put(':uuid/xref-id/:xref-id/roles/:name')
