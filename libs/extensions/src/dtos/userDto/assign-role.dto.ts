@@ -33,3 +33,16 @@ export class BulkAssignRoleDto {
   @Type(() => AssignRoleDto)
   roles: AssignRoleDto[];
 }
+
+export class RemoveRolesDto {
+  @ApiProperty({ example: ['admin', 'user'], type: [String] })
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsString({ each: true })
+  roles: string[];
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  xrefId?: string;
+}

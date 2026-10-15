@@ -136,6 +136,7 @@ export type UserClient = {
   removeRoles: (
     uuid: UUID,
     roles: string[],
+    xrefId?: string,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<UserRole[]>>;
   assignRoleInProject: (
@@ -151,12 +152,6 @@ export type UserClient = {
   listRolesInProject: (
     uuid: string,
     xrefId: string,
-    config?: AxiosRequestConfig,
-  ) => Promise<FormattedResponse<any>>;
-  removeRoleInProject: (
-    uuid: string,
-    xrefId: string,
-    name: string,
     config?: AxiosRequestConfig,
   ) => Promise<FormattedResponse<any>>;
   updateRoleAssignmentInProject: (

@@ -57,11 +57,12 @@ export const getUserClient = (client: AxiosInstance): UserClient => {
     removeRoles: async (
       uuid: UUID,
       roles: string[],
+      xrefId?: string,
       config?: AxiosRequestConfig,
     ) => {
       const response = await client.delete(`/users/${uuid}/roles`, {
         ...config,
-        data: roles,
+        data: { roles, xrefId },
       });
       return formatResponse<UserRole[]>(response);
     },
@@ -97,18 +98,6 @@ export const getUserClient = (client: AxiosInstance): UserClient => {
     ) => {
       const response = await client.get(
         `/users/${uuid}/xref-id/${xrefId}/roles`,
-        config,
-      );
-      return formatResponse(response);
-    },
-    removeRoleInProject: async (
-      uuid: string,
-      xrefId: string,
-      name: string,
-      config?: AxiosRequestConfig,
-    ) => {
-      const response = await client.delete(
-        `/users/${uuid}/xref-id/${xrefId}/roles/${name}`,
         config,
       );
       return formatResponse(response);
