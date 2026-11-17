@@ -5,23 +5,26 @@
 
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { NestFastifyApplication } from '@nestjs/platform-fastify';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { RsExceptionFilter } from '@rumsan/extensions/exceptions';
 import { ResponseTransformInterceptor } from '@rumsan/extensions/interceptors';
+import { getTrustProxy } from '@rumsan/extensions/utilities';
 import { WinstonModule } from 'nest-winston';
 import { AppModule } from './app/app.module';
 import { APP } from './constants';
 import { loggerInstance } from './logger/winston.logger';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestFastifyApplication>(AppModule, {
+  // No adapter is passed, so Nest runs on Express.
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: WinstonModule.createLogger({
       instance: loggerInstance,
     }),
   });
   const globalPrefix = 'v1';
+  app.set('trust proxy', getTrustProxy());
   app.enableCors();
 
   //must have this if you want to implicit conversion of string to number in dto

@@ -37,6 +37,7 @@
     "@nestjs/platform-express": "^10.4.4",
     "@nestjs/platform-fastify": "^10.4.4",
     "@nestjs/swagger": "^7.4.2",
+    "@nestjs/throttler": "6.7.1",
     "@paralleldrive/cuid2": "^2.2.2",
     "@prisma/client": "5.20.0",
     "@rumsan/communication": "^0.0.24",

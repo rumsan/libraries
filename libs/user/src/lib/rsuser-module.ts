@@ -1,13 +1,34 @@
-import { DynamicModule, Global, Module } from '@nestjs/common';
-// import { RumsanAppModule } from '@rumsan/extensions/apps';
-// import { AbilitySubject } from './ability/ability.subjects';
+import {
+  DynamicModule,
+  Global,
+  Module,
+  OnApplicationBootstrap,
+} from '@nestjs/common';
+import { HttpAdapterHost } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
 import { RSExceptionModule } from '@rumsan/extensions/exceptions';
+import { RS_AUTH_THROTTLERS } from './auths/throttle/auth-throttle';
+import { assertTrustProxyConfigured } from './auths/throttle/trust-proxy.check';
 import { ERRORS } from './constants';
+
+export interface RSUserModuleOptions {
+  /** Rate limit config for auth routes (required, defaults to RS_AUTH_THROTTLERS). */
+  throttler?: ThrottlerModuleOptions;
+}
 
 @Global()
 @Module({})
-export class RSUserModule {
-  static forRoot(modules: any[]): DynamicModule {
+export class RSUserModule implements OnApplicationBootstrap {
+  constructor(private readonly adapterHost: HttpAdapterHost) {}
+
+  onApplicationBootstrap() {
+    assertTrustProxyConfigured(this.adapterHost.httpAdapter);
+  }
+
+  static forRoot(
+    modules: any[],
+    options: RSUserModuleOptions = {},
+  ): DynamicModule {
     modules.map((module) => {
       let moduleName = module?.module?.name;
       if (!moduleName) {
@@ -35,6 +56,7 @@ export class RSUserModule {
       imports: [
         //SignupModule.forRoot({ autoApprove: false }),
         RSExceptionModule.forRoot({ errorSet: ERRORS }),
+        ThrottlerModule.forRoot(options.throttler ?? RS_AUTH_THROTTLERS),
         // RumsanAppModule.forRoot({
         //   controllers: {
         //     subjects: AbilitySubject.list,
