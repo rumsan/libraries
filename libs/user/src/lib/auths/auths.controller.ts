@@ -18,6 +18,7 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { RequestDetails } from '@rumsan/extensions/decorators';
 import {
   ChallengeDto,
@@ -38,24 +39,35 @@ import { CurrentUser } from './decorator/current-user.decorator';
 import { JwtGuard } from './guard/jwt.guard';
 import { LocalAuthGuard } from './guard/local.guard';
 import { CurrentUserInterface } from './interfaces/current-user.interface';
+import {
+  envLimit,
+  ONE_MINUTE_MS,
+  ThrottleTarget,
+} from './throttle/auth-throttle';
+import { AuthThrottlerGuard } from './throttle/auth-throttler.guard';
 
 @Controller('auth')
 @ApiTags('Auth')
 export class AuthsController {
   constructor(private authService: AuthsService) {}
 
+  @UseGuards(AuthThrottlerGuard)
   @HttpCode(HttpStatus.OK)
   @Post('login')
   loginOtp(@Body() dto: OtpLoginDto, @RequestDetails() rdetails: RequestType) {
     return this.authService.loginByOtp(dto, rdetails);
   }
 
+  @UseGuards(AuthThrottlerGuard)
+  @Throttle({ default: { limit: 30, ttl: ONE_MINUTE_MS } })
+  @ThrottleTarget('address', 5, 15 * ONE_MINUTE_MS)
   @HttpCode(HttpStatus.OK)
   @Post('otp')
   getOtp(@Body() dto: OtpDto, @RequestDetails() rdetails: RequestType) {
     return this.authService.getOtp(dto, rdetails);
   }
 
+  @UseGuards(AuthThrottlerGuard)
   @Post('wallet')
   walletLogin(
     @Body() dto: WalletLoginDto,
@@ -64,6 +76,13 @@ export class AuthsController {
     return this.authService.loginByWallet(dto, rdetails);
   }
 
+  @UseGuards(AuthThrottlerGuard)
+  @Throttle({
+    default: {
+      limit: envLimit('RATE_LIMIT_AUTH', 60),
+      ttl: ONE_MINUTE_MS,
+    },
+  })
   @Post('challenge')
   getChallenge(
     @Body() dto: ChallengeDto,
@@ -73,7 +92,8 @@ export class AuthsController {
   }
 
   // Password authentication endpoints
-  @UseGuards(LocalAuthGuard)
+  // AuthThrottlerGuard must run before LocalAuthGuard
+  @UseGuards(AuthThrottlerGuard, LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('login/password')
   async loginPassword(
@@ -103,6 +123,9 @@ export class AuthsController {
     return this.authService.updatePassword(user.id, dto);
   }
 
+  @UseGuards(AuthThrottlerGuard)
+  @Throttle({ default: { limit: 20, ttl: ONE_MINUTE_MS } })
+  @ThrottleTarget('identifier', 5, 15 * ONE_MINUTE_MS)
   @Post('password/reset')
   resetPassword(
     @Body() dto: ResetPasswordDto,
@@ -130,6 +153,13 @@ export class AuthsController {
 
   // ================== Service Authentication (OAuth2 Client Credentials) ==================
 
+  @UseGuards(AuthThrottlerGuard)
+  @Throttle({
+    default: {
+      limit: envLimit('RATE_LIMIT_AUTH', 20),
+      ttl: ONE_MINUTE_MS,
+    },
+  })
   @HttpCode(HttpStatus.OK)
   @Post('service/token')
   @ApiOperation({
