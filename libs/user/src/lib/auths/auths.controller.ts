@@ -39,7 +39,11 @@ import { CurrentUser } from './decorator/current-user.decorator';
 import { JwtGuard } from './guard/jwt.guard';
 import { LocalAuthGuard } from './guard/local.guard';
 import { CurrentUserInterface } from './interfaces/current-user.interface';
-import { ONE_MINUTE_MS, ThrottleTarget } from './throttle/auth-throttle';
+import {
+  envLimit,
+  ONE_MINUTE_MS,
+  ThrottleTarget,
+} from './throttle/auth-throttle';
 import { AuthThrottlerGuard } from './throttle/auth-throttler.guard';
 
 @Controller('auth')
@@ -48,7 +52,6 @@ export class AuthsController {
   constructor(private authService: AuthsService) {}
 
   @UseGuards(AuthThrottlerGuard)
-  @Throttle({ default: { limit: 60, ttl: ONE_MINUTE_MS } })
   @HttpCode(HttpStatus.OK)
   @Post('login')
   loginOtp(@Body() dto: OtpLoginDto, @RequestDetails() rdetails: RequestType) {
@@ -65,7 +68,6 @@ export class AuthsController {
   }
 
   @UseGuards(AuthThrottlerGuard)
-  @Throttle({ default: { limit: 60, ttl: ONE_MINUTE_MS } })
   @Post('wallet')
   walletLogin(
     @Body() dto: WalletLoginDto,
@@ -75,7 +77,12 @@ export class AuthsController {
   }
 
   @UseGuards(AuthThrottlerGuard)
-  @Throttle({ default: { limit: 60, ttl: ONE_MINUTE_MS } })
+  @Throttle({
+    default: {
+      limit: envLimit('RATE_LIMIT_AUTH', 60),
+      ttl: ONE_MINUTE_MS,
+    },
+  })
   @Post('challenge')
   getChallenge(
     @Body() dto: ChallengeDto,
@@ -87,7 +94,6 @@ export class AuthsController {
   // Password authentication endpoints
   // AuthThrottlerGuard must run before LocalAuthGuard
   @UseGuards(AuthThrottlerGuard, LocalAuthGuard)
-  @Throttle({ default: { limit: 60, ttl: ONE_MINUTE_MS } })
   @HttpCode(HttpStatus.OK)
   @Post('login/password')
   async loginPassword(
@@ -148,7 +154,12 @@ export class AuthsController {
   // ================== Service Authentication (OAuth2 Client Credentials) ==================
 
   @UseGuards(AuthThrottlerGuard)
-  @Throttle({ default: { limit: 20, ttl: ONE_MINUTE_MS } })
+  @Throttle({
+    default: {
+      limit: envLimit('RATE_LIMIT_AUTH', 20),
+      ttl: ONE_MINUTE_MS,
+    },
+  })
   @HttpCode(HttpStatus.OK)
   @Post('service/token')
   @ApiOperation({

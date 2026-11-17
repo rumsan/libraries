@@ -3,6 +3,16 @@ import { Throttle, ThrottlerOptions } from '@nestjs/throttler';
 
 export const ONE_MINUTE_MS = 60_000;
 
+/**
+ * Throttle limit read from an env variable on each request, falling back to
+ * `fallback` when the variable is missing or not a positive integer.
+ */
+export const envLimit =
+  (key: string, fallback: number) => (): number => {
+    const value = Number(process.env[key]);
+    return Number.isInteger(value) && value > 0 ? value : fallback;
+  };
+
 /** Throttler that counts requests per target account instead of per IP. */
 export const TARGET_THROTTLER = 'target';
 const TARGET_FIELD_KEY = 'rs:throttle-target-field';

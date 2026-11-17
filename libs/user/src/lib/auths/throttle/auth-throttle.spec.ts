@@ -11,10 +11,13 @@ import { Throttle, ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { RsExceptionFilter } from '@rumsan/extensions/exceptions';
 import { AddressInfo } from 'net';
 import {
+  envLimit,
   ONE_MINUTE_MS,
   RS_AUTH_THROTTLERS,
   ThrottleTarget,
 } from './auth-throttle';
+
+const TEST_ENV_KEY = 'RATE_LIMIT_TEST_ROUTE';
 
 @Controller()
 class TestController {
@@ -23,6 +26,24 @@ class TestController {
   @HttpCode(200)
   @Post('ip-only')
   ipOnly() {
+    return { ok: true };
+  }
+
+  // No @Throttle: uses the global `default` throttler (60/min)
+  @UseGuards(ThrottlerGuard)
+  @HttpCode(200)
+  @Post('default-only')
+  defaultOnly() {
+    return { ok: true };
+  }
+
+  @UseGuards(ThrottlerGuard)
+  @Throttle({
+    default: { limit: envLimit(TEST_ENV_KEY, 2), ttl: ONE_MINUTE_MS },
+  })
+  @HttpCode(200)
+  @Post('env-limit')
+  envLimited() {
     return { ok: true };
   }
 
@@ -56,7 +77,10 @@ describe('auth throttling', () => {
     baseUrl = `http://127.0.0.1:${port}`;
   });
 
-  afterEach(() => app.close());
+  afterEach(async () => {
+    delete process.env[TEST_ENV_KEY];
+    await app.close();
+  });
 
   const post = (path: string, ip: string, body: object = {}) =>
     fetch(`${baseUrl}/${path}`, {
@@ -66,7 +90,8 @@ describe('auth throttling', () => {
     }).then((res) => res.status);
 
   it('limits per client IP from X-Forwarded-For (trust proxy)', async () => {
-    for (let i = 0; i < 3; i++) expect(await post('ip-only', '1.1.1.1')).toBe(200);
+    for (let i = 0; i < 3; i++)
+      expect(await post('ip-only', '1.1.1.1')).toBe(200);
     expect(await post('ip-only', '1.1.1.1')).toBe(429);
     const res = await fetch(`${baseUrl}/ip-only`, {
       method: 'POST',
@@ -91,6 +116,55 @@ describe('auth throttling', () => {
     // 6 requests for one address from different IPs: above the default target
     // limit (5), so a 429 here would mean the target throttler leaked in
     for (let i = 0; i < 6; i++)
-      expect(await post('ip-only', `9.9.9.${i}`, { address: 'a@x.com' })).toBe(200);
+      expect(await post('ip-only', `9.9.9.${i}`, { address: 'a@x.com' })).toBe(
+        200,
+      );
+  });
+
+  it('applies the global default limit to routes without @Throttle', async () => {
+    for (let i = 0; i < 60; i++)
+      expect(await post('default-only', '4.4.4.4')).toBe(200);
+    expect(await post('default-only', '4.4.4.4')).toBe(429);
+  });
+
+  it('uses the fallback limit when the env variable is not set', async () => {
+    for (let i = 0; i < 2; i++)
+      expect(await post('env-limit', '5.5.5.5')).toBe(200);
+    expect(await post('env-limit', '5.5.5.5')).toBe(429);
+  });
+
+  it('reads the limit from env at request time, after the app has started', async () => {
+    process.env[TEST_ENV_KEY] = '4';
+    for (let i = 0; i < 4; i++)
+      expect(await post('env-limit', '6.6.6.6')).toBe(200);
+    expect(await post('env-limit', '6.6.6.6')).toBe(429);
+  });
+});
+
+describe('envLimit', () => {
+  const KEY = 'RATE_LIMIT_ENV_LIMIT_SPEC';
+
+  afterEach(() => {
+    delete process.env[KEY];
+  });
+
+  it('returns the env value when it is a positive integer', () => {
+    process.env[KEY] = '15';
+    expect(envLimit(KEY, 20)()).toBe(15);
+  });
+
+  it.each([undefined, '', 'abc', '0', '-5', '2.5'])(
+    'returns the fallback for %p',
+    (value) => {
+      if (value !== undefined) process.env[KEY] = value;
+      expect(envLimit(KEY, 20)()).toBe(20);
+    },
+  );
+
+  it('picks up env changes made after the decorator was created', () => {
+    const limit = envLimit(KEY, 20);
+    expect(limit()).toBe(20);
+    process.env[KEY] = '7';
+    expect(limit()).toBe(7);
   });
 });
