@@ -62,7 +62,7 @@ export class RsExceptionFilter implements PipeTransform<any>, ExceptionFilter {
       message: exception?.message,
       httpCode: exception?.httpCode,
       statusCode: exception?.statusCode,
-      exception: exception
+      exception: exception,
     });
 
     const responseData: {
@@ -100,8 +100,11 @@ export class RsExceptionFilter implements PipeTransform<any>, ExceptionFilter {
         responseData.errors = [response?.errors ?? ''];
       }
       responseData.name = exception.name;
-      responseData.statusCode = exceptionResponse.statusCode;
-      responseData.message = exceptionResponse.message;
+      responseData.statusCode = exception.getStatus();
+      responseData.message =
+        typeof exceptionResponse === 'string'
+          ? exceptionResponse
+          : exceptionResponse.message;
       responseData.type = 'HTTP';
       //console.log('HttpException occured', responseData);
     } else if (exception instanceof RSError) {

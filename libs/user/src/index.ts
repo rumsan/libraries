@@ -9,6 +9,7 @@ export * from './lib/auths/auths.service';
 export * from './lib/auths/guard';
 export * from './lib/auths/interfaces';
 export * from './lib/auths/strategy';
+export * from './lib/auths/throttle/auth-throttle';
 export { ACTIONS, ERRORS, EVENTS, SUBJECTS } from './lib/constants';
 export * from './lib/roles/roles.module';
 export * from './lib/roles/roles.service';
